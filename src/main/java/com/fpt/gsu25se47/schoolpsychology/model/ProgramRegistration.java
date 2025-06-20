@@ -9,8 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "program_registration")
@@ -36,7 +34,4 @@ public class ProgramRegistration extends Auditable {
     private RegistrationStatus status;
 
     private LocalDate registeredAt;
-
-    @OneToMany(mappedBy = "programRegistration")
-    private List<ProgramRecord> programRecords = new ArrayList<>();
 }

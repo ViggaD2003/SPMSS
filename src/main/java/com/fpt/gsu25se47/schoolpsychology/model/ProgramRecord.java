@@ -35,17 +35,18 @@ public class ProgramRecord extends Auditable {
 
     private LocalDate completeAt;
 
-    @OneToMany(mappedBy = "programRecord")
-    private List<MentalEvaluation> mentalEvaluations = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "mental_evaluation_id", nullable = false)
+    private MentalEvaluation mentalEvaluation;
 
     @ManyToOne
     @JoinColumn(name = "survey_id", nullable = false)
     private ProgramSurvey programSurvey;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "registration_id", nullable = false)
     private ProgramRegistration programRegistration;
 
-    @OneToOne(mappedBy = "programRecord")
-    private AnswerRecord answerRecord;
+    @OneToMany(mappedBy = "programRecord")
+    private List<AnswerRecord> answerRecords = new ArrayList<>();
 }

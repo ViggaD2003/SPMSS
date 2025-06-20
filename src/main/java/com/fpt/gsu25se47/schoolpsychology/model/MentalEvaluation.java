@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "mental_evaluation")
@@ -38,15 +40,12 @@ public class MentalEvaluation {
     @JoinColumn(name = "student_id", nullable = false)
     private Account student;
 
-    @ManyToOne
-    @JoinColumn(name = "appointment_record_id", nullable = false)
-    private AppointmentRecord appointmentRecord;
+    @OneToMany(mappedBy = "mentalEvaluation")
+    private List<AppointmentRecord> appointmentRecords = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "program_record_id", nullable = false)
-    private ProgramRecord programRecord;
+    @OneToMany(mappedBy = "mentalEvaluation")
+    private List<ProgramRecord> programRecords = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "survey_record_id", nullable = false)
-    private SurveyRecord surveyRecord;
+    @OneToMany(mappedBy = "mentalEvaluation")
+    private List<SurveyRecord> surveyRecords = new ArrayList<>();
 }

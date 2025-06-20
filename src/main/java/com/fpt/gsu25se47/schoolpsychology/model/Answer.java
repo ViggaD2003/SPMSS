@@ -22,9 +22,6 @@ public class Answer {
 
     private int score;
 
-    @OneToOne(mappedBy = "answer")
-    private AnswerRecord answerRecord;
-
     @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;

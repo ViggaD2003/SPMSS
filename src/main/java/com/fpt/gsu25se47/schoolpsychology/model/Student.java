@@ -23,8 +23,7 @@ public class Student {
     private Integer id;
 
     @OneToOne
-    @MapsId
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "account_id")
     private Account account;
 
     @Column(nullable = false, unique = true)

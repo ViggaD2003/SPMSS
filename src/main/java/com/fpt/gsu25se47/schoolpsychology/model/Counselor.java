@@ -19,8 +19,7 @@ public class Counselor {
     private Integer id;
 
     @OneToOne
-    @MapsId // dùng chung ID với Account
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "account_id")
     private Account account;
 
     @Column(nullable = false, unique = true)

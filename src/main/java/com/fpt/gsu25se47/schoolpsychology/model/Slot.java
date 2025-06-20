@@ -43,8 +43,5 @@ public class Slot extends Auditable {
     private SlotUsageType type;
 
     @OneToMany(mappedBy = "slot")
-    private List<Schedule> schedules = new ArrayList<>();
-
-    @OneToMany(mappedBy = "slot")
     private List<ProgramSession> programSessions = new ArrayList<>();
 }

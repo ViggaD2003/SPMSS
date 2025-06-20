@@ -18,17 +18,21 @@ public class AnswerRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "program_record_id", referencedColumnName = "id")
-    private ProgramRecord programRecord;
+    @OneToOne
+    @JoinColumn(name = "answer_id", referencedColumnName = "id")
+    private Answer answer;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "survey_record_id", referencedColumnName = "id")
     private SurveyRecord surveyRecord;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "answer_id", referencedColumnName = "id")
-    private Answer answer;
+    @ManyToOne
+    @JoinColumn(name = "appointment_record_id", referencedColumnName = "id")
+    private AppointmentRecord appointmentRecord;
+
+    @ManyToOne
+    @JoinColumn(name = "program_record_id", referencedColumnName = "id")
+    private ProgramRecord programRecord;
 
     private String otherAnswer;
 

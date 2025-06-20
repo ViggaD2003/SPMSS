@@ -19,11 +19,10 @@ public class Guardian {
 
     @Id
     @Column(name = "id")
-    private Integer id; // PK và FK đến Account
+    private Integer id;
 
     @OneToOne
-    @MapsId
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "account_id")
     private Account account;
 
     @Column(nullable = false)

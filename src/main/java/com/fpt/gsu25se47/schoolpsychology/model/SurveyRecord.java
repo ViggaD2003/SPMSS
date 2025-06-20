@@ -41,9 +41,10 @@ public class SurveyRecord extends Auditable {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    @OneToMany(mappedBy = "surveyRecord")
-    private List<MentalEvaluation> mentalEvaluations = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "mental_evaluation_id", nullable = false)
+    private MentalEvaluation mentalEvaluation;
 
-    @OneToOne(mappedBy = "surveyRecord")
-    private AnswerRecord answerRecord;
+    @OneToMany(mappedBy = "surveyRecord")
+    private List<AnswerRecord> answerRecords = new ArrayList<>();
 }

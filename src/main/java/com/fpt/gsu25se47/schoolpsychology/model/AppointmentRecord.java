@@ -10,7 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +45,10 @@ public class AppointmentRecord extends Auditable {
     private Integer totalScore;
 
 
+    @ManyToOne
+    @JoinColumn(name = "mental_evaluation_id", nullable = false)
+    private MentalEvaluation mentalEvaluation;
+
     @OneToMany(mappedBy = "appointmentRecord")
-    private List<MentalEvaluation> mentalEvaluations = new ArrayList<>();
+    private List<AnswerRecord> answerRecords = new ArrayList<>();
 }
