@@ -47,7 +47,7 @@ public class Question extends Auditable {
     private List<Answer> answers = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "survey")
+    @JoinColumn(name = "survey_id")
     private Survey survey;
 
     @ManyToOne

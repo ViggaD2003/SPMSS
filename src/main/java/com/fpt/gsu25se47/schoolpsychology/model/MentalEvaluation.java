@@ -38,7 +38,7 @@ public class MentalEvaluation {
 
     @ManyToOne
     @JoinColumn(name = "student_id", nullable = false)
-    private Account student;
+    private Student student;
 
     @OneToMany(mappedBy = "mentalEvaluation")
     private List<AppointmentRecord> appointmentRecords = new ArrayList<>();

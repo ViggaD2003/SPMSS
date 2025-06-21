@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +29,15 @@ public class Slot extends Auditable {
 
     private String slotName;
 
-    private LocalTime startTime;
+    private LocalDateTime startDateTime;
 
-    private LocalTime endTime;
+    private LocalDateTime endDateTime;
 
     private Integer maxCases;
 
     private Boolean isBooked;
+
+    private String location;
 
     @Enumerated(EnumType.STRING)
     private SlotType slotType;
