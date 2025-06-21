@@ -25,6 +25,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .                   # Đường dẫn tới Dockerfile (tùy theo dự án của bạn)
+          context: .                   # đường dẫn này dẫn tới dockerfile của mày nè Nam
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/spmss:latest
