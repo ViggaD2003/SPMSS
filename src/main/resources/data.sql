@@ -39,11 +39,30 @@ INSERT INTO levels (text, description, min_score, max_score, is_required, catego
 INSERT INTO levels (text, description, min_score, max_score, is_required, category_id) VALUES ('Cần cải thiện', 'Kỹ năng cần cải thiện', 6, 10, 1, 2);
 
 -- Dummy data for Survey
-INSERT INTO survey (name, description, status, is_required, is_recurring, recurring_cycle, start_date, end_date, created_date) VALUES ('Khảo sát tâm lý học đường', 'Khảo sát đánh giá tâm lý học sinh', 1, 1, 0, NULL, '2024-01-01', '2024-12-31', NOW());
+INSERT INTO survey (name, description, status, is_required, is_recurring, recurring_cycle, start_date, end_date, created_date) VALUES ('Khảo sát tâm lý học đường', 'Khảo sát đánh giá tâm lý học sinh', 1, 1, 0, "MONTHLY", '2024-01-01', '2024-12-31', NOW());
 
--- Dummy data for Question (liên kết với category và survey)
-INSERT INTO questions (text, description, is_active, question_type, module_type, is_required, survey_id, category_id, created_date) VALUES ('Bạn có cảm thấy căng thẳng khi đến trường không?', 'Câu hỏi về cảm xúc khi đến trường', 1, 'YES_NO_CONCERN', 'SURVEY', 1, 1, 1, NOW());
-INSERT INTO questions (text, description, is_active, question_type, module_type, is_required, survey_id, category_id, created_date) VALUES ('Bạn có thường xuyên tham gia các hoạt động ngoại khóa không?', 'Câu hỏi về kỹ năng sống', 1, 'YES_NO_CONCERN', 'SURVEY', 1, 1, 2, NOW());
+
+INSERT INTO questions (
+    text,
+    description,
+    is_active,
+    question_type,
+    module_type,
+    is_required,
+    survey_id,
+    category_id,
+    created_date
+) VALUES (
+             'Bạn có thường xuyên cảm thấy bị quá tải với khối lượng bài tập và kỳ vọng học tập không?',
+             'Đánh giá mức độ áp lực từ việc học.',
+             1,
+             'MULTIPLE_CHOICE',
+             'SURVEY',
+             1,
+             1,
+             1,
+             NOW()
+         );
 
 -- Dummy data for Answer (liên kết với question)
 INSERT INTO answers (text, score, question_id) VALUES ('Có', 1, 1);

@@ -8,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,5 +21,17 @@ public class SurveyController {
     @PreAuthorize("hasRole('COUNSELOR')")
     public ResponseEntity<?> createSurvey(@Valid @RequestBody AddNewSurveyDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(surveyService.addNewSurvey(dto));
+    }
+
+    @PreAuthorize("hasRole('COUNSELOR')")
+    @GetMapping
+    public ResponseEntity<?> getAllSurveys() {
+        return ResponseEntity.ok(surveyService.getAllSurveys());
+    }
+
+    @PreAuthorize("hasRole('COUNSELOR')")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getSurveyById(@PathVariable Integer id) {
+        return ResponseEntity.ok(surveyService.getSurveyById(id));
     }
 }
