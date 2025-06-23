@@ -3,11 +3,11 @@
 
 -- Insert Accounts
 -- IDs are auto-generated, so we assume the order: 1:Manager, 2:Student, 3:Teacher, 4:Counselor, 5:Parent
-INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('manager@school.com', '$2a$10$N0iB65LA5F.Pa1s27gTfM.oAHe1H.s24gIu.ShlD2h2S3m.YagL22', 'MANAGER', 1, '0123456789', NOW());
-INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('student@school.com', '$2a$10$N0iB65LA5F.Pa1s27gTfM.oAHe1H.s24gIu.ShlD2h2S3m.YagL22', 'STUDENT', 1, '0123456788', NOW());
-INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('teacher@school.com', '$2a$10$N0iB65LA5F.Pa1s27gTfM.oAHe1H.s24gIu.ShlD2h2S3m.YagL22', 'TEACHER', 1, '0123456787', NOW());
-INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('counselor@school.com', '$2a$10$N0iB65LA5F.Pa1s27gTfM.oAHe1H.s24gIu.ShlD2h2S3m.YagL22', 'COUNSELOR', 1, '0123456786', NOW());
-INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('parent@school.com', '$2a$10$N0iB65LA5F.Pa1s27gTfM.oAHe1H.s24gIu.ShlD2h2S3m.YagL22', 'PARENTS', 1, '0123456785', NOW());
+INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('manager@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'MANAGER', 1, '0123456789', NOW());
+INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('student@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'STUDENT', 1, '0123456788', NOW());
+INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('teacher@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'TEACHER', 1, '0123456787', NOW());
+INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('counselor@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'COUNSELOR', 1, '0123456786', NOW());
+INSERT INTO accounts (email, password, role, status, phone_number, created_date) VALUES ('parent@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'PARENTS', 1, '0123456785', NOW());
 
 -- Insert Classes
 -- ID will be 1
