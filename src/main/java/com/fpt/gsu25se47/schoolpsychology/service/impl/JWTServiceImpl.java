@@ -71,11 +71,20 @@ public class JWTServiceImpl implements JWTService {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
+                .claim("role", populateAuthorities(user.getAuthorities()))
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiredTime))
                 .signWith(getSigninKey())
                 .compact();
+    }
+
+    private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
+        Set<String> authoritiesSet = new HashSet<>();
+        for (GrantedAuthority authority : authorities) {
+            authoritiesSet.add(authority.getAuthority().replace("ROLE_", ""));
+        }
+        return String.join(",", authoritiesSet);
     }
 
     @Override
