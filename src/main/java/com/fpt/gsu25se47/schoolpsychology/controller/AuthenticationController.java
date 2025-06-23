@@ -6,6 +6,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SignUpRequest;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AuthenticationService;
 import com.fpt.gsu25se47.schoolpsychology.utils.ResponseObject;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +22,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseObject> signIn(@RequestBody SignInRequest request) {
+    public ResponseEntity<ResponseObject> signIn(@Valid @RequestBody SignInRequest request) {
         return authenticationService.login(request);
     }
 
@@ -36,7 +37,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@RequestBody SignUpRequest request) {
+    public ResponseEntity<String> signUp(@Valid @RequestBody SignUpRequest request) {
         return authenticationService.signUp(request);
     }
 }

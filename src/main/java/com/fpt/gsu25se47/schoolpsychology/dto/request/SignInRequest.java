@@ -21,6 +21,6 @@ public class SignInRequest {
 
     @NotEmpty(message = "Password is mandatory")
     @NotNull(message = "Password is mandatory")
-    @Size(min = 8, message = "Password should be 8 characters long minimum")
+    @Size(min = 6, message = "Password should be 8 characters long minimum")
     private String password;
 }

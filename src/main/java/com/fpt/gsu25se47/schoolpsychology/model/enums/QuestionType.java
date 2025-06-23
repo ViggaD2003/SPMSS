@@ -5,5 +5,6 @@ public enum QuestionType {
     FREQUENTLY_SCALE,
     YES_NO_CONCERN,
     MOOD_SCALE,
-    OPEN_FEELING
+    OPEN_FEELING,
+    MULTIPLE_CHOICE,
 }

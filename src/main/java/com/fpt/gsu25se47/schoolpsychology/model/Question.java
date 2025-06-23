@@ -43,7 +43,7 @@ public class Question extends Auditable {
     @JoinColumn(name = "program_survey_id")
     private ProgramSurvey programSurvey;
 
-    @OneToMany(mappedBy = "question")
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
 
     @ManyToOne
