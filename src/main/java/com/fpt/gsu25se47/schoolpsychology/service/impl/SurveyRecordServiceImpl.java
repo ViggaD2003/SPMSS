@@ -90,22 +90,20 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
         SurveyRecord surveyRecordCreated = surveyRecordRepository.save(surveyRecord);
 
         var answerResponses = answerRecords.stream()
-                .map(ar -> {
-                    Answer answer = answerRepository.findById(ar.getId()).get();
-
-                    return AnswerRecordResponse
+                .map(ar ->
+                    AnswerRecordResponse
                             .builder()
                             .id(ar.getId())
                             .answerResponse(AnswerResponse
                                     .builder()
-                                    .id(answer.getId())
-                                    .score(answer.getScore())
-                                    .text(answer.getText())
+                                    .id(ar.getAnswer().getId())
+                                    .score(ar.getAnswer().getScore())
+                                    .text(ar.getAnswer().getText())
                                     .build())
                             .otherAnswer(ar.getOtherAnswer())
                             .skipped(ar.isSkipped())
-                            .build();
-                })
+                            .build()
+                )
                 .toList();
 
         SurveyRecordResponse response = SurveyRecordResponse.builder()
@@ -119,8 +117,17 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                 .completedAt(surveyRecord.getCompletedAt())
                 .totalScore(surveyRecord.getTotalScore())
                 .answerRecords(answerResponses)
+                .totalScore(calculateScore(answerRecords))
                 .build();
 
         return Optional.of(response);
+    }
+
+    private int calculateScore(List<AnswerRecord> answerRecords) {
+        return answerRecords.stream()
+                .mapToInt(ar -> answerRepository.findById(ar.getAnswer().getId())
+                        .map(Answer::getScore)
+                        .orElse(0))
+                .sum();
     }
 }
