@@ -67,5 +67,3 @@ INSERT INTO questions (
 -- Dummy data for Answer (liên kết với question)
 INSERT INTO answers (text, score, question_id) VALUES ('Có', 1, 1);
 INSERT INTO answers (text, score, question_id) VALUES ('Không', 0, 1);
-INSERT INTO answers (text, score, question_id) VALUES ('Thường xuyên', 1, 2);
-INSERT INTO answers (text, score, question_id) VALUES ('Hiếm khi', 0, 2); 

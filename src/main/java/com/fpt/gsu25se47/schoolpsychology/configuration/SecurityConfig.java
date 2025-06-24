@@ -36,7 +36,12 @@ public class SecurityConfig {
                         cors.configurationSource(
                                 request -> {
                                     CorsConfiguration config = new CorsConfiguration();
-                                    config.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+                                    config.setAllowedOrigins(List.of(
+                                            "http://localhost:5173",             // React web (vite)
+                                            "http://localhost:19006",            // Expo (web)
+                                            "http://localhost:8081",             // React Native Metro bundler
+                                            "http://192.168.1.104:8081"          // Android emulator truy cập host (API chạy local)
+                                    ));
                                     config.setAllowedMethods(Collections.singletonList("*"));
                                     config.setAllowCredentials(true);
                                     config.setAllowedHeaders(Collections.singletonList("*"));
