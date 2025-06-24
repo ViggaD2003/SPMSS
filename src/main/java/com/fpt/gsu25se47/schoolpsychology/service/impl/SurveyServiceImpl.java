@@ -7,18 +7,18 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.QuestionResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyResponse;
-import com.fpt.gsu25se47.schoolpsychology.model.Answer;
-import com.fpt.gsu25se47.schoolpsychology.model.Category;
-import com.fpt.gsu25se47.schoolpsychology.model.Question;
-import com.fpt.gsu25se47.schoolpsychology.model.Survey;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
-import com.fpt.gsu25se47.schoolpsychology.repository.AnswerRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.QuestRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -32,16 +32,26 @@ public class SurveyServiceImpl implements SurveyService {
 
     private final SurveyRepository surveyRepository;
 
-    private final QuestRepository questRepository;
-
-    private final AnswerRepository answerRepository;
-
     private final CategoryRepository categoryRepository;
+
+    private final JWTService jwtService;
+
+    private final AccountRepository accountRepository;
 
     @Override
     @Transactional
-    public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto) {
+    public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request) {
         try {
+            String token = request.getHeader("Authorization");
+            String role = jwtService.extractRoleFromJWT(token);
+
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            if(userDetails == null) {
+                throw new BadRequestException("Unauthorized");
+            }
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
+
             Survey survey = this.mapToSurvey(addNewSurveyDto);
             if (survey.getQuestions() != null) {
                 for (Question question : survey.getQuestions()) {
@@ -54,6 +64,14 @@ public class SurveyServiceImpl implements SurveyService {
                     }
                 }
             }
+
+            if(role.equalsIgnoreCase("MANAGER")){
+                survey.setStatus(SurveyStatus.ARCHIVED);
+            } else if(role.equalsIgnoreCase("COUNSELOR")){
+                survey.setStatus(SurveyStatus.DRAFT);
+            }
+
+            survey.setAccount(account);
 
             surveyRepository.save(survey);
 
@@ -94,6 +112,68 @@ public class SurveyServiceImpl implements SurveyService {
         }
     }
 
+    @Override
+    @Transactional
+    public Optional<?> updateSurveyById(Integer id, AddNewSurveyDto updateSurveyRequest) {
+        try {
+            Survey survey = surveyRepository.findById(id).orElseThrow(() ->
+                    new RuntimeException("Survey not found"));
+
+            // Cập nhật các field của survey
+            survey.setName(updateSurveyRequest.getName());
+            survey.setDescription(updateSurveyRequest.getDescription());
+            survey.setEndDate(updateSurveyRequest.getEndDate());
+            survey.setStartDate(updateSurveyRequest.getStartDate());
+            survey.setIsRecurring(updateSurveyRequest.getIsRecurring());
+            survey.setIsRequired(updateSurveyRequest.getIsRequired());
+            survey.setRecurringCycle(updateSurveyRequest.getRecurringCycle());
+
+            // Xoá và thay thế câu hỏi
+            //kĩ thuật update
+            //chỉ xoá phần tử trong danh sách trước đó (trước đó là khi tạo mới 1 object đã lưu danh sách đó vào)
+            survey.getQuestions().clear();
+
+            List<Question> newQuestions = updateSurveyRequest.getQuestions()
+                    .stream()
+                    .map(dto -> {
+                        Question question = this.mapToQuestion(dto);
+                        question.setSurvey(survey);
+                        if (question.getAnswers() != null) {
+                            question.getAnswers().forEach(answer -> answer.setQuestion(question));
+                        }
+                        return question;
+                    }).toList();
+
+            //sau khi xoá phần tử
+            //thì lưu phần tử mới vào danh sách trước đó
+            survey.getQuestions().addAll(newQuestions);
+
+            Survey updatedSurvey = surveyRepository.save(survey);
+            return Optional.of(this.mapToSurveyResponse(updatedSurvey));
+
+        } catch (Exception e) {
+            log.error("Failed to update survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Something went wrong");
+        }
+    }
+
+    @Override
+    public Optional<?> getAllSurveyByCounselorId() {
+        try{
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
+
+            List<Survey> surveys = surveyRepository.findByAccountId(account.getId());
+
+            List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
+            return Optional.of(surveyResponses);
+        } catch (Exception e){
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Something went wrong");
+        }
+    }
+
 
     private Answer mapToAnswer(AddNewAnswerDto dto){
         return Answer.builder()
@@ -114,6 +194,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .moduleType(dto.getModuleType())
                 .build();
     }
+
     private Survey mapToSurvey(AddNewSurveyDto dto){
         return Survey.builder()
                 .description(dto.getDescription())
@@ -125,7 +206,6 @@ public class SurveyServiceImpl implements SurveyService {
                 .questions(dto.getQuestions().stream().map(this::mapToQuestion).collect(Collectors.toList()))
                 .recurringCycle(dto.getRecurringCycle())
                 .startDate(dto.getStartDate())
-                .status(SurveyStatus.PENDING)
                 .build();
     }
 

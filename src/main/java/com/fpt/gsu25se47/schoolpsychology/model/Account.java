@@ -64,6 +64,9 @@ public class Account extends Auditable implements UserDetails {
     @OneToMany(mappedBy = "account")
     private List<Token> tokens = new ArrayList<>();
 
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Survey> surveys = new ArrayList<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

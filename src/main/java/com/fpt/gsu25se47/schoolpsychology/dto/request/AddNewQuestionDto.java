@@ -25,6 +25,7 @@ public class AddNewQuestionDto {
     @NotNull(message = "Loại module không được để trống")
     private ModuleType moduleType;
 
+    @NotNull(message = "Require không được để trống")
     private boolean isRequired;
 
     @NotNull(message = "Category ID không được để trống")

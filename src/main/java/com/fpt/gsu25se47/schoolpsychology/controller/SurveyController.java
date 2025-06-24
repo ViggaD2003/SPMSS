@@ -3,8 +3,10 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,20 +20,32 @@ public class SurveyController {
     private final SurveyService surveyService;
 
     @PostMapping
-    @PreAuthorize("hasRole('COUNSELOR')")
-    public ResponseEntity<?> createSurvey(@Valid @RequestBody AddNewSurveyDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(surveyService.addNewSurvey(dto));
+    @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
+    public ResponseEntity<?> createSurvey(@Valid @RequestBody AddNewSurveyDto dto, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(surveyService.addNewSurvey(dto, request));
     }
 
-    @PreAuthorize("hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping
     public ResponseEntity<?> getAllSurveys() {
         return ResponseEntity.ok(surveyService.getAllSurveys());
     }
 
-    @PreAuthorize("hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getSurveyById(@PathVariable Integer id) {
         return ResponseEntity.ok(surveyService.getSurveyById(id));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateSurvey(@PathVariable Integer id, @Valid @RequestBody AddNewSurveyDto dto) {
+        return ResponseEntity.status(HttpStatus.OK).body(surveyService.updateSurveyById(id, dto));
+    }
+
+    @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
+    @GetMapping("/get-by-account")
+    public ResponseEntity<?> getSurveysByAccount(){
+        return ResponseEntity.ok(surveyService.getAllSurveyByCounselorId());
     }
 }
