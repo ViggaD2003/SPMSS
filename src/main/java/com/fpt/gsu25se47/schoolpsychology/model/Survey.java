@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Survey extends Auditable {
+public class    Survey extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,6 +40,10 @@ public class Survey extends Auditable {
     private LocalDate startDate;
 
     private LocalDate endDate;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @OneToMany(mappedBy = "survey")
     private List<SurveyRecord> surveyRecords = new ArrayList<>();

@@ -40,6 +40,12 @@ public class JWTServiceImpl implements JWTService {
         return getClaim(jwt, Claims::getSubject);
     }
 
+    @Override
+    public String extractRoleFromJWT(String jwt) {
+        Claims claims = extractAllClaimsFromToken(jwt);
+        return claims.get("role", String.class);
+    }
+
     private <T> T getClaim(String token, Function<Claims, T> claimsResolver) {
         return claimsResolver.apply(extractAllClaimsFromToken(token));
     }
@@ -91,6 +97,8 @@ public class JWTServiceImpl implements JWTService {
     public boolean checkIfNotExpired(String jwt) {
         return !getClaim(jwt, Claims::getExpiration).before(new Date());
     }
+
+
 
 
 }
