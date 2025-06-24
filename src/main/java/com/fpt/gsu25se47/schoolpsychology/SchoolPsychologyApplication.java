@@ -9,5 +9,4 @@ public class SchoolPsychologyApplication {
     public static void main(String[] args) {
         SpringApplication.run(SchoolPsychologyApplication.class, args);
     }
-
 }
