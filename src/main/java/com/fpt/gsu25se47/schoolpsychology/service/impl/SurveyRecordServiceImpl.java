@@ -83,7 +83,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                 .status(dto.getSurveyStatus())
                 .account(account)
                 .mentalEvaluation(mentalEvaluation)
-                .totalScore(10) // Consider calculating this dynamically
+                .totalScore(calculateScore(answerRecords))
                 .completedAt(LocalDate.now())
                 .build();
 
