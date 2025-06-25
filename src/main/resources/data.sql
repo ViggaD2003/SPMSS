@@ -1,30 +1,33 @@
 -- Insert Accounts
-INSERT INTO accounts (email, password, role, status, phone_number, created_date)
+INSERT INTO accounts (email, password, role, status, phone_number, full_name, gender, dob, created_date)
 VALUES
-    ('manager@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'MANAGER', 1, '0123456789', NOW()),
-    ('student@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'STUDENT', 1, '0123456788', NOW()),
-    ('teacher@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'TEACHER', 1, '0123456787', NOW()),
-    ('counselor@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'COUNSELOR', 1, '0123456786', NOW()),
-    ('parent@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'PARENTS', 1, '0123456785', NOW());
+-- Existing records
+('manager@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'MANAGER', 1, '0123456789', 'Khuat Van Thanh Danh', 1, '1990-01-01', NOW()),
+('student@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'STUDENT', 1, '0123456788', 'Nguyen Van A', 1, '2005-09-01', NOW()),
+('teacher@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'TEACHER', 1, '0123456787', 'Tran Thi B', 0, '1985-06-10', NOW()),
+('counselor@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'COUNSELOR', 1, '0123456786', 'Pham Van C', 1, '1988-03-15', NOW()),
+('parent@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'PARENTS', 1, '0123456785', 'Le Thi D', 0, '1975-12-20', NOW());
+
+
 
 -- Insert Classes
 INSERT INTO classes (code_class, class_year) VALUES ('SE1800', '2024-01-01');
 
 -- Insert Teacher
-INSERT INTO teachers (id, account_id, teacher_code, full_name, gender, class_id)
-VALUES (3, 3, 'T001', 'Teacher Name', 1, 1);
+INSERT INTO teachers (id, account_id, teacher_code, class_id)
+VALUES (3, 3, 'T001',  1);
 
 -- Insert Student
-INSERT INTO students (id, account_id, student_code, full_name, gender, dob, is_enable_survey)
-VALUES (2, 2, 'S001', 'Student Name', 1, '2005-05-10', 1);
+INSERT INTO students (id, account_id, student_code, class_id,  is_enable_survey)
+VALUES (2, 2, 'S001', 1, 1);
 
 -- Insert Counselor
-INSERT INTO counselors (id, account_id, counselor_code, full_name, gender)
-VALUES (4, 4, 'C001', 'Counselor Name', 0);
+INSERT INTO counselors (id, account_id, counselor_code)
+VALUES (4, 4, 'C001');
 
 -- Insert Guardian
-INSERT INTO guardians (id, account_id, full_name, gender, address)
-VALUES (5, 5, 'Parent Name', 0, '123 ABC Street');
+INSERT INTO guardians (id, account_id, address)
+VALUES (5, 5, '123 ABC Street');
 
 -- Insert Relationship
 INSERT INTO relationship (student_id, guardian_id, relationship_type)
