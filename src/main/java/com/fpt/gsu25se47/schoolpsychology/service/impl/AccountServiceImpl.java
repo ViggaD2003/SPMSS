@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
@@ -165,4 +166,52 @@ public class AccountServiceImpl implements AccountService {
             throw new RuntimeException("Something went wrong");
         }
     }
+
+    @Override
+    public Optional<?> updateProfileAccount(UpdateProfileDto updateProfileDto) {
+        try {
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElse(null);
+
+            if(account == null) {
+                throw new UsernameNotFoundException("Not found account");
+            }
+
+            if(account.getRole().name().equalsIgnoreCase("STUDENT")){
+                account.setFullName(updateProfileDto.getFullName());
+                account.setGender(updateProfileDto.getGender());
+                account.setPhoneNumber(updateProfileDto.getPhoneNumber());
+                account.setDob(updateProfileDto.getDob());
+                Student student = studentRepository.findById(account.getId()).orElse(null);
+
+                if(student == null) {
+                    throw new UsernameNotFoundException("Not found student");
+                }
+
+                student.setIsEnableSurvey(updateProfileDto.getIsEnableSurvey());
+                studentRepository.save(student);
+                accountRepository.save(account);
+
+
+                Optional<?> getAccount = this.profileAccount();
+                return Optional.of(getAccount);
+            } else {
+                account.setFullName(updateProfileDto.getFullName());
+                account.setGender(updateProfileDto.getGender());
+                account.setPhoneNumber(updateProfileDto.getPhoneNumber());
+                account.setDob(updateProfileDto.getDob());
+                accountRepository.save(account);
+
+                Optional<?> getAccount = this.profileAccount();
+                return Optional.of(getAccount);
+            }
+
+
+        } catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException("Something went wrong");
+        }
+    }
+
+
 }
