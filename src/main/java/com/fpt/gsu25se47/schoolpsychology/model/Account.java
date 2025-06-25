@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,6 +43,13 @@ public class Account extends Auditable implements UserDetails {
 
     @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Column(nullable = false)
+    private String fullName;
+
+    private Boolean gender;
+
+    private LocalDate dob;
 
     @OneToMany(mappedBy = "hostBy")
     private List<ProgramSession> programSessions = new ArrayList<>();

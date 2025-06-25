@@ -27,11 +27,6 @@ public class Teacher {
 
     private String linkMeet;
 
-    @Column(nullable = false)
-    private String fullName;
-
-    private Boolean gender;
-
     @OneToOne
     @JoinColumn(name = "class_id", referencedColumnName = "id")
     private Classes classes;

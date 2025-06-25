@@ -1,6 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
-import org.springframework.security.core.userdetails.UserDetailsService;
+
+import java.util.Optional;
 
 public interface AccountService {
+    Optional<?> profileAccount();
 }

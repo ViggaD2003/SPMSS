@@ -26,9 +26,4 @@ public class Counselor {
     private String counselorCode;
 
     private String linkMeet;
-
-    @Column(nullable = false)
-    private String fullName;
-
-    private Boolean gender;
 }

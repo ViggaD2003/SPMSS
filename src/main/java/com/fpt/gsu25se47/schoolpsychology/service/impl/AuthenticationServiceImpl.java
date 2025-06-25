@@ -160,6 +160,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
+                .dob(request.getDob())
+                .fullName(request.getFullName())
+                .phoneNumber(request.getPhoneNumber())
+                .gender(request.getGender())
                 .status(true)
                 .build();
 
