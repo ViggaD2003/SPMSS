@@ -25,12 +25,7 @@ public class Guardian {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @Column(nullable = false)
-    private String fullName;
-
     private String address;
-
-    private Boolean gender;
 
     @OneToMany(mappedBy = "guardian")
     private List<Relationship> relationships = new ArrayList<>();

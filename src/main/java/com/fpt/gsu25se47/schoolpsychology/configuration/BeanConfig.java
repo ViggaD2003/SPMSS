@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -30,7 +31,7 @@ public class BeanConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return email -> accountRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Account with email " + email + " not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Account with email " + email + " not found"));
     }
 
     @Bean

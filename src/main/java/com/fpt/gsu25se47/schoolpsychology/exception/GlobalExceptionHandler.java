@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(UsernameNotFoundException.class)
   public ResponseEntity<String> handleUsernameNotFound(UsernameNotFoundException ex) {
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email does not exist");
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
   }
 
   @ExceptionHandler(Exception.class)

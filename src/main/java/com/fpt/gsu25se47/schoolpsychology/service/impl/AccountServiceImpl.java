@@ -1,16 +1,168 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
-import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountServiceImpl implements AccountService {
 
+    private final AccountRepository accountRepository;
 
+    private final StudentRepository studentRepository;
+
+    private final CounselorRepository counselorRepository;
+
+    private final TeacherRepository teacherRepository;
+
+    private final GuardianRepository guardianRepository;
+
+
+    @Override
+    public Optional<?> profileAccount() {
+        try {
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElse(null);
+
+            if (account == null) {
+                throw new UsernameNotFoundException("Not found user");
+            }
+
+            if (account.getRole().name().equalsIgnoreCase("STUDENT")) {
+                Student student = studentRepository.findById(account.getId()).orElse(null);
+
+                if (student == null) {
+                    throw new UsernameNotFoundException("Not found student");
+                }
+
+                StudentDto studentDto = new StudentDto();
+                studentDto.setEmail(account.getEmail());
+                studentDto.setDob(account.getDob());
+                studentDto.setFullName(account.getFullName());
+                studentDto.setGender(account.getGender());
+                studentDto.setIsEnableSurvey(student.getIsEnableSurvey());
+                studentDto.setPhoneNumber(account.getPhoneNumber());
+                studentDto.setStudentCode(student.getStudentCode());
+
+                ClassDto classDto = new ClassDto();
+                classDto.setClassYear(student.getClasses().getClassYear());
+                classDto.setCodeClass(student.getClasses().getCodeClass());
+
+                TeacherOfClassDto teacherDto = new TeacherOfClassDto();
+                teacherDto.setEmail(student.getClasses().getTeacher().getAccount().getEmail());
+                teacherDto.setFullName(student.getClasses().getTeacher().getAccount().getFullName());
+                teacherDto.setPhoneNumber(student.getClasses().getTeacher().getAccount().getPhoneNumber());
+                teacherDto.setTeacherCode(student.getClasses().getTeacher().getTeacherCode());
+
+                classDto.setTeacher(teacherDto);
+                studentDto.setClassDto(classDto);
+
+                return Optional.of(studentDto);
+            } else if (account.getRole().name().equalsIgnoreCase("PARENTS")) {
+                Guardian guardian = guardianRepository.findById(account.getId()).orElse(null);
+
+                if (guardian == null) {
+                    throw new UsernameNotFoundException("Not found guardian");
+                }
+
+                ParentDto parentDto = new ParentDto();
+                parentDto.setEmail(account.getEmail());
+                parentDto.setDob(account.getDob());
+                parentDto.setFullName(account.getFullName());
+                parentDto.setGender(account.getGender());
+                parentDto.setPhoneNumber(account.getPhoneNumber());
+                parentDto.setAddress(guardian.getAddress());
+
+                RelationshipDto relationshipDto = new RelationshipDto();
+                List<Student> students = guardian.getRelationships().stream().map(Relationship::getStudent).toList();
+
+                List<StudentDto> studentDtos = students.stream().map(item -> {
+                    StudentDto studentDto = new StudentDto();
+                    Account student = accountRepository.findById(item.getId()).orElse(null);
+                    if (student == null) {
+                        throw new UsernameNotFoundException("Not found student");
+                    }
+
+                    studentDto.setEmail(student.getEmail());
+                    studentDto.setDob(student.getDob());
+                    studentDto.setFullName(student.getFullName());
+                    studentDto.setGender(student.getGender());
+                    studentDto.setPhoneNumber(student.getPhoneNumber());
+                    studentDto.setStudentCode(item.getStudentCode());
+                    studentDto.setIsEnableSurvey(item.getIsEnableSurvey());
+
+                    ClassDto classDto = new ClassDto();
+                    classDto.setClassYear(item.getClasses().getClassYear());
+                    classDto.setCodeClass(item.getClasses().getCodeClass());
+
+                    TeacherOfClassDto teacherDto = new TeacherOfClassDto();
+                    teacherDto.setEmail(item.getClasses().getTeacher().getAccount().getEmail());
+                    teacherDto.setFullName(item.getClasses().getTeacher().getAccount().getFullName());
+                    teacherDto.setPhoneNumber(item.getClasses().getTeacher().getAccount().getPhoneNumber());
+                    teacherDto.setTeacherCode(item.getClasses().getTeacher().getTeacherCode());
+                    classDto.setTeacher(teacherDto);
+
+                    studentDto.setClassDto(classDto);
+                    return studentDto;
+                }).collect(Collectors.toList());
+
+                relationshipDto.setStudent(studentDtos);
+
+                parentDto.setRelationships(relationshipDto);
+
+                return Optional.of(parentDto);
+            } else if (account.getRole().name().equalsIgnoreCase("COUNSELOR")){
+               CounselorDto counselorDto = new CounselorDto();
+               Counselor counselor = counselorRepository.findById(account.getId()).orElse(null);
+
+               if (counselor == null) {
+                   throw new UsernameNotFoundException("Not found counselor");
+               }
+
+               counselorDto.setCounselorCode(counselor.getCounselorCode());
+               counselorDto.setPhoneNumber(account.getPhoneNumber());
+               counselorDto.setEmail(account.getEmail());
+               counselorDto.setFullName(account.getFullName());
+               counselorDto.setGender(account.getGender());
+               counselorDto.setLinkMeet(counselor.getLinkMeet());
+               counselorDto.setGender(account.getGender());
+
+               return Optional.of(counselorDto);
+            } else {
+                TeacherDto teacherDto = new TeacherDto();
+                Teacher teacher = teacherRepository.findById(account.getId()).orElse(null);
+
+                if (teacher == null) {
+                    throw new UsernameNotFoundException("Not found teacher");
+                }
+
+                teacherDto.setEmail(account.getEmail());
+                teacherDto.setFullName(account.getFullName());
+                teacherDto.setPhoneNumber(account.getPhoneNumber());
+                teacherDto.setGender(account.getGender());
+                teacherDto.setFullName(account.getFullName());
+                teacherDto.setTeacherCode(teacher.getTeacherCode());
+                teacherDto.setLinkMeet(teacher.getLinkMeet());
+
+                return Optional.of(teacherDto);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException("Something went wrong");
+        }
+    }
 }

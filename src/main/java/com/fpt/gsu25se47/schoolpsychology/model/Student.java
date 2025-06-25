@@ -29,14 +29,6 @@ public class Student {
     @Column(nullable = false, unique = true)
     private String studentCode;
 
-    @Column(nullable = false)
-    private String fullName;
-
-    @Column(nullable = false)
-    private Boolean gender;
-
-    private LocalDate dob;
-
     private Boolean isEnableSurvey;
 
     @ManyToOne
