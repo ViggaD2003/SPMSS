@@ -1,9 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerRecordResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordResponse;
+import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
@@ -32,6 +31,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     private final StudentRepository studentRepository;
     private final CategoryRepository categoryRepository;
     private final AnswerRepository answerRepository;
+    private final SurveyRecordMapper surveyRecordMapper;
 
     @Override
     @Transactional
@@ -89,38 +89,17 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
         SurveyRecord surveyRecordCreated = surveyRecordRepository.save(surveyRecord);
 
-        var answerResponses = answerRecords.stream()
-                .map(ar ->
-                    AnswerRecordResponse
-                            .builder()
-                            .id(ar.getId())
-                            .answerResponse(AnswerResponse
-                                    .builder()
-                                    .id(ar.getAnswer().getId())
-                                    .score(ar.getAnswer().getScore())
-                                    .text(ar.getAnswer().getText())
-                                    .build())
-                            .otherAnswer(ar.getOtherAnswer())
-                            .skipped(ar.isSkipped())
-                            .build()
-                )
-                .toList();
-
-        SurveyRecordResponse response = SurveyRecordResponse.builder()
-                .id(surveyRecordCreated.getId())
-                .surveyId(survey.getId())
-                .accountId(account.getId())
-                .accountFullName(account.getUsername())
-                .status(surveyRecord.getStatus().name())
-                .noteSuggest(dto.getNoteSuggest())
-                .mentalEvaluationId(mentalEvaluation.getId())
-                .completedAt(surveyRecord.getCompletedAt())
-                .totalScore(surveyRecord.getTotalScore())
-                .answerRecords(answerResponses)
-                .totalScore(calculateScore(answerRecords))
-                .build();
+        SurveyRecordResponse response = surveyRecordMapper.mapToSurveyRecordResponse(surveyRecordCreated);
 
         return Optional.of(response);
+    }
+
+    @Override
+    public List<SurveyRecordResponse> getAllSurveyRecordById(int accountId) {
+        var surveyRecords = surveyRecordRepository.findAllByAccountId(accountId);
+        return surveyRecords.stream()
+                .map(surveyRecordMapper::mapToSurveyRecordResponse)
+                .toList();
     }
 
     private int calculateScore(List<AnswerRecord> answerRecords) {
