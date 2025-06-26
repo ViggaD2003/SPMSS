@@ -48,4 +48,10 @@ public class SurveyController {
     public ResponseEntity<?> getSurveysByAccount(){
         return ResponseEntity.ok(surveyService.getAllSurveyByCounselorId());
     }
+
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
+    @GetMapping("/published")
+    public ResponseEntity<?> getAllSurveyWithPublished(){
+        return ResponseEntity.ok(surveyService.getAllSurveyWithPublished());
+    }
 }

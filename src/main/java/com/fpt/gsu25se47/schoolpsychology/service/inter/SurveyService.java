@@ -17,4 +17,6 @@ public interface SurveyService {
     Optional<?> updateSurveyById(Integer id, AddNewSurveyDto updateSurveyRequest);
 
     Optional<?> getAllSurveyByCounselorId();
+
+    Optional<?> getAllSurveyWithPublished();
 }

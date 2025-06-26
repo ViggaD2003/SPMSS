@@ -174,6 +174,21 @@ public class SurveyServiceImpl implements SurveyService {
         }
     }
 
+    @Override
+    public Optional<?> getAllSurveyWithPublished() {
+        try {
+            List<Survey> surveys = surveyRepository.findAll().stream()
+                    .filter(item -> item.getStatus().name().equalsIgnoreCase("PUBLISHED"))
+                    .toList();
+
+            List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
+            return Optional.of(surveyResponses);
+        } catch (Exception e){
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Something went wrong");
+        }
+    }
+
 
     private Answer mapToAnswer(AddNewAnswerDto dto){
         return Answer.builder()

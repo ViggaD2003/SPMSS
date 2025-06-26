@@ -33,24 +33,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors ->
-                        cors.configurationSource(
-                                request -> {
-                                    CorsConfiguration config = new CorsConfiguration();
-                                    config.setAllowedOrigins(List.of(
-                                            "http://localhost:5173",             // React web (vite)
-                                            "http://localhost:19006",            // Expo (web)
-                                            "http://localhost:8081",             // React Native Metro bundler
-                                            "http://192.168.1.104:8081",
-                                            "exp://192.168.1.104:8081"// Android emulator truy cập host (API chạy local)
-                                    ));
-                                    config.setAllowedMethods(Collections.singletonList("*"));
-                                    config.setAllowCredentials(true);
-                                    config.setAllowedHeaders(Collections.singletonList("*"));
-                                    config.setExposedHeaders(List.of("Authorization"));
-                                    config.setMaxAge(3600L);
-                                    return config;
-                                }
-                        )
+                        cors.configurationSource(request -> {
+                            CorsConfiguration config = new CorsConfiguration();
+                            config.addAllowedOriginPattern("http://localhost:*");
+                            config.addAllowedOriginPattern("http://10.0.2.2:*");
+                            config.addAllowedOriginPattern("http://vuvly9a-viggad2003-8081.exp.direct");
+                            config.addAllowedOriginPattern("https://vuvly9a-viggad2003-8081.exp.direct");
+
+                            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                            config.setAllowedHeaders(List.of("*"));
+                            config.setExposedHeaders(List.of("Authorization"));
+                            config.setAllowCredentials(true);
+                            config.setMaxAge(3600L);
+                            return config;
+                        })
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
@@ -80,6 +76,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
     @Bean
     public AccessDeniedHandler customAccessDeniedHandler() {
         return (request, response, accessDeniedException) -> {
@@ -98,4 +95,3 @@ public class SecurityConfig {
         };
     }
 }
-
