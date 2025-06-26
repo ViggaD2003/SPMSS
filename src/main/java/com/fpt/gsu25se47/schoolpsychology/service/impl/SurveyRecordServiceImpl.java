@@ -1,7 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordResponse;
+import com.fpt.gsu25se47.schoolpsychology.mapper.AnswerRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
@@ -25,79 +27,84 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
     private final SurveyRecordRepository surveyRecordRepository;
     private final MentalEvaluationRepository mentalEvaluationRepository;
-    private final AnswerRecordRepository answerRecordRepository;
     private final SurveyRepository surveyRepository;
     private final AccountRepository accountRepository;
     private final StudentRepository studentRepository;
     private final CategoryRepository categoryRepository;
     private final AnswerRepository answerRepository;
+    private final QuestRepository questRepository;
     private final SurveyRecordMapper surveyRecordMapper;
+    private final AnswerRecordMapper answerRecordMapper;
 
     @Override
     @Transactional
     public Optional<SurveyRecordResponse> createSurveyRecord(CreateSurveyRecordDto dto) {
+        try {
+            Survey survey = surveyRepository.findById(dto.getSurveyId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Survey not found with ID: " + dto.getSurveyId()));
 
-        List<AnswerRecord> answerRecords = answerRecordRepository
-                .findAllById(dto.getAnswerRecordRequests());
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!(principal instanceof UserDetails)) {
+                throw new BadCredentialsException("Invalid authentication principal");
+            }
 
-        if (answerRecords.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Answer Record not found");
+            String email = ((UserDetails) principal).getUsername();
+
+            Account account = accountRepository.findByEmail(email)
+                    .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
+
+            MentalEvaluation mentalEvaluation = mentalEvaluationRepository.findById(dto.getMentalEvaluationId())
+                    .orElseGet(() -> {
+                        Student student = studentRepository.findById(account.getId())
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Student not found with ID: " + account.getId()));
+
+                        Category category = categoryRepository.findByCode("PSY").get();
+
+                        return mentalEvaluationRepository.save(
+                                MentalEvaluation.builder()
+                                        .category(category)
+                                        .student(student)
+                                        .build()
+                        );
+                    });
+
+            List<AnswerRecord> answerRecords = dto.getAnswerRecordRequests()
+                    .stream()
+                    .map(t -> {
+                        var createAnswerRecordRequest = CreateAnswerRecordRequest.builder()
+                                .submitAnswerRecordRequests(t)
+                                .build();
+                        return answerRecordMapper.mapToAnswerRecord(createAnswerRecordRequest);
+                    })
+                    .toList();
+
+            SurveyRecord surveyRecord = SurveyRecord.builder()
+                    .survey(survey)
+                    .answerRecords(answerRecords)
+                    .noteSuggest(dto.getNoteSuggest())
+                    .status(dto.getSurveyStatus())
+                    .account(account)
+                    .mentalEvaluation(mentalEvaluation)
+                    .completedAt(LocalDate.now())
+                    .totalScore(calculateScore(answerRecords))
+                    .build();
+
+            answerRecords.forEach(ar -> ar.setSurveyRecord(surveyRecord));
+
+            SurveyRecord surveyRecordCreated = surveyRecordRepository.save(surveyRecord);
+
+            return Optional.of(surveyRecordMapper.mapToSurveyRecordResponse(surveyRecordCreated));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        Survey survey = surveyRepository.findById(dto.getSurveyId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Survey not found with ID: " + dto.getSurveyId()));
-
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UserDetails)) {
-            throw new BadCredentialsException("Invalid authentication principal");
-        }
-
-        String email = ((UserDetails) principal).getUsername();
-
-        Account account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
-
-        // Find or create MentalEvaluation
-        MentalEvaluation mentalEvaluation = mentalEvaluationRepository.findById(dto.getMentalEvaluationId())
-                .orElseGet(() -> {
-                    Student student = studentRepository.findById(account.getId())
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                    "Student not found with ID: " + account.getId()));
-
-                    Category category = categoryRepository.findByCode("PSY").get();
-
-                    return mentalEvaluationRepository.save(
-                            MentalEvaluation.builder()
-                                    .category(category)
-                                    .student(student)
-                                    .build()
-                    );
-                });
-
-        SurveyRecord surveyRecord = SurveyRecord.builder()
-                .survey(survey)
-                .answerRecords(answerRecords)
-                .noteSuggest(dto.getNoteSuggest())
-                .status(dto.getSurveyStatus())
-                .account(account)
-                .mentalEvaluation(mentalEvaluation)
-                .totalScore(calculateScore(answerRecords))
-                .completedAt(LocalDate.now())
-                .build();
-
-        SurveyRecord surveyRecordCreated = surveyRecordRepository.save(surveyRecord);
-
-        SurveyRecordResponse response = surveyRecordMapper.mapToSurveyRecordResponse(surveyRecordCreated);
-
-        return Optional.of(response);
     }
 
     @Override
     public List<SurveyRecordResponse> getAllSurveyRecordById(int accountId) {
-        var surveyRecords = surveyRecordRepository.findAllByAccountId(accountId);
-        return surveyRecords.stream()
+        return surveyRecordRepository.findAllByAccountId(accountId)
+                .stream()
                 .map(surveyRecordMapper::mapToSurveyRecordResponse)
                 .toList();
     }

@@ -8,7 +8,7 @@ import lombok.Data;
 public class AnswerRecordResponse {
 
     private Integer id;
+    private QuestionResponse questionResponse;
     private AnswerResponse answerResponse;
-    private String otherAnswer;
     private boolean skipped;
 }

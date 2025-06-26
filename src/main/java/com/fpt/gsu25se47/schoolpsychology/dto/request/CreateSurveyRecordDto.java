@@ -12,5 +12,5 @@ public class CreateSurveyRecordDto {
     private SurveyRecordStatus surveyStatus;
     private Integer surveyId;
     private Integer mentalEvaluationId;
-    private List<Integer> answerRecordRequests;
+    private List<SubmitAnswerRecordRequest> answerRecordRequests;
 }
