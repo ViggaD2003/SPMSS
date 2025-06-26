@@ -1,6 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;
 import lombok.Data;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 public class CreateSurveyRecordDto {
 
     private String noteSuggest;
-    private SurveyStatus surveyStatus;
+    private SurveyRecordStatus surveyStatus;
     private Integer surveyId;
     private Integer mentalEvaluationId;
     private List<Integer> answerRecordRequests;
