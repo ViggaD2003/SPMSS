@@ -45,6 +45,6 @@ public class SurveyRecord extends Auditable {
     @JoinColumn(name = "mental_evaluation_id", nullable = false)
     private MentalEvaluation mentalEvaluation;
 
-    @OneToMany(mappedBy = "surveyRecord")
+    @OneToMany(mappedBy = "surveyRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerRecord> answerRecords = new ArrayList<>();
 }

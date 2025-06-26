@@ -16,8 +16,7 @@ public class SurveyRecordResponse {
     private String status;
     private LocalDate completedAt;
     private Integer surveyId;
-    private Integer accountId;
-    private String accountFullName;
+    private StudentDto studentDto;
     private Integer mentalEvaluationId;
 
     private List<AnswerRecordResponse> answerRecords;

@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "answers")
 @Data
@@ -25,4 +28,7 @@ public class Answer {
     @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
+
+    @OneToMany(mappedBy = "answer")
+    private List<AnswerRecord> answerRecords = new ArrayList<>();
 }

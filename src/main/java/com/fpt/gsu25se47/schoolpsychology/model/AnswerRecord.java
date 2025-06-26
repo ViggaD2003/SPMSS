@@ -18,7 +18,7 @@ public class AnswerRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "answer_id", referencedColumnName = "id")
     private Answer answer;
 
@@ -33,8 +33,6 @@ public class AnswerRecord {
     @ManyToOne
     @JoinColumn(name = "program_record_id", referencedColumnName = "id")
     private ProgramRecord programRecord;
-
-    private String otherAnswer;
 
     private boolean isSkipped;
 }
