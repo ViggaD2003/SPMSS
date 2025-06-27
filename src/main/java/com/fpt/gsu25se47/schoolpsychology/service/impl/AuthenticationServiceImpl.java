@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.common.Status;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.ChangePasswordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.RefreshTokenRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SignInRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SignUpRequest;
@@ -18,19 +19,24 @@ import com.fpt.gsu25se47.schoolpsychology.utils.TokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final JWTService jwtService;
     private final AccountRepository accountRepo;
@@ -174,6 +180,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .body(
                         "Sign up successful !"
                 );
+    }
+
+    @Override
+    public ResponseEntity<String> changePassword(ChangePasswordRequest request, Principal connectedUser) {
+        try {
+//            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//            Account account = accountRepo.findByEmail(userDetails.getUsername()).orElse(null);
+            var account = (Account) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+
+            if(account == null) {
+                throw new IllegalArgumentException("Account not found");
+            }
+
+            if(!passwordEncoder.matches(request.getCurrentPassword(), account.getPassword())) {
+                throw new IllegalArgumentException("Current password doesn't match");
+            }
+
+            if(!request.getNewPassword().equals(request.getConfirmNewPassword())){
+                throw new IllegalArgumentException("New password doesn't match");
+            }
+
+            account.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            accountRepo.save(account);
+
+            return ResponseEntity.ok("Change password success !");
+
+        } catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException("Something went wrong");
+        }
     }
 
 

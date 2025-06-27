@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.request.ChangePasswordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.RefreshTokenRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SignInRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SignUpRequest;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,5 +42,10 @@ public class AuthenticationController {
     @PostMapping("/signup")
     public ResponseEntity<String> signUp(@Valid @RequestBody SignUpRequest request) {
         return authenticationService.signUp(request);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordRequest request, Principal principal) {
+        return authenticationService.changePassword(request, principal);
     }
 }
