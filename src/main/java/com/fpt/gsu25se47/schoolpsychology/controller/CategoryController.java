@@ -28,6 +28,7 @@ public class CategoryController {
                     .status(HttpStatus.CONFLICT)
                     .body(
                             ApiResponse.<Void>builder()
+                                    .statusCode(HttpStatus.OK.value())
                                     .success(false)
                                     .message("Category name or code already exists.")
                                     .data(null)
@@ -36,6 +37,7 @@ public class CategoryController {
         }
         return ResponseEntity
                 .ok(ApiResponse.<CategoryResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
                         .success(true)
                         .message("Category created successfully")
                         .data(categoryResponse.get())
@@ -48,6 +50,7 @@ public class CategoryController {
         if (categories.isEmpty()) {
             return ResponseEntity.ok(
                     ApiResponse.builder()
+                            .statusCode(HttpStatus.OK.value())
                             .success(true)
                             .message("No categories yet")
                             .data(categories)
@@ -55,6 +58,7 @@ public class CategoryController {
         }
         return ResponseEntity.ok(
                 ApiResponse.builder()
+                        .statusCode(HttpStatus.OK.value())
                         .success(true)
                         .message("Categories retrieved successfully")
                         .data(categories)
