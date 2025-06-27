@@ -17,7 +17,6 @@ public class SurveyRecordResponse {
     private LocalDate completedAt;
     private Integer surveyId;
     private StudentDto studentDto;
-    private Integer mentalEvaluationId;
 
     private List<AnswerRecordResponse> answerRecords;
 }
