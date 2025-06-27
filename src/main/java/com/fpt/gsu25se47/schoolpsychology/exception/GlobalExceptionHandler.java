@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleAll(Exception ex) {
     ex.printStackTrace();
-    return ResponseEntity.status(500).body("Internal Server Error");
+    return ResponseEntity.status(500).body(!ex.getMessage().isEmpty() ? ex.getMessage() : "Internal Server Error");
   }
 
   @ExceptionHandler(DuplicateResourceException.class)

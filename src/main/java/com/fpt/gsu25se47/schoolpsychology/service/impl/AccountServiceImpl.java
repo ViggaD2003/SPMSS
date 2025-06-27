@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -59,18 +60,22 @@ public class AccountServiceImpl implements AccountService {
                 studentDto.setPhoneNumber(account.getPhoneNumber());
                 studentDto.setStudentCode(student.getStudentCode());
 
-                ClassDto classDto = new ClassDto();
-                classDto.setClassYear(student.getClasses().getClassYear());
-                classDto.setCodeClass(student.getClasses().getCodeClass());
+                if (student.getClasses() != null) {
+                    ClassDto classDto = new ClassDto();
+                    classDto.setClassYear(student.getClasses().getClassYear());
+                    classDto.setCodeClass(student.getClasses().getCodeClass());
 
-                TeacherOfClassDto teacherDto = new TeacherOfClassDto();
-                teacherDto.setEmail(student.getClasses().getTeacher().getAccount().getEmail());
-                teacherDto.setFullName(student.getClasses().getTeacher().getAccount().getFullName());
-                teacherDto.setPhoneNumber(student.getClasses().getTeacher().getAccount().getPhoneNumber());
-                teacherDto.setTeacherCode(student.getClasses().getTeacher().getTeacherCode());
+                    if (student.getClasses().getTeacher() != null && student.getClasses().getTeacher().getAccount() != null) {
+                        TeacherOfClassDto teacherDto = new TeacherOfClassDto();
+                        teacherDto.setEmail(student.getClasses().getTeacher().getAccount().getEmail());
+                        teacherDto.setFullName(student.getClasses().getTeacher().getAccount().getFullName());
+                        teacherDto.setPhoneNumber(student.getClasses().getTeacher().getAccount().getPhoneNumber());
+                        teacherDto.setTeacherCode(student.getClasses().getTeacher().getTeacherCode());
+                        classDto.setTeacher(teacherDto);
+                    }
 
-                classDto.setTeacher(teacherDto);
-                studentDto.setClassDto(classDto);
+                    studentDto.setClassDto(classDto);
+                }
 
                 return Optional.of(studentDto);
             } else if (account.getRole().name().equalsIgnoreCase("PARENTS")) {
@@ -89,40 +94,46 @@ public class AccountServiceImpl implements AccountService {
                 parentDto.setAddress(guardian.getAddress());
 
                 RelationshipDto relationshipDto = new RelationshipDto();
-                List<Student> students = guardian.getRelationships().stream().map(Relationship::getStudent).toList();
+                List<Student> students = guardian.getRelationships().stream()
+                        .map(Relationship::getStudent)
+                        .filter(Objects::nonNull)
+                        .toList();
 
                 List<StudentDto> studentDtos = students.stream().map(item -> {
                     StudentDto studentDto = new StudentDto();
-                    Account student = accountRepository.findById(item.getId()).orElse(null);
-                    if (student == null) {
-                        throw new UsernameNotFoundException("Not found student");
+                    Account studentAcc = accountRepository.findById(item.getId()).orElse(null);
+                    if (studentAcc == null) {
+                        return null; // hoặc throw nếu bạn muốn chặt chẽ hơn
                     }
 
-                    studentDto.setEmail(student.getEmail());
-                    studentDto.setDob(student.getDob());
-                    studentDto.setFullName(student.getFullName());
-                    studentDto.setGender(student.getGender());
-                    studentDto.setPhoneNumber(student.getPhoneNumber());
+                    studentDto.setEmail(studentAcc.getEmail());
+                    studentDto.setDob(studentAcc.getDob());
+                    studentDto.setFullName(studentAcc.getFullName());
+                    studentDto.setGender(studentAcc.getGender());
+                    studentDto.setPhoneNumber(studentAcc.getPhoneNumber());
                     studentDto.setStudentCode(item.getStudentCode());
                     studentDto.setIsEnableSurvey(item.getIsEnableSurvey());
 
                     ClassDto classDto = new ClassDto();
-                    classDto.setClassYear(item.getClasses().getClassYear());
-                    classDto.setCodeClass(item.getClasses().getCodeClass());
+                    if (item.getClasses() != null) {
+                        classDto.setClassYear(item.getClasses().getClassYear());
+                        classDto.setCodeClass(item.getClasses().getCodeClass());
 
-                    TeacherOfClassDto teacherDto = new TeacherOfClassDto();
-                    teacherDto.setEmail(item.getClasses().getTeacher().getAccount().getEmail());
-                    teacherDto.setFullName(item.getClasses().getTeacher().getAccount().getFullName());
-                    teacherDto.setPhoneNumber(item.getClasses().getTeacher().getAccount().getPhoneNumber());
-                    teacherDto.setTeacherCode(item.getClasses().getTeacher().getTeacherCode());
-                    classDto.setTeacher(teacherDto);
+                        if (item.getClasses().getTeacher() != null && item.getClasses().getTeacher().getAccount() != null) {
+                            TeacherOfClassDto teacherDto = new TeacherOfClassDto();
+                            teacherDto.setEmail(item.getClasses().getTeacher().getAccount().getEmail());
+                            teacherDto.setFullName(item.getClasses().getTeacher().getAccount().getFullName());
+                            teacherDto.setPhoneNumber(item.getClasses().getTeacher().getAccount().getPhoneNumber());
+                            teacherDto.setTeacherCode(item.getClasses().getTeacher().getTeacherCode());
+                            classDto.setTeacher(teacherDto);
+                        }
+                    }
 
                     studentDto.setClassDto(classDto);
                     return studentDto;
-                }).collect(Collectors.toList());
+                }).filter(Objects::nonNull).toList();
 
                 relationshipDto.setStudent(studentDtos);
-
                 parentDto.setRelationships(relationshipDto);
 
                 return Optional.of(parentDto);
