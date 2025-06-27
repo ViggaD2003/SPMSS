@@ -11,6 +11,6 @@ public class CreateSurveyRecordDto {
     private String noteSuggest;
     private SurveyRecordStatus surveyStatus;
     private Integer surveyId;
-    private Integer mentalEvaluationId;
+    private Integer totalScore;
     private List<SubmitAnswerRecordRequest> answerRecordRequests;
 }

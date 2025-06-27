@@ -36,10 +36,6 @@ public class ProgramRecord extends Auditable {
     private LocalDate completeAt;
 
     @ManyToOne
-    @JoinColumn(name = "mental_evaluation_id", nullable = false)
-    private MentalEvaluation mentalEvaluation;
-
-    @ManyToOne
     @JoinColumn(name = "survey_id", nullable = false)
     private ProgramSurvey programSurvey;
 

@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "mental_evaluation")
@@ -22,8 +20,6 @@ public class MentalEvaluation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    private Integer evaluationId; // reference to Appointment, Survey, or Program (depends on type)
 
     @Enumerated(EnumType.STRING)
     private EvaluationType evaluationType;
@@ -40,12 +36,15 @@ public class MentalEvaluation {
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    @OneToMany(mappedBy = "mentalEvaluation")
-    private List<AppointmentRecord> appointmentRecords = new ArrayList<>();
+    @OneToOne
+    @JoinColumn(name = "appointment_record_id")
+    private AppointmentRecord appointmentRecord;
 
-    @OneToMany(mappedBy = "mentalEvaluation")
-    private List<ProgramRecord> programRecords = new ArrayList<>();
+    @OneToOne
+    @JoinColumn(name = "program_record_id")
+    private ProgramRecord programRecord;
 
-    @OneToMany(mappedBy = "mentalEvaluation")
-    private List<SurveyRecord> surveyRecords = new ArrayList<>();
+    @OneToOne
+    @JoinColumn(name = "survey_record_id")
+    private SurveyRecord surveyRecord;
 }
