@@ -185,10 +185,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public ResponseEntity<String> changePassword(ChangePasswordRequest request, Principal connectedUser) {
         try {
-//            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//            Account account = accountRepo.findByEmail(userDetails.getUsername()).orElse(null);
             var account = (Account) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-
 
             if(account == null) {
                 throw new IllegalArgumentException("Account not found");
