@@ -173,6 +173,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .status(true)
                 .build();
 
+
+
+
         accountRepo.save(account);
 
         return ResponseEntity
@@ -212,7 +215,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     private void revokeAllTokens(Account account) {
-        List<Token> tokens = tokenRepo.findAllByAccount_Id(account.getId());
+        List<Token> tokens = tokenRepo.findAllByAccount_IdAndStatus(account.getId(), Status.TOKEN_ACTIVE.getValue());
         for (Token token : tokens) {
             TokenUtil.handleExpiredToken(token.getValue(), tokenRepo);
         }

@@ -10,7 +10,6 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,8 +32,6 @@ public class SurveyServiceImpl implements SurveyService {
     private final SurveyRepository surveyRepository;
 
     private final CategoryRepository categoryRepository;
-
-    private final JWTService jwtService;
 
     private final AccountRepository accountRepository;
 
@@ -62,9 +60,13 @@ public class SurveyServiceImpl implements SurveyService {
                 }
             }
 
-            survey.setStatus(SurveyStatus.DRAFT);
-            survey.setAccount(account);
+            if(LocalDate.now().isEqual(addNewSurveyDto.getStartDate())){
+                survey.setStatus(SurveyStatus.PUBLISHED);
+            } else {
+                survey.setStatus(SurveyStatus.DRAFT);
+            }
 
+            survey.setAccount(account);
             surveyRepository.save(survey);
 
             return Optional.of("Create survey successfull");
@@ -77,14 +79,14 @@ public class SurveyServiceImpl implements SurveyService {
 
     @Override
     public Optional<?> getAllSurveys() {
-       try {
-         List<Survey> surveys = surveyRepository.findAll();
-         List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
-         return Optional.of(surveyResponses);
-       } catch (Exception e){
-           log.error("Failed to create survey: {}", e.getMessage(), e);
-           throw new RuntimeException("Something went wrong");
-       }
+        try {
+            List<Survey> surveys = surveyRepository.findAll();
+            List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
+            return Optional.of(surveyResponses);
+        } catch (Exception e){
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Something went wrong");
+        }
     }
 
     @Override
@@ -169,9 +171,11 @@ public class SurveyServiceImpl implements SurveyService {
     @Override
     public Optional<?> getAllSurveyWithPublished() {
         try {
-            List<Survey> surveys = surveyRepository.findAll().stream()
-                    .filter(item -> item.getStatus().name().equalsIgnoreCase("PUBLISHED"))
-                    .toList();
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
+
+            List<Survey> surveys = surveyRepository.findExpiredSurveysNotCompletedByAccount(account.getId());
 
             List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
             return Optional.of(surveyResponses);
@@ -202,13 +206,16 @@ public class SurveyServiceImpl implements SurveyService {
                 .build();
     }
 
-    private Survey mapToSurvey(AddNewSurveyDto dto){
+    private Survey mapToSurvey(AddNewSurveyDto dto) {
+        if(dto.getEndDate().isEqual(dto.getStartDate())){
+            throw new RuntimeException("End date must be after than start date");
+        }
+
         return Survey.builder()
                 .description(dto.getDescription())
                 .endDate(dto.getEndDate())
                 .isRequired(dto.getIsRequired())
                 .isRecurring(dto.getIsRecurring())
-                .endDate(dto.getEndDate())
                 .name(dto.getName())
                 .questions(dto.getQuestions().stream().map(this::mapToQuestion).collect(Collectors.toList()))
                 .recurringCycle(dto.getRecurringCycle())

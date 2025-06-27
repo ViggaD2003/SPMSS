@@ -11,11 +11,10 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
 
     Optional<Token> findByValue(String value);
 
-    List<Token> findAllByAccount_Id(int id);
+    List<Token> findAllByAccount_IdAndStatus(Integer accountId, String status);
 
     Optional<Token> findByValueAndStatus(String value, String status);
 
     List<Token> findAllByTokenTypeAndStatusAndAccount_Id(String type, String status, int accountId);
-
 
 }
