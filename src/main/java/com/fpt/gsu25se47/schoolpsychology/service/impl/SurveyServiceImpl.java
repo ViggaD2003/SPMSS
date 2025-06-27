@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -42,14 +41,12 @@ public class SurveyServiceImpl implements SurveyService {
     @Transactional
     public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request) {
         try {
-            String token = request.getHeader("Authorization");
-            String role = jwtService.extractRoleFromJWT(token);
-
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
             if(userDetails == null) {
                 throw new BadRequestException("Unauthorized");
             }
+
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
             Survey survey = this.mapToSurvey(addNewSurveyDto);
@@ -65,12 +62,7 @@ public class SurveyServiceImpl implements SurveyService {
                 }
             }
 
-            if(role.equalsIgnoreCase("MANAGER")){
-                survey.setStatus(SurveyStatus.ARCHIVED);
-            } else if(role.equalsIgnoreCase("COUNSELOR")){
-                survey.setStatus(SurveyStatus.DRAFT);
-            }
-
+            survey.setStatus(SurveyStatus.DRAFT);
             survey.setAccount(account);
 
             surveyRepository.save(survey);
