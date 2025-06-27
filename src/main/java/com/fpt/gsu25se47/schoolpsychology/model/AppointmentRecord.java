@@ -44,11 +44,6 @@ public class AppointmentRecord extends Auditable {
 
     private Integer totalScore;
 
-
-    @ManyToOne
-    @JoinColumn(name = "mental_evaluation_id", nullable = false)
-    private MentalEvaluation mentalEvaluation;
-
     @OneToMany(mappedBy = "appointmentRecord")
     private List<AnswerRecord> answerRecords = new ArrayList<>();
 }

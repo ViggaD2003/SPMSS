@@ -35,7 +35,6 @@ public class SurveyRecordMapper {
                 .noteSuggest(surveyRecord.getNoteSuggest())
                 .completedAt(surveyRecord.getCompletedAt())
                 .studentDto(studentMapper.mapToStudentDto(student))
-                .mentalEvaluationId(surveyRecord.getMentalEvaluation().getId())
                 .status(surveyRecord.getStatus().name())
                 .build();
     }

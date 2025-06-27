@@ -26,13 +26,8 @@ import java.util.Optional;
 public class SurveyRecordServiceImpl implements SurveyRecordService {
 
     private final SurveyRecordRepository surveyRecordRepository;
-    private final MentalEvaluationRepository mentalEvaluationRepository;
     private final SurveyRepository surveyRepository;
     private final AccountRepository accountRepository;
-    private final StudentRepository studentRepository;
-    private final CategoryRepository categoryRepository;
-    private final AnswerRepository answerRepository;
-    private final QuestRepository questRepository;
     private final SurveyRecordMapper surveyRecordMapper;
     private final AnswerRecordMapper answerRecordMapper;
 
@@ -54,22 +49,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             Account account = accountRepository.findByEmail(email)
                     .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
 
-            MentalEvaluation mentalEvaluation = mentalEvaluationRepository.findById(dto.getMentalEvaluationId())
-                    .orElseGet(() -> {
-                        Student student = studentRepository.findById(account.getId())
-                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "Student not found with ID: " + account.getId()));
-
-                        Category category = categoryRepository.findByCode("PSY").get();
-
-                        return mentalEvaluationRepository.save(
-                                MentalEvaluation.builder()
-                                        .category(category)
-                                        .student(student)
-                                        .build()
-                        );
-                    });
-
             List<AnswerRecord> answerRecords = dto.getAnswerRecordRequests()
                     .stream()
                     .map(t -> {
@@ -86,9 +65,8 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .noteSuggest(dto.getNoteSuggest())
                     .status(dto.getSurveyStatus())
                     .account(account)
-                    .mentalEvaluation(mentalEvaluation)
                     .completedAt(LocalDate.now())
-                    .totalScore(calculateScore(answerRecords))
+                    .totalScore(dto.getTotalScore())
                     .build();
 
             answerRecords.forEach(ar -> ar.setSurveyRecord(surveyRecord));
@@ -107,13 +85,5 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                 .stream()
                 .map(surveyRecordMapper::mapToSurveyRecordResponse)
                 .toList();
-    }
-
-    private int calculateScore(List<AnswerRecord> answerRecords) {
-        return answerRecords.stream()
-                .mapToInt(ar -> answerRepository.findById(ar.getAnswer().getId())
-                        .map(Answer::getScore)
-                        .orElse(0))
-                .sum();
     }
 }
