@@ -29,9 +29,6 @@ public class SecurityConfig {
 
     private final AuthenticationProvider authenticationProvider;
 
-    private final CustomerOAuth2UserService customOAuth2UserService;
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -77,8 +74,6 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//                .oauth2Login(oauth2 -> oauth2
-//                        .userInfoEndpoint(user -> user.userService(customOAuth2UserService)));
         return http.build();
     }
 
