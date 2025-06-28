@@ -16,7 +16,7 @@ public class Teacher {
 
     @Id
     @Column(name = "id")
-    private Integer id; // PK & FK đến Account
+    private Integer id;
 
     @OneToOne
     @JoinColumn(name = "account_id")

@@ -8,18 +8,18 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SignInRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SignUpRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.JwtAuthenticationResponse;
 import com.fpt.gsu25se47.schoolpsychology.exception.DuplicateResourceException;
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.Token;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.TokenType;
-import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.TokenRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AuthenticationService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.GoogleCalendarService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import com.fpt.gsu25se47.schoolpsychology.utils.ResponseObject;
 import com.fpt.gsu25se47.schoolpsychology.utils.TokenUtil;
 import com.google.api.client.http.HttpTransport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,16 +28,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.List;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -58,6 +54,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
+
+    private final GoogleCalendarService googleCalendarService;
+
+    private final TeacherRepository teacherRepository;
+
+    private final StudentRepository studentRepository;
+
+    private final CounselorRepository counselorRepository;
+
+    private final GuardianRepository guardianRepository;
 
     @Value("${google.client.id}")
     private String clientId;
@@ -196,6 +202,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<String> signUp(SignUpRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Sign up request cannot be null");
@@ -216,10 +223,51 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .status(true)
                 .build();
 
-
-
-
         accountRepo.save(account);
+
+
+        switch (request.getRole().name()) {
+            case "TEACHER" -> {
+                String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+
+                Teacher teacher = Teacher.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .teacherCode(generateNextTeacherCode())
+                        .linkMeet(linkMeet)
+                        .build();
+
+                teacherRepository.save(teacher);
+            }
+            case "COUNSELOR" -> {
+                String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+
+                Counselor counselor = Counselor.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .linkMeet(linkMeet)
+                        .counselorCode(generateNextCounselorCode())
+                        .build();
+                counselorRepository.save(counselor);
+            }
+            case "STUDENT" -> {
+                Student student = Student.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .studentCode(generateNextStudentCode())
+                        .isEnableSurvey(false)
+                        .build();
+
+                studentRepository.save(student);
+            }
+            case "GUARDIAN" -> {
+                Guardian guardian = Guardian.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .build();
+                guardianRepository.save(guardian);
+            }
+        }
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -273,8 +321,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String googleAccessToken = tokenResponse.getAccessToken();
         String googleRefreshToken = tokenResponse.getRefreshToken();
 
-        System.out.println("accessToken: " + googleAccessToken + " | refreshToken: " + googleRefreshToken);
-
         // Save Google tokens
         tokenStore.saveTokens(googleAccessToken, googleRefreshToken);
 
@@ -295,7 +341,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new IllegalStateException("Failed to generate access token");
         }
 
-        System.out.println("Google Calendar callback success for: " + email);
+
+        response.sendRedirect("http://localhost:5173/login-success?token=" + newAccess.getValue());
     }
 
 
@@ -362,5 +409,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
 
+    private String generateNextTeacherCode() {
+        String lastCode = teacherRepository.findTopTeacherCode();
+        int nextNumber = 1;
 
+        if (lastCode != null && lastCode.matches("TC\\d+")) {
+            nextNumber = Integer.parseInt(lastCode.substring(2)) + 1;
+        }
+
+        return String.format("TC%04d", nextNumber);
+    }
+
+    private String generateNextCounselorCode() {
+        String lastCode = counselorRepository.findTopCounselorCode();
+        int nextNumber = 1;
+
+        if (lastCode != null && lastCode.matches("CL\\d+")) {
+            nextNumber = Integer.parseInt(lastCode.substring(2)) + 1;
+        }
+
+        return String.format("CL%04d", nextNumber);
+    }
+
+    private String generateNextStudentCode() {
+        String lastCode = studentRepository.findTopStudentCode();
+        int nextNumber = 1;
+
+        if (lastCode != null && lastCode.matches("ST\\d+")) {
+            nextNumber = Integer.parseInt(lastCode.substring(2)) + 1;
+        }
+
+        return String.format("ST%04d", nextNumber);
+    }
 }
