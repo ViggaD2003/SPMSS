@@ -55,4 +55,16 @@ public class SurveyRecordController {
                 .data(surveyRecordResponse)
                 .build());
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SurveyRecordResponse>>> getAllSurveyRecords() {
+
+        List<SurveyRecordResponse> recordResponses = surveyRecordService.getAllSurveyRecords();
+        return ResponseEntity.ok(ApiResponse.<List<SurveyRecordResponse>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .success(true)
+                .message("Retrieve survey records successfully")
+                .data(recordResponses)
+                .build());
+    }
 }

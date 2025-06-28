@@ -10,4 +10,5 @@ public interface SurveyRecordService {
     SurveyRecordResponse createSurveyRecord(CreateSurveyRecordDto createSurveyRecordDto);
     List<SurveyRecordResponse> getAllSurveyRecordById(int accountId);
     SurveyRecordResponse getSurveyRecordById(int surveyRecordId);
+    List<SurveyRecordResponse> getAllSurveyRecords();
 }

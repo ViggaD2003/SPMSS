@@ -14,12 +14,10 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,6 +35,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     private final SurveyRecordRepository surveyRecordRepository;
     private final SurveyRepository surveyRepository;
     private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final SurveyRecordMapper surveyRecordMapper;
     private final AnswerRecordMapper answerRecordMapper;
 
@@ -51,7 +50,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             if (dto.getStatus() == SurveyRecordStatus.SKIPPED) {
                 SurveyRecord skippedRecord = SurveyRecord.builder()
                         .survey(survey)
-                        .account(getAccount())
+                        .account(accountService.getCurrentAccount())
                         .status(SurveyRecordStatus.SKIPPED)
                         .noteSuggest(dto.getNoteSuggest())
                         .completedAt(LocalDate.now())
@@ -81,7 +80,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .noteSuggest(dto.getNoteSuggest())
                     .level(dto.getLevel())
                     .status(dto.getStatus())
-                    .account(getAccount())
+                    .account(accountService.getCurrentAccount())
                     .completedAt(LocalDate.now())
                     .totalScore(dto.getTotalScore())
                     .build();
@@ -117,16 +116,12 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
         return surveyRecordMapper.mapToSurveyRecordResponse(surveyRecord);
     }
 
-    private Account getAccount() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UserDetails)) {
-            throw new BadCredentialsException("Invalid authentication principal");
-        }
-
-        String email = ((UserDetails) principal).getUsername();
-
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
+    @Override
+    public List<SurveyRecordResponse> getAllSurveyRecords() {
+        return surveyRecordRepository.findAll()
+                .stream()
+                .map(surveyRecordMapper::mapToSurveyRecordResponse)
+                .toList();
     }
 
     private void validateAnswerIds(List<SubmitAnswerRecordRequest> submitAnswerRecordRequests) {

@@ -7,16 +7,15 @@ import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -224,5 +223,15 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    public Account getCurrentAccount() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof UserDetails)) {
+            throw new BadCredentialsException("Invalid authentication principal");
+        }
 
+        String email = ((UserDetails) principal).getUsername();
+
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
+    }
 }
