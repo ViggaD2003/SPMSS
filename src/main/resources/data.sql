@@ -50,14 +50,14 @@ VALUES
 -- Dummy data for Survey
 INSERT INTO survey (
     name, description, status, is_required, is_recurring,
-    recurring_cycle, start_date, end_date, created_date, account_id
+    recurring_cycle, start_date, end_date, created_date, account_id, survey_code
 )
 VALUES (
            'Khảo sát tâm lý học đường',
            'Khảo sát đánh giá tâm lý học sinh',
            1, 1, 0, 'MONTHLY',
            '2024-01-01', '2024-12-31',
-           NOW(), 1
+           NOW(), 1, 'FAMILY_ENV'
        );
 
 -- Dummy Question

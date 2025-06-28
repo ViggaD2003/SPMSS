@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,12 +18,14 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     @Query("SELECT s FROM Survey s WHERE s.startDate = :date AND s.status = 'PUBLISHED'")
     List<Survey> findByEndDateAndStatusPublished(LocalDate date);
 
-
     @Query("""
     SELECT s FROM Survey s
-    LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id AND sr.account.id = :accountId
+    LEFT JOIN SurveyRecord sr ON sr.survey.id = s.id AND sr.account.id = :accountId
+    JOIN Student st ON st.account.id = :accountId
     WHERE sr.id IS NULL
-      AND s.status = "PUBLISHED"
+      AND s.status = 'PUBLISHED'
+      AND st.isEnableSurvey = false
 """)
-    List<Survey> findExpiredSurveysNotCompletedByAccount(@Param("accountId") Integer accountId);
+    List<Survey> findUnansweredExpiredSurveysByAccountId(@Param("accountId") Integer accountId);
+
 }

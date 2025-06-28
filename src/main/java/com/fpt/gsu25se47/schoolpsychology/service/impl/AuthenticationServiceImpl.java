@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
+import com.fpt.gsu25se47.schoolpsychology.common.GoogleTokenStore;
 import com.fpt.gsu25se47.schoolpsychology.common.Status;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.ChangePasswordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.RefreshTokenRequest;
@@ -16,11 +17,12 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.AuthenticationService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import com.fpt.gsu25se47.schoolpsychology.utils.ResponseObject;
 import com.fpt.gsu25se47.schoolpsychology.utils.TokenUtil;
+import com.google.api.client.http.HttpTransport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,8 +33,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.List;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -42,18 +53,49 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AccountRepository accountRepo;
     private final TokenRepository tokenRepo;
 
+    private final GoogleTokenStore tokenStore;
+
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
 
+    @Value("${google.client.id}")
+    private String clientId;
+
+    @Value("${google.client.secret}")
+    private String clientSecret;
+
+    @Value("${google.redirect.uri}")
+    private String redirectUri;
+
 
     @Override
     public ResponseEntity<ResponseObject> login(SignInRequest signInRequest) {
-        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getEmail(), signInRequest.getPassword()));
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        signInRequest.getEmail(),
+                        signInRequest.getPassword()
+                )
+        );
         Account account = (Account) auth.getPrincipal();
+
         if (!account.getStatus()) {
             throw new IllegalArgumentException("Account is not active !");
         }
+
+        // ✅ Nếu là ADMIN thì chuyển hướng tới OAuth Google
+        if ("MANAGER".equals(account.getRole().name())) {
+            String googleAuthUrl = buildGoogleOAuthUrl(account.getEmail()); // phương thức tạo URL
+            return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
+                    .body(ResponseObject.builder()
+                            .message("Redirect to Google OAuth")
+                            .success(true)
+                            .data(googleAuthUrl)
+                            .build()
+                    );
+        }
+
+        // ✅ Nếu không phải ADMIN → tiếp tục flow login như cũ
         revokeAllTokens(account);
         saveTokenAccount(account);
 
@@ -73,6 +115,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .build()
         );
     }
+
 
     @Override
     public ResponseEntity<ResponseObject> logout(HttpServletRequest request) {
@@ -213,6 +256,49 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
+    @Override
+    public void callBackGoogleSignIn(String code, HttpServletRequest request, HttpServletResponse response)
+            throws GeneralSecurityException, IOException {
+
+        HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+        JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+
+        // Exchange code for Google token
+        GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
+                transport, jsonFactory,
+                "https://oauth2.googleapis.com/token",
+                clientId, clientSecret, code, redirectUri
+        ).execute();
+
+        String googleAccessToken = tokenResponse.getAccessToken();
+        String googleRefreshToken = tokenResponse.getRefreshToken();
+
+        System.out.println("accessToken: " + googleAccessToken + " | refreshToken: " + googleRefreshToken);
+
+        // Save Google tokens
+        tokenStore.saveTokens(googleAccessToken, googleRefreshToken);
+
+        // Extract email passed via `state`
+        String email = request.getParameter("state");
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Missing email in state parameter");
+        }
+
+        Account account = accountRepo.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        revokeAllTokens(account);
+        saveTokenAccount(account);
+
+        Token newAccess = getActiveToken(account, TokenType.ACCESS_TOKEN.getValue());
+        if (newAccess == null) {
+            throw new IllegalStateException("Failed to generate access token");
+        }
+
+        System.out.println("Google Calendar callback success for: " + email);
+    }
+
+
 
     private void revokeAllTokens(Account account) {
         List<Token> tokens = tokenRepo.findAllByAccount_IdAndStatus(account.getId(), Status.TOKEN_ACTIVE.getValue());
@@ -263,5 +349,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         return true;
     }
+
+    private String buildGoogleOAuthUrl(String email) {
+        return "https://accounts.google.com/o/oauth2/auth"
+                + "?client_id=" + clientId
+                + "&redirect_uri=" + redirectUri
+                + "&response_type=code"
+                + "&scope=https://www.googleapis.com/auth/calendar"
+                + "&access_type=offline"
+                + "&prompt=consent"
+                + "&state=" + email;
+    }
+
+
 
 }

@@ -24,6 +24,8 @@ public class SurveyResponse {
 
     private LocalDate startDate;
 
+    private String surveyCode;
+
     private LocalDate endDate;
 
     private LocalDateTime createdAt;

@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 
 public interface AuthenticationService {
@@ -24,4 +26,5 @@ public interface AuthenticationService {
 
     ResponseEntity<String> changePassword(ChangePasswordRequest request, Principal connectedAccount);
 
+    void callBackGoogleSignIn(String code, HttpServletRequest request,  HttpServletResponse response) throws GeneralSecurityException, IOException;
 }

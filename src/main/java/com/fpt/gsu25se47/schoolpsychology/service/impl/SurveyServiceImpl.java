@@ -175,7 +175,7 @@ public class SurveyServiceImpl implements SurveyService {
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
 
-            List<Survey> surveys = surveyRepository.findExpiredSurveysNotCompletedByAccount(account.getId());
+            List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(account.getId());
 
             List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
             return Optional.of(surveyResponses);
@@ -220,6 +220,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .questions(dto.getQuestions().stream().map(this::mapToQuestion).collect(Collectors.toList()))
                 .recurringCycle(dto.getRecurringCycle())
                 .startDate(dto.getStartDate())
+                .surveyCode(dto.getSurveyCode())
                 .build();
     }
 
@@ -233,6 +234,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .status(survey.getStatus().name())
                 .isRecurring(survey.getIsRecurring())
                 .isRequired(survey.getIsRequired())
+                .surveyCode(survey.getSurveyCode())
                 .endDate(survey.getEndDate())
                 .startDate(survey.getStartDate())
                 .description(survey.getDescription())

@@ -28,6 +28,9 @@ public class AddNewSurveyDto {
     @Size(max = 50, message = "Chu kỳ lặp không được vượt quá 50 ký tự")
     private String recurringCycle;
 
+    @NotBlank(message = "Hãy nhập survey code")
+    private String surveyCode;
+
     @NotNull(message = "Ngày bắt đầu không được để trống")
     @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc sau đó")
     private LocalDate startDate;
