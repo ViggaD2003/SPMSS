@@ -14,6 +14,7 @@ public class SurveyRecordResponse {
     private String noteSuggest;
     private Integer totalScore;
     private String status;
+    private String level;
     private LocalDate completedAt;
     private Integer surveyId;
     private StudentDto studentDto;

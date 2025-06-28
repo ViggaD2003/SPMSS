@@ -32,6 +32,7 @@ public class SurveyRecordMapper {
                 .surveyId(surveyRecord.getSurvey().getId())
                 .answerRecords(answerRecordResponses)
                 .totalScore(surveyRecord.getTotalScore())
+                .level(surveyRecord.getLevel().name())
                 .noteSuggest(surveyRecord.getNoteSuggest())
                 .completedAt(surveyRecord.getCompletedAt())
                 .studentDto(studentMapper.mapToStudentDto(student))
