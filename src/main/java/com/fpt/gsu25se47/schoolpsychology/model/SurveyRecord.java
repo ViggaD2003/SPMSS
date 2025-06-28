@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
 import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordLevel;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,9 @@ public class SurveyRecord extends Auditable {
 
     @Enumerated(EnumType.STRING)
     private SurveyRecordStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private SurveyRecordLevel level;
 
     private LocalDate completedAt;
 

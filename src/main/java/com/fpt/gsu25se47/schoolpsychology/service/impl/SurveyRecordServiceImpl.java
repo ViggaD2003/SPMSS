@@ -10,6 +10,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.AnswerRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,22 +44,26 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     @Transactional
     public SurveyRecordResponse createSurveyRecord(CreateSurveyRecordDto dto) {
         try {
-
-            validateAnswerIds(dto.getAnswerRecordRequests());
-
             Survey survey = surveyRepository.findById(dto.getSurveyId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "Survey not found with ID: " + dto.getSurveyId()));
 
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            if (!(principal instanceof UserDetails)) {
-                throw new BadCredentialsException("Invalid authentication principal");
+            if (dto.getStatus() == SurveyRecordStatus.SKIPPED) {
+                SurveyRecord skippedRecord = SurveyRecord.builder()
+                        .survey(survey)
+                        .account(getAccount())
+                        .status(SurveyRecordStatus.SKIPPED)
+                        .noteSuggest(dto.getNoteSuggest())
+                        .completedAt(LocalDate.now())
+                        .totalScore(null)
+                        .answerRecords(Collections.emptyList())
+                        .build();
+
+                SurveyRecord saved = surveyRecordRepository.save(skippedRecord);
+                return surveyRecordMapper.mapToSurveyRecordResponse(saved);
             }
 
-            String email = ((UserDetails) principal).getUsername();
-
-            Account account = accountRepository.findByEmail(email)
-                    .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
+            validateAnswerIds(dto.getAnswerRecordRequests());
 
             List<AnswerRecord> answerRecords = dto.getAnswerRecordRequests()
                     .stream()
@@ -73,8 +79,9 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .survey(survey)
                     .answerRecords(answerRecords)
                     .noteSuggest(dto.getNoteSuggest())
-                    .status(dto.getSurveyStatus())
-                    .account(account)
+                    .level(dto.getLevel())
+                    .status(dto.getStatus())
+                    .account(getAccount())
                     .completedAt(LocalDate.now())
                     .totalScore(dto.getTotalScore())
                     .build();
@@ -91,7 +98,11 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
     @Override
     public List<SurveyRecordResponse> getAllSurveyRecordById(int accountId) {
-        return surveyRecordRepository.findAllByAccountId(accountId)
+
+        Account account = accountRepository.findById(accountId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account not found for ID: " + accountId));
+
+        return surveyRecordRepository.findAllByAccountId(account.getId())
                 .stream()
                 .map(surveyRecordMapper::mapToSurveyRecordResponse)
                 .toList();
@@ -104,6 +115,18 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                         "Survey Record not found with Id: " + surveyRecordId));
 
         return surveyRecordMapper.mapToSurveyRecordResponse(surveyRecord);
+    }
+
+    private Account getAccount() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof UserDetails)) {
+            throw new BadCredentialsException("Invalid authentication principal");
+        }
+
+        String email = ((UserDetails) principal).getUsername();
+
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
     }
 
     private void validateAnswerIds(List<SubmitAnswerRecordRequest> submitAnswerRecordRequests) {
