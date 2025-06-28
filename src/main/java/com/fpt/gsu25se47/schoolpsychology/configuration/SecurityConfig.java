@@ -37,8 +37,8 @@ public class SecurityConfig {
                             CorsConfiguration config = new CorsConfiguration();
                             config.addAllowedOriginPattern("http://localhost:*");
                             config.addAllowedOriginPattern("http://10.0.2.2:*");
-                            config.addAllowedOriginPattern("http://vuvly9a-viggad2003-8081.exp.direct");
-                            config.addAllowedOriginPattern("https://vuvly9a-viggad2003-8081.exp.direct");
+                            config.addAllowedOriginPattern("http://*.exp.direct");
+                            config.addAllowedOriginPattern("https://*.exp.direct");
 
                             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                             config.setAllowedHeaders(List.of("*"));
