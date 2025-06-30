@@ -44,6 +44,6 @@ public class AppointmentRecord extends Auditable {
 
     private Integer totalScore;
 
-    @OneToMany(mappedBy = "appointmentRecord")
+    @OneToMany(mappedBy = "appointmentRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerRecord> answerRecords = new ArrayList<>();
 }
