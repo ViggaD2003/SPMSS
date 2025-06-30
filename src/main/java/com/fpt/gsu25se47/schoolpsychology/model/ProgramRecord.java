@@ -43,6 +43,6 @@ public class ProgramRecord extends Auditable {
     @JoinColumn(name = "registration_id", nullable = false)
     private ProgramRegistration programRegistration;
 
-    @OneToMany(mappedBy = "programRecord")
+    @OneToMany(mappedBy = "programRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerRecord> answerRecords = new ArrayList<>();
 }
