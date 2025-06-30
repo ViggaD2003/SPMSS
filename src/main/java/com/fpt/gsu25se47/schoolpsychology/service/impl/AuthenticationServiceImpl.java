@@ -1,0 +1,444 @@
+package com.fpt.gsu25se47.schoolpsychology.service.impl;
+
+import com.fpt.gsu25se47.schoolpsychology.common.GoogleTokenStore;
+import com.fpt.gsu25se47.schoolpsychology.common.Status;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.ChangePasswordRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.RefreshTokenRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.SignInRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.SignUpRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.JwtAuthenticationResponse;
+import com.fpt.gsu25se47.schoolpsychology.exception.DuplicateResourceException;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.TokenType;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AuthenticationService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.GoogleCalendarService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
+import com.fpt.gsu25se47.schoolpsychology.utils.ResponseObject;
+import com.fpt.gsu25se47.schoolpsychology.utils.TokenUtil;
+import com.google.api.client.http.HttpTransport;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.Principal;
+import java.util.List;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+
+
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class AuthenticationServiceImpl implements AuthenticationService {
+    private final JWTService jwtService;
+    private final AccountRepository accountRepo;
+    private final TokenRepository tokenRepo;
+
+    private final GoogleTokenStore tokenStore;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final AuthenticationManager authenticationManager;
+
+    private final GoogleCalendarService googleCalendarService;
+
+    private final TeacherRepository teacherRepository;
+
+    private final StudentRepository studentRepository;
+
+    private final CounselorRepository counselorRepository;
+
+    private final GuardianRepository guardianRepository;
+
+    @Value("${google.client.id}")
+    private String clientId;
+
+    @Value("${google.client.secret}")
+    private String clientSecret;
+
+    @Value("${google.redirect.uri}")
+    private String redirectUri;
+
+
+    @Override
+    public ResponseEntity<ResponseObject> login(SignInRequest signInRequest) {
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        signInRequest.getEmail(),
+                        signInRequest.getPassword()
+                )
+        );
+        Account account = (Account) auth.getPrincipal();
+
+        if (!account.getStatus()) {
+            throw new IllegalArgumentException("Account is not active !");
+        }
+
+        // ✅ Nếu là ADMIN thì chuyển hướng tới OAuth Google
+        if ("MANAGER".equals(account.getRole().name())) {
+            String googleAuthUrl = buildGoogleOAuthUrl(account.getEmail()); // phương thức tạo URL
+            return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
+                    .body(ResponseObject.builder()
+                            .message("Redirect to Google OAuth")
+                            .success(true)
+                            .data(googleAuthUrl)
+                            .build()
+                    );
+        }
+
+        // ✅ Nếu không phải ADMIN → tiếp tục flow login như cũ
+        revokeAllTokens(account);
+        saveTokenAccount(account);
+
+        Token newAccess = getActiveToken(account, TokenType.ACCESS_TOKEN.getValue());
+        Token newRefresh = getActiveToken(account, TokenType.REFRESH_TOKEN.getValue());
+
+        assert newAccess != null;
+        assert newRefresh != null;
+
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .message("Login successfully")
+                        .success(true)
+                        .data(JwtAuthenticationResponse.builder()
+                                .token(newAccess.getValue())
+                                .build())
+                        .build()
+        );
+    }
+
+
+    @Override
+    public ResponseEntity<ResponseObject> logout(HttpServletRequest request) {
+        String authToken = request.getHeader("Authorization");
+
+        String accessToken = authToken.substring(7);
+
+        if (authToken == null){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ResponseObject.builder()
+                            .message("Logout failed")
+                            .success(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        Token token = tokenRepo.findByValue(accessToken).orElse(null);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ResponseObject.builder()
+                            .message("Token invalid")
+                            .success(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        revokeAllTokens(token.getAccount());
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .message("Logout successfully")
+                        .success(true)
+                        .data(null)
+                        .build()
+        );
+    }
+
+    @Override
+    public ResponseEntity<ResponseObject> refresh(RefreshTokenRequest request) {
+        if(request.getToken() != null && jwtService.checkIfNotExpired(request.getToken())){
+            Token refresh = tokenRepo.findByValue(request.getToken()).orElse(null);
+            if(refresh != null && revokeAllActiveAccessTokens(refresh.getAccount())) {
+                String newAccess = jwtService.generateAccessToken(refresh.getAccount());
+                tokenRepo.save(
+                        Token.builder()
+                                .value(newAccess)
+                                .tokenType(TokenType.ACCESS_TOKEN.getValue())
+                                .account(refresh.getAccount())
+                                .status(Status.TOKEN_ACTIVE.getValue())
+                                .build()
+                );
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        ResponseObject.builder()
+                                .message("Refresh access token successfully")
+                                .success(true)
+                                .data(JwtAuthenticationResponse.builder()
+                                        .token(newAccess)
+                                        .build())
+                                .build()
+                );
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ResponseObject.builder()
+                            .message("No refresh token found")
+                            .success(false)
+                            .data(null)
+                            .build());
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ResponseObject.builder()
+                        .message("Refresh invalid")
+                        .success(false)
+                        .data(null)
+                        .build()
+        );
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<String> signUp(SignUpRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Sign up request cannot be null");
+        }
+
+        if(accountRepo.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+
+        Account account = Account.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole())
+                .dob(request.getDob())
+                .fullName(request.getFullName())
+                .phoneNumber(request.getPhoneNumber())
+                .gender(request.getGender())
+                .status(true)
+                .build();
+
+        accountRepo.save(account);
+
+
+        switch (request.getRole().name()) {
+            case "TEACHER" -> {
+                String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+
+                Teacher teacher = Teacher.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .teacherCode(generateNextTeacherCode())
+                        .linkMeet(linkMeet)
+                        .build();
+
+                teacherRepository.save(teacher);
+            }
+            case "COUNSELOR" -> {
+                String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+
+                Counselor counselor = Counselor.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .linkMeet(linkMeet)
+                        .counselorCode(generateNextCounselorCode())
+                        .build();
+                counselorRepository.save(counselor);
+            }
+            case "STUDENT" -> {
+                Student student = Student.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .studentCode(generateNextStudentCode())
+                        .isEnableSurvey(false)
+                        .build();
+
+                studentRepository.save(student);
+            }
+            case "GUARDIAN" -> {
+                Guardian guardian = Guardian.builder()
+                        .id(account.getId())
+                        .account(account)
+                        .build();
+                guardianRepository.save(guardian);
+            }
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                        "Sign up successful !"
+                );
+    }
+
+    @Override
+    public ResponseEntity<String> changePassword(ChangePasswordRequest request, Principal connectedUser) {
+        try {
+            var account = (Account) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+            if(account == null) {
+                throw new IllegalArgumentException("Account not found");
+            }
+
+            if(!passwordEncoder.matches(request.getCurrentPassword(), account.getPassword())) {
+                throw new IllegalArgumentException("Current password doesn't match");
+            }
+
+            if(!request.getNewPassword().equals(request.getConfirmNewPassword())){
+                throw new IllegalArgumentException("New password doesn't match");
+            }
+
+            account.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            accountRepo.save(account);
+
+            return ResponseEntity.ok("Change password success !");
+
+        } catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException("Something went wrong");
+        }
+    }
+
+    @Override
+    public void callBackGoogleSignIn(String code, HttpServletRequest request, HttpServletResponse response)
+            throws GeneralSecurityException, IOException {
+
+        HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+        JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+
+        // Exchange code for Google token
+        GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
+                transport, jsonFactory,
+                "https://oauth2.googleapis.com/token",
+                clientId, clientSecret, code, redirectUri
+        ).execute();
+
+        String googleAccessToken = tokenResponse.getAccessToken();
+        String googleRefreshToken = tokenResponse.getRefreshToken();
+
+        // Save Google tokens
+        tokenStore.saveTokens(googleAccessToken, googleRefreshToken);
+
+        // Extract email passed via `state`
+        String email = request.getParameter("state");
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Missing email in state parameter");
+        }
+
+        Account account = accountRepo.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        revokeAllTokens(account);
+        saveTokenAccount(account);
+
+        Token newAccess = getActiveToken(account, TokenType.ACCESS_TOKEN.getValue());
+        if (newAccess == null) {
+            throw new IllegalStateException("Failed to generate access token");
+        }
+
+
+        response.sendRedirect("http://localhost:5173/login-success?token=" + newAccess.getValue());
+    }
+
+
+
+    private void revokeAllTokens(Account account) {
+        List<Token> tokens = tokenRepo.findAllByAccount_IdAndStatus(account.getId(), Status.TOKEN_ACTIVE.getValue());
+        for (Token token : tokens) {
+            TokenUtil.handleExpiredToken(token.getValue(), tokenRepo);
+        }
+    }
+
+    private void saveTokenAccount(Account account) {
+        String accessToken = jwtService.generateAccessToken(account);
+        String refreshToken = jwtService.generateRefreshToken(account);
+        tokenRepo.save(
+                Token.builder()
+                        .value(accessToken)
+                        .status(Status.TOKEN_ACTIVE.getValue())
+                        .account(account)
+                        .tokenType(TokenType.ACCESS_TOKEN.getValue())
+                        .build()
+        );
+
+        tokenRepo.save(
+                Token.builder()
+                        .value(refreshToken)
+                        .status(Status.TOKEN_ACTIVE.getValue())
+                        .account(account)
+                        .tokenType(TokenType.REFRESH_TOKEN.getValue())
+                        .build()
+        );
+    }
+
+    private Token getActiveToken(Account account, String type) {
+        List<Token> tokens = tokenRepo.findAllByTokenTypeAndStatusAndAccount_Id(type, Status.TOKEN_ACTIVE.getValue(), account.getId());
+        if (!tokens.isEmpty()) {
+            if (tokens.size() > 1) {
+                for (int i = 0; i < tokens.size() - 1; i++) {
+                    TokenUtil.handleExpiredToken(tokens.get(i).getValue(), tokenRepo);
+                }
+            }
+            return tokens.getLast();
+        }
+        return null;
+    }
+
+    private boolean revokeAllActiveAccessTokens(Account account){
+        List<Token> tokens = tokenRepo.findAllByTokenTypeAndStatusAndAccount_Id(TokenType.ACCESS_TOKEN.getValue(), Status.TOKEN_ACTIVE.getValue(), account.getId());
+        for(Token t: tokens){
+            TokenUtil.handleExpiredToken(t.getValue(), tokenRepo);
+        }
+        return true;
+    }
+
+    private String buildGoogleOAuthUrl(String email) {
+        return "https://accounts.google.com/o/oauth2/auth"
+                + "?client_id=" + clientId
+                + "&redirect_uri=" + redirectUri
+                + "&response_type=code"
+                + "&scope=https://www.googleapis.com/auth/calendar"
+                + "&access_type=offline"
+                + "&prompt=consent"
+                + "&state=" + email;
+    }
+
+
+    private String generateNextTeacherCode() {
+        String lastCode = teacherRepository.findTopTeacherCode();
+        int nextNumber = 1;
+
+        if (lastCode != null && lastCode.matches("TC\\d+")) {
+            nextNumber = Integer.parseInt(lastCode.substring(2)) + 1;
+        }
+
+        return String.format("TC%04d", nextNumber);
+    }
+
+    private String generateNextCounselorCode() {
+        String lastCode = counselorRepository.findTopCounselorCode();
+        int nextNumber = 1;
+
+        if (lastCode != null && lastCode.matches("CL\\d+")) {
+            nextNumber = Integer.parseInt(lastCode.substring(2)) + 1;
+        }
+
+        return String.format("CL%04d", nextNumber);
+    }
+
+    private String generateNextStudentCode() {
+        String lastCode = studentRepository.findTopStudentCode();
+        int nextNumber = 1;
+
+        if (lastCode != null && lastCode.matches("ST\\d+")) {
+            nextNumber = Integer.parseInt(lastCode.substring(2)) + 1;
+        }
+
+        return String.format("ST%04d", nextNumber);
+    }
+}
