@@ -31,7 +31,7 @@ public class SurveyController {
         return ResponseEntity.ok(surveyService.getAllSurveys());
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER' or hasRole('STUDENT') or hasRole('GUARDIAN'))")
     @GetMapping("/{id}")
     public ResponseEntity<?> getSurveyById(@PathVariable Integer id) {
         return ResponseEntity.ok(surveyService.getSurveyById(id));
