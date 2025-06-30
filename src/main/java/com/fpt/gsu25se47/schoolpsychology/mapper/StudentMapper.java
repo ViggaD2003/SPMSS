@@ -15,7 +15,7 @@ public class StudentMapper {
         return StudentDto.builder()
                 .studentCode(student.getStudentCode())
                 .isEnableSurvey(student.getIsEnableSurvey())
-                .classDto((student.getClasses() == null) ? classMapper.mapToClassDto(student.getClasses()) : null)
+                .classDto(student.getClasses() != null ? classMapper.mapToClassDto(student.getClasses()) : null)
                 .build();
     }
 }
