@@ -5,7 +5,10 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordReq
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentRole;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
+import com.fpt.gsu25se47.schoolpsychology.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppointmentRecordController {
 
+    private final PaginationUtil paginationUtil;
     private final AppointmentRecordService appointmentRecordService;
 
     @PostMapping
@@ -46,27 +50,46 @@ public class AppointmentRecordController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AppointmentRecordResponse>>> getAll() {
+    public ResponseEntity<ApiResponse<List<AppointmentRecordResponse>>> getAll(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false, defaultValue = "totalScore") String field,
+            @RequestParam(required = false, defaultValue = "desc") String direction
+    ) {
+
+        PageRequest pageRequest = paginationUtil.getPageRequest(page, size, direction, field);
+
+        Page<AppointmentRecordResponse> appointmentRecordResponses = appointmentRecordService.getAllAppointmentRecords(pageRequest);
 
         return ResponseEntity.ok(ApiResponse.<List<AppointmentRecordResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .success(true)
                 .message("Retrieved all Appointment Records successfully")
-                .data(appointmentRecordService.getAllAppointmentRecords())
+                .data(appointmentRecordResponses.getContent())
+                .pagination(paginationUtil.getPaginationResponse(pageRequest, appointmentRecordResponses))
                 .build());
     }
 
-        @GetMapping("/accounts")
-        public ResponseEntity<ApiResponse<List<AppointmentRecordResponse>>> getAllByFieldAccountId(
-                @RequestParam AppointmentRole field,
-                @RequestParam int accountId
-        ) {
+    @GetMapping("/accounts")
+    public ResponseEntity<ApiResponse<List<AppointmentRecordResponse>>> getAllByFieldAccountId(
+            @RequestParam AppointmentRole role,
+            @RequestParam int accountId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false, defaultValue = "totalScore") String field,
+            @RequestParam(required = false, defaultValue = "desc") String direction
+    ) {
 
-            return ResponseEntity.ok(ApiResponse.<List<AppointmentRecordResponse>>builder()
-                    .statusCode(HttpStatus.OK.value())
-                    .success(true)
-                    .message("Retrieved all Appointment Records successfully")
-                    .data(appointmentRecordService.getAppointmentRecordsByField(field, accountId))
-                    .build());
-        }
+        PageRequest pageRequest = paginationUtil.getPageRequest(page, size, direction, field);
+
+        Page<AppointmentRecordResponse> appointmentRecordResponses = appointmentRecordService.getAppointmentRecordsByField(role, accountId, pageRequest);
+
+        return ResponseEntity.ok(ApiResponse.<List<AppointmentRecordResponse>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .success(true)
+                .message("Retrieved all Appointment Records successfully")
+                .data(appointmentRecordResponses.getContent())
+                .pagination(paginationUtil.getPaginationResponse(pageRequest, appointmentRecordResponses))
+                .build());
+    }
 }

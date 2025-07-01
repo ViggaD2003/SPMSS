@@ -15,4 +15,5 @@ public class CreateSurveyRecordDto {
     private Integer totalScore;
     private SurveyRecordLevel level;
     private List<SubmitAnswerRecordRequest> answerRecordRequests;
+    private Integer categoryId;
 }

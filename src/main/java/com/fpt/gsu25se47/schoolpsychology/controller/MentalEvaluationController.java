@@ -5,7 +5,10 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequ
 import com.fpt.gsu25se47.schoolpsychology.dto.response.MentalEvaluationResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
+import com.fpt.gsu25se47.schoolpsychology.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/mental-evaluations")
 public class MentalEvaluationController {
 
+    private final PaginationUtil paginationUtil;
     private final MentalEvaluationService mentalEvaluationService;
 
     @PostMapping
@@ -45,33 +49,47 @@ public class MentalEvaluationController {
     @GetMapping("/students/{studentId}")
     public ResponseEntity<ApiResponse<List<MentalEvaluationResponse>>> getAllMentalEvaluationsByStudentId(
             @PathVariable int studentId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
             @RequestParam(required = false) LocalDate from,
             @RequestParam(required = false) LocalDate to,
             @RequestParam(required = false) EvaluationType evaluationType,
             @RequestParam(defaultValue = "date") String field,
             @RequestParam(defaultValue = "desc") String direction) {
 
+        PageRequest pageRequest = paginationUtil.getPageRequest(page, size, direction, field);
+
+        Page<MentalEvaluationResponse> mentalEvaluationResponses = mentalEvaluationService.getMentalEvaluationsByAccountId(studentId, from, to, evaluationType, pageRequest);
+
         return ResponseEntity.ok(ApiResponse.<List<MentalEvaluationResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .success(true)
-                .data(mentalEvaluationService.getMentalEvaluationsByAccountId(studentId, from, to, evaluationType, field, direction))
-                        .message("Retrieved list of mental evaluations by studentId: " + studentId + " successfully")
+                .data(mentalEvaluationResponses.getContent())
+                .message("Retrieved list of mental evaluations by studentId: " + studentId + " successfully")
+                .pagination(paginationUtil.getPaginationResponse(pageRequest, mentalEvaluationResponses))
                 .build());
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MentalEvaluationResponse>>> getAllMentalEvaluations(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
             @RequestParam(required = false) LocalDate from,
             @RequestParam(required = false) LocalDate to,
             @RequestParam(required = false) EvaluationType evaluationType,
             @RequestParam(defaultValue = "date") String field,
             @RequestParam(defaultValue = "desc") String direction) {
 
+        PageRequest pageRequest = paginationUtil.getPageRequest(page, size, direction, field);
+
+        Page<MentalEvaluationResponse> mentalEvaluationResponse = mentalEvaluationService.getAllMentalEvaluations(from, to, evaluationType, pageRequest);
+
         return ResponseEntity.ok(ApiResponse.<List<MentalEvaluationResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .success(true)
-                .data(mentalEvaluationService.getAllMentalEvaluations(from, to, evaluationType, field, direction))
+                .data(mentalEvaluationResponse.getContent())
                 .message("Retrieved list of mental evaluations successfully")
+                        .pagination(paginationUtil.getPaginationResponse(pageRequest, mentalEvaluationResponse))
                 .build());
     }
 }

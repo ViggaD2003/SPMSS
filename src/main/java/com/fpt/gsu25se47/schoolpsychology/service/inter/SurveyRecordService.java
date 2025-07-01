@@ -2,13 +2,13 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface SurveyRecordService {
 
     SurveyRecordResponse createSurveyRecord(CreateSurveyRecordDto createSurveyRecordDto);
-    List<SurveyRecordResponse> getAllSurveyRecordById(int accountId);
+    Page<SurveyRecordResponse> getAllSurveyRecordById(int accountId, Pageable pageable);
     SurveyRecordResponse getSurveyRecordById(int surveyRecordId);
-    List<SurveyRecordResponse> getAllSurveyRecords();
+    Page<SurveyRecordResponse> getAllSurveyRecords(Pageable pageable);
 }

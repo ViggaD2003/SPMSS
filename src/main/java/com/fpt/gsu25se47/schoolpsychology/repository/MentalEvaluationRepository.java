@@ -2,12 +2,12 @@ package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluation, Integer> {
 
@@ -18,7 +18,7 @@ public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluati
             AND (:to IS NULL OR m.date <= :to)
             AND (:evaluationType IS NULL OR m.evaluationType = :evaluationType)
             """)
-    List<MentalEvaluation> findAllByStudentIdAndDateBetweenAndEvaluationType(int studentId, LocalDate from, LocalDate to, EvaluationType evaluationType, Sort sort);
+    Page<MentalEvaluation> findAllByStudentIdAndDateBetweenAndEvaluationType(int studentId, LocalDate from, LocalDate to, EvaluationType evaluationType, Pageable pageable);
 
     @Query("""
             SELECT m FROM MentalEvaluation m
@@ -26,5 +26,5 @@ public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluati
             AND (:to IS NULL OR m.date <= :to)
             AND (:evaluationType IS NULL OR m.evaluationType = :evaluationType)
             """)
-    List<MentalEvaluation> findAllByDateBetweenAndEvaluationType(LocalDate from, LocalDate to, EvaluationType evaluationType, Sort sort);
+    Page<MentalEvaluation> findAllByDateBetweenAndEvaluationType(LocalDate from, LocalDate to, EvaluationType evaluationType, Pageable pageable);
 }
