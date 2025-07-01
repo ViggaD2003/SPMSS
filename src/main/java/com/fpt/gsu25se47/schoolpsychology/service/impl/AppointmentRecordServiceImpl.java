@@ -64,7 +64,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
         switch (field) {
             case BOOKED_FOR -> records = appointmentRecordRepository.findAllByBookedFor(accountId);
             case BOOKED_BY -> records = appointmentRecordRepository.findAllByBookedBy(accountId);
-            case HOSTED_BY -> records = appointmentRecordRepository.findAllByHostBy(accountId);
+//            case HOSTED_BY -> records = appointmentRecordRepository.findAllByHostBy(accountId);
             default -> throw new IllegalArgumentException("Invalid field name: " + field);
         }
 

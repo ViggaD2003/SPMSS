@@ -255,7 +255,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .id(account.getId())
                         .account(account)
                         .studentCode(generateNextStudentCode())
-                        .isEnableSurvey(false)
+                        .isEnableSurvey(true)
                         .build();
 
                 studentRepository.save(student);

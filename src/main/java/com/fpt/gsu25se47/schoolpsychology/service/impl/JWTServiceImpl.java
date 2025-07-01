@@ -1,10 +1,11 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.TokenRepository;
+import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -34,8 +35,11 @@ public class JWTServiceImpl implements JWTService {
     @Value("${jwt.expiration.refresh-token}")
     private long refreshExpiration;
 
-    private final TokenRepository tokenRepo;
     private final AccountRepository accountRepo;
+
+    private final StudentRepository studentRepo;
+
+    private final RelationshipRepository relationshipRepo;
 
     @Override
     public String extractUsernameFromJWT(String jwt) {
@@ -78,14 +82,39 @@ public class JWTServiceImpl implements JWTService {
         Account account = accountRepo.findByEmail(user.getUsername())
                 .orElseThrow(() -> new RuntimeException("Unauthorized"));
 
-        return Jwts.builder()
+        Student student = null;
+
+        if(account.getRole().name().equals("PARENTS")){
+            List<Student> students = relationshipRepo.findChildrenByParentAccountId(account.getId());
+
+            List<Map<String, Object>> childrenClaims = students.stream().map(child -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("userId", child.getId());
+                map.put("fullName", child.getAccount().getFullName());
+                map.put("isEnable", child.getIsEnableSurvey());
+                return map;
+            }).toList();
+
+            extraClaims.put("relationship_type", "PARENT");
+            extraClaims.put("children", childrenClaims);
+        } else if(account.getRole().name().equals("STUDENT")){
+             student = studentRepo.findById(account.getId()).orElseThrow(() -> new RuntimeException("Unauthorized"));
+        }
+
+        JwtBuilder builder = Jwts.builder()
                 .setClaims(extraClaims)
                 .claim("role", populateAuthorities(user.getAuthorities()))
                 .claim("fullname", account.getFullName())
                 .claim("user-id", account.getId())
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiredTime))
+                .setExpiration(new Date(System.currentTimeMillis() + expiredTime));
+
+        if (student != null) {
+            builder.claim("isEnableSurvey", student.getIsEnableSurvey());
+        }
+
+        return builder
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512)
                 .compact();
     }

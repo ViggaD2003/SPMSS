@@ -1,5 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.model.enums;
 
-public enum SlotType {
-    DEFAULT, OT
+public enum SlotStatus {
+    DRAFT, PUBLISHED, CLOSED
 }

@@ -1,0 +1,20 @@
+package com.fpt.gsu25se47.schoolpsychology.service.inter;
+
+import com.fpt.gsu25se47.schoolpsychology.dto.request.AddSlotRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface SlotService {
+
+    Optional<?> initSlot(List<AddSlotRequest> requests);
+
+    Optional<?> updateSlot(Integer slotId, UpdateSlotRequest request);
+
+    Optional<?> updateStatusSlot(Integer slotId);
+
+    Optional<?> getAllSlotsByHostBy(Integer hostById);
+
+    Optional<?> getSlotById(Integer slotId);
+}
