@@ -23,7 +23,7 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
     private final MentalEvaluationRepository mentalEvaluationRepository;
     private final SurveyRecordRepository surveyRecordRepository;
-    private final AppointmentRecordRepository appointmentRecordRepository;
+//    private final AppointmentRecordRepository appointmentRecordRepository;
     private final ProgramRecordRepository programRecordRepository;
     private final MentalEvaluationMapper mentalEvaluationMapper;
     private final StudentRepository studentRepository;
@@ -43,10 +43,10 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
                             HttpStatus.BAD_REQUEST,
                             "Program record not found with ID: " + request.getEvaluationRecordId()));
 
-            case APPOINTMENT -> appointmentRecordRepository.findById(request.getEvaluationRecordId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Appointment record not found with ID: " + request.getEvaluationRecordId()));
+//            case APPOINTMENT -> appointmentRecordRepository.findById(request.getEvaluationRecordId())
+//                    .orElseThrow(() -> new ResponseStatusException(
+//                            HttpStatus.BAD_REQUEST,
+//                            "Appointment record not found with ID: " + request.getEvaluationRecordId()));
 
             default -> throw new IllegalStateException("Unexpected value: " + request.getEvaluationType());
         }

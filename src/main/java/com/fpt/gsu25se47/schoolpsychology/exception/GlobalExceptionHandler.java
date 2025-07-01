@@ -48,6 +48,12 @@ public class GlobalExceptionHandler {
 //        return ResponseEntity.status(500).body("Internal Server Error");
 //    }
 
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<?> handleDuplicateResource(DuplicateResourceException ex) {
         Map<String, String> error = new HashMap<>();

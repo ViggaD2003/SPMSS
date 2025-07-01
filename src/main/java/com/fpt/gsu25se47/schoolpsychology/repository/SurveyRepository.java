@@ -24,7 +24,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     JOIN Student st ON st.account.id = :accountId
     WHERE sr.id IS NULL
       AND s.status = 'PUBLISHED'
-      AND st.isEnableSurvey = false
+      AND st.isEnableSurvey = true
 """)
     List<Survey> findUnansweredExpiredSurveysByAccountId(@Param("accountId") Integer accountId);
 

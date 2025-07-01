@@ -20,10 +20,10 @@ public interface AppointmentRecordRepository extends JpaRepository<AppointmentRe
             WHERE m.bookedBy.id = :accountId
             """)
     public List<AppointmentRecord> findAllByBookedBy(int accountId);
-    @Query("""
-            SELECT ar FROM AppointmentRecord ar
-            JOIN Appointment m ON m.id = ar.appointment.id
-            WHERE m.hostedBy.id = :accountId
-            """)
-    public List<AppointmentRecord> findAllByHostBy(int accountId);
+//    @Query("""
+//            SELECT ar FROM AppointmentRecord ar
+//            JOIN Appointment m ON m.id = ar.appointment.id
+//            WHERE m.hostedBy.id = :accountId
+//            """)
+//    public List<AppointmentRecord> findAllByHostBy(int accountId);
 }

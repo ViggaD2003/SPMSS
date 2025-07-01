@@ -25,8 +25,7 @@ public class Appointment extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
-    @MapsId
+    @ManyToOne
     @JoinColumn(name = "slot_id")
     private Slot slot;
 
@@ -38,12 +37,10 @@ public class Appointment extends Auditable {
     @JoinColumn(name = "booked_by")
     private Account bookedBy;
 
-    @ManyToOne
-    @JoinColumn(name = "hosted_by")
-    private Account hostedBy;
-
     @Enumerated(EnumType.STRING)
     private HostType hostType;
+
+    private String location;
 
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;

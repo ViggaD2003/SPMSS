@@ -32,7 +32,7 @@ public class AddNewSurveyDto {
     private String surveyCode;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
-    @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc sau đó")
+        @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc sau đó")
     private LocalDate startDate;
 
     @NotNull(message = "Ngày kết thúc không được để trống")

@@ -64,7 +64,7 @@ public class Account extends Auditable implements UserDetails {
     private List<Appointment> appointmentsMade = new ArrayList<>();
 
     @OneToMany(mappedBy = "hostedBy")
-    private List<Appointment> appointmentsHosted = new ArrayList<>();
+    private List<Slot> slotsHostBy = new ArrayList<>();
 
     @OneToMany(mappedBy = "account")
     private List<SurveyRecord> surveyRecords = new ArrayList<>();
