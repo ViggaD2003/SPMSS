@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
+
 @Service
 @RequiredArgsConstructor
 public class SurveyRecordServiceImpl implements SurveyRecordService {
@@ -39,6 +41,8 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
         try {
             if (dto.getStatus() == SurveyRecordStatus.SKIPPED) {
                 dto.setTotalScore(null);
+                dto.setAnswerRecordRequests(Collections.emptyList());
+                dto.setCategoryId(null);
                 SurveyRecord skippedRecord = surveyRecordMapper.mapToSurveyRecord(dto);
                 SurveyRecord saved = surveyRecordRepository.save(skippedRecord);
                 return surveyRecordMapper.mapToSurveyRecordResponse(saved);
