@@ -9,10 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiResponse<T> {
-    private int statusCode;
-    private boolean success;
-    private String message;
-    private T data;
-    private PaginationResponse pagination;
+public class PaginationResponse {
+    private int page;
+    private int size;
+    private int totalPages;
+    private long totalElements;
+    private boolean hasNext;
+    private boolean hasPrevious;
 }

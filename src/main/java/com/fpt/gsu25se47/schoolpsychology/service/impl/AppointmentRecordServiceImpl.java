@@ -9,6 +9,8 @@ import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.utils.AnswerRecordUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -48,28 +50,24 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     }
 
     @Override
-    public List<AppointmentRecordResponse> getAllAppointmentRecords() {
+    public Page<AppointmentRecordResponse> getAllAppointmentRecords(Pageable pageable) {
 
-        List<AppointmentRecord> appointmentRecords = appointmentRecordRepository.findAll();
+        Page<AppointmentRecord> appointmentRecords = appointmentRecordRepository.findAll(pageable);
 
-        return appointmentRecords.stream()
-                .map(appointmentRecordMapper::toAppointmentRecordResponse)
-                .toList();
+        return appointmentRecords.map(appointmentRecordMapper::toAppointmentRecordResponse);
     }
 
     @Override
-    public List<AppointmentRecordResponse> getAppointmentRecordsByField(AppointmentRole field, int accountId) {
-        List<AppointmentRecord> records;
+    public Page<AppointmentRecordResponse> getAppointmentRecordsByField(AppointmentRole field, int accountId, Pageable pageable) {
+        Page<AppointmentRecord> records;
 
         switch (field) {
-            case BOOKED_FOR -> records = appointmentRecordRepository.findAllByBookedFor(accountId);
-            case BOOKED_BY -> records = appointmentRecordRepository.findAllByBookedBy(accountId);
+            case BOOKED_FOR -> records = appointmentRecordRepository.findAllByBookedFor(accountId, pageable);
+            case BOOKED_BY -> records = appointmentRecordRepository.findAllByBookedBy(accountId, pageable);
 //            case HOSTED_BY -> records = appointmentRecordRepository.findAllByHostBy(accountId);
             default -> throw new IllegalArgumentException("Invalid field name: " + field);
         }
 
-        return records.stream()
-                .map(appointmentRecordMapper::toAppointmentRecordResponse)
-                .toList();
+        return records.map(appointmentRecordMapper::toAppointmentRecordResponse);
     }
 }
