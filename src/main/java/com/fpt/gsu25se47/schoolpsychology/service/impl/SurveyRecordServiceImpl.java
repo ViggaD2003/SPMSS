@@ -52,7 +52,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
             SurveyRecord surveyRecord = surveyRecordMapper.mapToSurveyRecord(dto);
 
-
             surveyRecord.getAnswerRecords().forEach(ar -> ar.setSurveyRecord(surveyRecord));
 
             SurveyRecord surveyRecordCreated = surveyRecordRepository.save(surveyRecord);
