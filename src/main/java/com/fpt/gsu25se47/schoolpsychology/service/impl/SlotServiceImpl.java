@@ -2,21 +2,29 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotConflictError;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
+import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotUsageType;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,21 +35,53 @@ public class SlotServiceImpl implements SlotService {
 
     private final AccountRepository accountRepository;
 
+    private final StudentRepository studentRepository;
+
     @Override
-    public Optional<?> initSlot(List<AddSlotRequest> requests) {
-        try{
-            List<Slot> slots = requests.stream().map(this::mapToEntity).toList();
-            slotRepository.saveAll(slots);
-            return Optional.of("Init new slot successfully !");
-        } catch (Exception e){
-            log.error("Failed to create slot: {}", e.getMessage(), e);
-            throw new RuntimeException("Something went wrong");
+    public ResponseEntity<?> initSlot(List<AddSlotRequest> requests) {
+        List<Slot> slotsToCreate = new ArrayList<>();
+        List<SlotConflictError> conflictErrors = new ArrayList<>();
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Account account = accountRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Unauthorized"));
+
+        for (AddSlotRequest req : requests) {
+            List<Slot> conflicts = slotRepository.findConflictingSlots(
+                    account.getId(),
+                    req.getStartDateTime(),
+                    req.getEndDateTime()
+            );
+
+            if (!conflicts.isEmpty()) {
+                conflictErrors.add(SlotConflictError.builder()
+                        .slotName(req.getSlotName())
+                        .startDateTime(req.getStartDateTime())
+                        .endDateTime(req.getEndDateTime())
+                        .reason("Overlaps with existing slot ID(s): " +
+                                conflicts.stream().map(Slot::getId).map(String::valueOf).collect(Collectors.joining(", ")))
+                        .build());
+            } else {
+                Slot slot = mapToEntity(req, account);
+                slotsToCreate.add(slot);
+            }
         }
+
+        if (!conflictErrors.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Một số slot bị trùng thời gian",
+                    "conflicts", conflictErrors
+            ));
+        }
+
+        slotRepository.saveAll(slotsToCreate);
+        return ResponseEntity.ok("Khởi tạo slot thành công!");
     }
 
     @Override
     public Optional<?> updateSlot(Integer slotId, UpdateSlotRequest request) {
-        try{
+        try {
             Slot slot = slotRepository.findById(slotId).orElseThrow(() -> new IllegalArgumentException("Slot not found"));
 
             if (slot.getAppointments() == null || slot.getProgramSessions() == null) {
@@ -55,7 +95,7 @@ public class SlotServiceImpl implements SlotService {
             Slot savedSlot = slotRepository.save(slot);
 
             return Optional.of(this.mapToResponse(savedSlot));
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to update slot: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
@@ -70,46 +110,68 @@ public class SlotServiceImpl implements SlotService {
 
             slotRepository.save(slot);
             return Optional.of("Update status slot successfully !");
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to update slot status: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
     }
 
     @Override
-    public Optional<?> getAllSlotsByHostBy(Integer hostById) {
-        try{
-            List<Slot> slots = hostById != null ? slotRepository.findAllByHostedById(hostById)
-                    : slotRepository.findAll();
-            List<SlotResponse> responses = slots.stream().map(this::mapToResponse).toList();
+    public Optional<List<SlotResponse>> getAllSlotsByHostBy(Integer hostById) {
+//        try {
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Account account = accountRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+            List<Slot> slots;
+
+            if (account.getRole().name().equals("STUDENT")) {
+                Student student = studentRepository.findById(account.getId()).orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
+                if (hostById == null) {
+                    if (student.getClasses() != null) {
+                        hostById = student.getClasses().getTeacher().getId();
+                    } else {
+                        throw new IllegalArgumentException("Student not in any class so dont have teacher to book slot !");
+                    }
+                }
+
+                slots = slotRepository.findAllByHostedById(hostById).stream()
+                        .filter(slot -> slot.getStatus().name().equals("PUBLISHED"))
+                        .toList();
+            } else {
+                slots = (hostById != null)
+                        ? slotRepository.findAllByHostedById(hostById)
+                        : slotRepository.findAll();
+            }
+
+            List<SlotResponse> responses = slots.stream()
+                    .map(this::mapToResponse)
+                    .toList();
 
             return Optional.of(responses);
-        } catch (Exception e){
-            log.error("Failed to view slot: {}", e.getMessage(), e);
-            throw new RuntimeException("Something went wrong");
-        }
+
+//        } catch (Exception e) {
+//            log.error("Failed to view slot: {}", e.getMessage(), e);
+//            throw new RuntimeException("Something went wrong");
+//        }
     }
 
     @Override
     public Optional<?> getSlotById(Integer slotId) {
-        try{
+        try {
             Slot slot = slotRepository.findById(slotId).orElseThrow(() -> new IllegalArgumentException("Slot not found"));
             SlotResponse response = mapToResponse(slot);
 
             return Optional.of(response);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to view slot: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
     }
 
 
-    private Slot mapToEntity(AddSlotRequest request) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Account account = accountRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Unauthorized"));
-
+    private Slot mapToEntity(AddSlotRequest request, Account account) {
         if (request.getStartDateTime().isAfter(request.getEndDateTime())) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
