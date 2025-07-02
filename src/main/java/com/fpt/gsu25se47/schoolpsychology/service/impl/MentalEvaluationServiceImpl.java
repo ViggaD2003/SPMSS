@@ -6,16 +6,19 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
-import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.ProgramRecordRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +26,6 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
     private final MentalEvaluationRepository mentalEvaluationRepository;
     private final SurveyRecordRepository surveyRecordRepository;
-//    private final AppointmentRecordRepository appointmentRecordRepository;
     private final ProgramRecordRepository programRecordRepository;
     private final MentalEvaluationMapper mentalEvaluationMapper;
     private final StudentRepository studentRepository;
@@ -67,28 +69,25 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     }
 
     @Override
-    public List<MentalEvaluationResponse> getMentalEvaluationsByAccountId(int studentId, LocalDate from, LocalDate to, EvaluationType evaluationType, String field, String direction) {
+    public Page<MentalEvaluationResponse> getMentalEvaluationsByAccountId(int studentId, LocalDate from, LocalDate to, EvaluationType evaluationType,
+                                                                          Pageable pageable) {
 
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Student not found"));
 
-        List<MentalEvaluation> mentalEvaluations = mentalEvaluationRepository
+        Page<MentalEvaluation> mentalEvaluations = mentalEvaluationRepository
                 .findAllByStudentIdAndDateBetweenAndEvaluationType(student.getId(), from,
-                        to, evaluationType, Sort.by(Sort.Direction.fromString(direction), field));
+                        to, evaluationType, pageable);
 
-        return mentalEvaluations.stream()
-                .map(mentalEvaluationMapper::mapToEvaluationResponse)
-                .toList();
+        return mentalEvaluations.map(mentalEvaluationMapper::mapToEvaluationResponse);
     }
 
     @Override
-    public List<MentalEvaluationResponse> getAllMentalEvaluations(LocalDate from, LocalDate to, EvaluationType evaluationType, String field, String direction) {
-        List<MentalEvaluation> mentalEvaluations = mentalEvaluationRepository
-                .findAllByDateBetweenAndEvaluationType(from, to, evaluationType, Sort.by(Sort.Direction.fromString(direction), field));
+    public Page<MentalEvaluationResponse> getAllMentalEvaluations(LocalDate from, LocalDate to, EvaluationType evaluationType, Pageable pageable) {
+        Page<MentalEvaluation> mentalEvaluations = mentalEvaluationRepository
+                .findAllByDateBetweenAndEvaluationType(from, to, evaluationType, pageable);
 
-        return mentalEvaluations.stream()
-                .map(mentalEvaluationMapper::mapToEvaluationResponse)
-                .toList();
+        return mentalEvaluations.map(mentalEvaluationMapper::mapToEvaluationResponse);
     }
 }
