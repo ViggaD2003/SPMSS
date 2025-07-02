@@ -16,8 +16,7 @@ public class SurveyRecordResponse {
     private String status;
     private String level;
     private LocalDate completedAt;
-    private Integer surveyId;
+    private SurveyResponse survey;
     private StudentDto studentDto;
-
     private List<AnswerRecordResponse> answerRecords;
 }

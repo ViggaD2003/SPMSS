@@ -27,6 +27,7 @@ public class SurveyRecordMapper {
     private final SurveyRepository surveyRepository;
     private final AnswerRecordMapper answerRecordMapper;
     private final StudentMapper studentMapper;
+    private final SurveyMapper surveyMapper;
     private final AccountService accountService;
 
     public SurveyRecord mapToSurveyRecord(CreateSurveyRecordDto dto) {
@@ -68,7 +69,7 @@ public class SurveyRecordMapper {
 
         return SurveyRecordResponse.builder()
                 .id(surveyRecord.getId())
-                .surveyId(surveyRecord.getSurvey().getId())
+                .survey(surveyMapper.mapToSurveyResponse(surveyRecord.getSurvey()))
                 .answerRecords(answerRecordResponses)
                 .totalScore(surveyRecord.getTotalScore())
                 .level(surveyRecord.getLevel().name())
