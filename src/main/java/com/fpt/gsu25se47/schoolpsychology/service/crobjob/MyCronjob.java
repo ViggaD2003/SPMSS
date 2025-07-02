@@ -1,9 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
 
+import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
+import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +25,9 @@ public class MyCronjob {
 
     private final SlotRepository slotRepository;
 
-    @Scheduled(cron = "0 0 0 * * *") // Chạy mỗi ngày
+    private final AppointmentRepository appointmentRepository;
+
+    @Scheduled(cron = "0 0 0 * * *")
     public void updateSurveyStatus() {
         LocalDate now = LocalDate.now();
 
@@ -36,13 +41,22 @@ public class MyCronjob {
         surveyRepository.saveAll(toFinish);
     }
 
-    @Scheduled(cron = "0 0 * * * *") // ✅ Mỗi giờ
+    @Scheduled(cron = "0 */1 * * * *")
     public void updateSlotStatus(){
         LocalDateTime now = LocalDateTime.now();
 
         List<Slot> toCompleted = slotRepository.findAllSlotsExpired(SlotStatus.PUBLISHED, now);
         toCompleted.forEach(slot -> slot.setStatus(SlotStatus.CLOSED));
         slotRepository.saveAll(toCompleted);
+    }
+
+    @Scheduled(cron = "0 */1 * * * *")
+    public void updateAppointmentStatus() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Appointment> appointments = appointmentRepository.findAllAppointmentExpired(AppointmentStatus.CONFIRMED, now);
+        appointments.forEach(appointment -> appointment.setStatus(AppointmentStatus.COMPLETED));
+        appointmentRepository.saveAll(appointments);
     }
 
 }

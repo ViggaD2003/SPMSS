@@ -1,0 +1,162 @@
+package com.fpt.gsu25se47.schoolpsychology.service.impl;
+
+import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class AppointmentServiceImpl implements AppointmentService {
+
+    private final AppointmentRepository appointmentRepository;
+
+    private final AccountRepository accountRepository;
+
+    private final SlotRepository slotRepository;
+
+    private final TeacherRepository teacherRepository;
+
+    private final CounselorRepository counselorRepository;
+
+
+    @Override
+    public Optional<?> createAppointment(AddNewAppointment request) {
+        try {
+            Appointment appointment = this.mapToEntity(request);
+            appointmentRepository.save(appointment);
+            return Optional.of("Created appointment successfully");
+        } catch (Exception e) {
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Could not create appointment. Please check your data.");
+        }
+    }
+
+    @Override
+    public Optional<?> showHistoryAppointment() {
+        try {
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Account account = accountRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Account not found"));
+
+            List<Appointment> appointments = appointmentRepository.findByBookedBy(account.getId());
+
+            List<AppointmentResponse> responses = appointments.stream().map(this::mapToResponse).toList();
+
+            return Optional.of(responses);
+        } catch (Exception e) {
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Could not create appointment. Please check your data.");
+        }
+    }
+
+    @Override
+    public Optional<?> showAllAppointmentsOfSlots() {
+        try{
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Account account = accountRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Account not found"));
+
+
+            List<Appointment> appointments = appointmentRepository.findAllBySlotHostedBy(account.getId());
+
+            List<AppointmentResponse> responses = appointments.stream().map(this::mapToResponse).toList();
+            return Optional.of(responses);
+        } catch (Exception e) {
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Could not create appointment. Please check your data.");
+        }
+    }
+
+    @Override
+    public Optional<?> updateAppointmentStatus(Integer appointmentId) {
+        try{
+            Appointment appointment = appointmentRepository.findById(appointmentId)
+                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
+            appointment.setStatus(AppointmentStatus.CONFIRMED);
+            appointmentRepository.save(appointment);
+            return Optional.of("Updated status appointment successfully");
+        } catch (Exception e){
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Could not update appointment. Please check your data.");
+        }
+    }
+
+
+    private Appointment mapToEntity(AddNewAppointment request) {
+        Account bookedBy = accountRepository.findById(request.getBookedById())
+                .orElseThrow(() -> new RuntimeException("BookedBy not found"));
+
+        Account bookedFor = null;
+        if (request.getBookedForId() != null) {
+            bookedFor = accountRepository.findById(request.getBookedForId())
+                    .orElseThrow(() -> new RuntimeException("BookedFor not found"));
+        }
+
+        Slot slot = slotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new RuntimeException("Slot not found"));
+
+        Role role = slot.getHostedBy().getRole();
+        HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
+
+        String linkMeet;
+        if (hostType == HostType.TEACHER) {
+            Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
+                    .orElseThrow(() -> new RuntimeException("Teacher not found"));
+            linkMeet = teacher.getLinkMeet();
+        } else {
+            Counselor counselor = counselorRepository.findById(slot.getHostedBy().getId())
+                    .orElseThrow(() -> new RuntimeException("Counselor not found"));
+            linkMeet = counselor.getLinkMeet();
+        }
+
+        String location = request.getIsOnline() ? linkMeet : request.getLocation();
+
+
+        if(request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())){
+            throw new RuntimeException("Start date and end date must be before end date time");
+        }
+
+        return Appointment.builder()
+                .slot(slot)
+                .bookedBy(bookedBy)
+                .bookedFor(bookedFor)
+                .isOnline(request.getIsOnline())
+                .status(AppointmentStatus.PENDING)
+                .hostType(hostType)
+                .startDateTime(request.getStartDateTime())
+                .endDateTime(request.getEndDateTime())
+                .location(location)
+                .build();
+    }
+
+
+    private AppointmentResponse mapToResponse(Appointment appointment) {
+        return AppointmentResponse.builder()
+                .id(appointment.getId())
+                .location(appointment.getLocation())
+                .bookByName(appointment.getBookedBy().getFullName())
+                .bookForName(appointment.getBookedFor() == null ? null : appointment.getBookedFor().getFullName())
+                .isOnline(appointment.getIsOnline())
+                .hostName(appointment.getSlot().getHostedBy().getFullName())
+                .endDateTime(appointment.getEndDateTime())
+                .startDateTime(appointment.getStartDateTime())
+                .status(appointment.getStatus())
+                .hostType(appointment.getHostType())
+                .build();
+    }
+}
