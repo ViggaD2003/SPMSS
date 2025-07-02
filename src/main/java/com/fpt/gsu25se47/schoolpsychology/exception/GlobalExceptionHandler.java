@@ -42,11 +42,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<String> handleAll(Exception ex) {
-//        ex.printStackTrace();
-//        return ResponseEntity.status(500).body("Internal Server Error");
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleAll(Exception ex) {
+        ex.printStackTrace();
+        return ResponseEntity.status(500).body(ex.getMessage());
+    }
 
 
     @ExceptionHandler(IllegalArgumentException.class)

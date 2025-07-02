@@ -24,7 +24,7 @@ public class SlotController {
     @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
     @PostMapping
     public ResponseEntity<?> save(@Valid @RequestBody List<AddSlotRequest> request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(slotService.initSlot(request));
+        return slotService.initSlot(request);
     }
 
     @PreAuthorize("hasRole('MANAGER')")
@@ -39,7 +39,7 @@ public class SlotController {
         return ResponseEntity.ok(slotService.updateStatusSlot(slotId));
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('STUDENT')")
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam(required = false) Integer hostById) {
         return ResponseEntity.ok(slotService.getAllSlotsByHostBy(hostById));
