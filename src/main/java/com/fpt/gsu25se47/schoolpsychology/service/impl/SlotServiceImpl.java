@@ -79,7 +79,8 @@ public class SlotServiceImpl implements SlotService {
     @Override
     public Optional<?> getAllSlotsByHostBy(Integer hostById) {
         try{
-            List<Slot> slots = slotRepository.findAllByHostedById(hostById);
+            List<Slot> slots = hostById != null ? slotRepository.findAllByHostedById(hostById)
+                    : slotRepository.findAll();
             List<SlotResponse> responses = slots.stream().map(this::mapToResponse).toList();
 
             return Optional.of(responses);
