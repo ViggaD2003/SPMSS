@@ -203,7 +203,7 @@ public class SlotServiceImpl implements SlotService {
                 .slotType(slot.getType().name())
                 .createdAt(slot.getCreatedDate())
                 .updatedAt(slot.getUpdatedDate())
-                .Booked(bookedSlots)
+                .booked(bookedSlots)
                 .build();
     }
 
