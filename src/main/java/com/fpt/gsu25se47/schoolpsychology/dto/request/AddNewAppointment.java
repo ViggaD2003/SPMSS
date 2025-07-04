@@ -17,13 +17,6 @@ public class AddNewAppointment {
 
     private Integer bookedForId;
 
-    @NotNull(message = "Booked By ID is required")
-    @Min(value = 1, message = "Booked By ID must be greater than 0")
-    private Integer bookedById;
-
-    @NotNull(message = "location is required")
-    private String location;
-
     @NotNull(message = "Online status is required")
     private Boolean isOnline;
 
@@ -32,4 +25,6 @@ public class AddNewAppointment {
 
     @NotNull(message = "End date and time must not be null")
     private LocalDateTime endDateTime;
+
+    private String reasonType;
 }

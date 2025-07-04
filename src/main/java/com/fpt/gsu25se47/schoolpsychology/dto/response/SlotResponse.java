@@ -29,4 +29,6 @@ public class SlotResponse {
 
     private LocalDateTime updatedAt;
 
+    private Object booked;
+
 }

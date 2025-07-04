@@ -223,6 +223,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
     public Account getCurrentAccount() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof UserDetails)) {
@@ -233,5 +234,33 @@ public class AccountServiceImpl implements AccountService {
 
         return accountRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
+    }
+
+    @Override
+    public Optional<?> listAllCounselors() {
+        try{
+            List<Account> accounts = accountRepository.findCounselorsWithSlots();
+            List<InfoCounselor> infoCounselors = accounts.stream()
+                    .map(this::mapToDto).toList();
+            return Optional.of(infoCounselors);
+        } catch (UsernameNotFoundException e){
+            log.error(e.getMessage());
+            return Optional.of(e.getMessage());
+        }
+    }
+
+
+    private InfoCounselor mapToDto(Account account) {
+        Counselor counselor = counselorRepository.findById(account.getId())
+                .orElseThrow(() -> new UsernameNotFoundException("Not found counselor"));
+
+        return InfoCounselor.builder()
+                .id(account.getId())
+                .fullName(account.getFullName())
+                .phoneNumber(account.getPhoneNumber())
+                .gender(account.getGender())
+                .dob(account.getDob())
+                .counselorCode(counselor.getCounselorCode())
+                .build();
     }
 }

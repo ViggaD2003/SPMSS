@@ -1,9 +1,11 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,7 +33,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.showAllAppointmentsOfSlots());
     }
 
-    @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping
     @Operation(summary = "Đặt cuộc hẹn mới", description = "Tạo một appointment mới giữa người đặt và người được đặt theo slot nhất định.")
     public ResponseEntity<?> addAppointment(@RequestBody AddNewAppointment request) {
@@ -41,7 +43,7 @@ public class AppointmentController {
     @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
     @PatchMapping
     @Operation(summary = "Xác nhận yêu cầu", description = "Xác nhận 1 yêu cầu mới từ appointment mới tạo của học sinh")
-    public ResponseEntity<?> updateStatusAppointment(@RequestParam Integer appointmentId) {
-        return ResponseEntity.ok(appointmentService.updateAppointmentStatus(appointmentId));
+    public ResponseEntity<?> updateStatusAppointment(@Valid @RequestBody ConfirmAppointment request) {
+        return ResponseEntity.ok(appointmentService.updateAppointmentStatus(request));
     }
 }
