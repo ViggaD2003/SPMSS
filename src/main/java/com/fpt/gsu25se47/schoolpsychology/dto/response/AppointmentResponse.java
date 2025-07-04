@@ -26,6 +26,8 @@ public class AppointmentResponse {
 
     private String location;
 
+    private String reason;
+
     private AppointmentStatus status;
 
     private Boolean isOnline;
