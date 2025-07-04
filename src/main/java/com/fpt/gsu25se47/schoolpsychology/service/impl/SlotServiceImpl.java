@@ -2,9 +2,11 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.BookedSlot;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotConflictError;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
+import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
@@ -118,7 +120,6 @@ public class SlotServiceImpl implements SlotService {
 
     @Override
     public Optional<List<SlotResponse>> getAllSlotsByHostBy(Integer hostById) {
-//        try {
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             Account account = accountRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("Account not found"));
@@ -150,11 +151,6 @@ public class SlotServiceImpl implements SlotService {
                     .toList();
 
             return Optional.of(responses);
-
-//        } catch (Exception e) {
-//            log.error("Failed to view slot: {}", e.getMessage(), e);
-//            throw new RuntimeException("Something went wrong");
-//        }
     }
 
     @Override
@@ -194,6 +190,8 @@ public class SlotServiceImpl implements SlotService {
     }
 
     private SlotResponse mapToResponse(Slot slot) {
+        List<Appointment> appointments = slot.getAppointments();
+        List<BookedSlot> bookedSlots = appointments.stream().map(this::mapToBookedSlot).toList();
         return SlotResponse.builder()
                 .slotName(slot.getSlotName())
                 .id(slot.getId())
@@ -205,6 +203,14 @@ public class SlotServiceImpl implements SlotService {
                 .slotType(slot.getType().name())
                 .createdAt(slot.getCreatedDate())
                 .updatedAt(slot.getUpdatedDate())
+                .Booked(bookedSlots)
+                .build();
+    }
+
+    private BookedSlot mapToBookedSlot(Appointment appointment) {
+        return BookedSlot.builder()
+                .startDateTime(appointment.getStartDateTime())
+                .endDateTime(appointment.getEndDateTime())
                 .build();
     }
 }

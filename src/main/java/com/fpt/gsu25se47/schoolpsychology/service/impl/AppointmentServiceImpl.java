@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
@@ -13,10 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -83,10 +82,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Optional<?> updateAppointmentStatus(Integer appointmentId) {
+    public Optional<?> updateAppointmentStatus(ConfirmAppointment request) {
         try{
-            Appointment appointment = appointmentRepository.findById(appointmentId)
+            Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                     .orElseThrow(() -> new RuntimeException("Appointment not found"));
+            appointment.setLocation(request.getLocation());
             appointment.setStatus(AppointmentStatus.CONFIRMED);
             appointmentRepository.save(appointment);
             return Optional.of("Updated status appointment successfully");
@@ -98,9 +98,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 
     private Appointment mapToEntity(AddNewAppointment request) {
-        Account bookedBy = accountRepository.findById(request.getBookedById())
-                .orElseThrow(() -> new RuntimeException("BookedBy not found"));
-
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Account bookedBy = accountRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Account not found"));
         Account bookedFor = null;
         if (request.getBookedForId() != null) {
             bookedFor = accountRepository.findById(request.getBookedForId())
@@ -113,19 +113,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         Role role = slot.getHostedBy().getRole();
         HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
 
-        String linkMeet;
-        if (hostType == HostType.TEACHER) {
-            Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
-                    .orElseThrow(() -> new RuntimeException("Teacher not found"));
-            linkMeet = teacher.getLinkMeet();
-        } else {
-            Counselor counselor = counselorRepository.findById(slot.getHostedBy().getId())
-                    .orElseThrow(() -> new RuntimeException("Counselor not found"));
-            linkMeet = counselor.getLinkMeet();
+        String linkMeet = null;
+        if(request.getIsOnline()){
+            if (hostType == HostType.TEACHER) {
+                Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
+                        .orElseThrow(() -> new RuntimeException("Teacher not found"));
+                linkMeet = teacher.getLinkMeet();
+            } else {
+                Counselor counselor = counselorRepository.findById(slot.getHostedBy().getId())
+                        .orElseThrow(() -> new RuntimeException("Counselor not found"));
+                linkMeet = counselor.getLinkMeet();
+            }
         }
 
-        String location = request.getIsOnline() ? linkMeet : request.getLocation();
-
+        String location = linkMeet;
 
         if(request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())){
             throw new RuntimeException("Start date and end date must be before end date time");
@@ -136,7 +137,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .bookedBy(bookedBy)
                 .bookedFor(bookedFor)
                 .isOnline(request.getIsOnline())
-                .status(AppointmentStatus.PENDING)
+                .status(request.getIsOnline() ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING)
                 .hostType(hostType)
                 .startDateTime(request.getStartDateTime())
                 .endDateTime(request.getEndDateTime())

@@ -10,5 +10,8 @@ public interface AccountService {
     Optional<?> profileAccount();
 
     Optional<?> updateProfileAccount(UpdateProfileDto updateProfileDto);
+
     Account getCurrentAccount();
+
+    Optional<?> listAllCounselors();
 }
