@@ -25,9 +25,10 @@ public class Classes {
     @OneToOne(mappedBy = "classes")
     private Teacher teacher;
 
-    @OneToMany(mappedBy = "classes")
+    @OneToMany(mappedBy = "classes", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Student> students = new ArrayList<>();
 
+    @Column(unique = true)
     private String codeClass;
 
     private LocalDate classYear;
