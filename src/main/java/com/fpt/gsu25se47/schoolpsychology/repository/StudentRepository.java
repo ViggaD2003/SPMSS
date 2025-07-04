@@ -8,4 +8,6 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     @Query("SELECT s.studentCode FROM Student s ORDER BY s.studentCode DESC LIMIT 1")
     String findTopStudentCode();
+
+    Student findByStudentCode(String studentCode);
 }
