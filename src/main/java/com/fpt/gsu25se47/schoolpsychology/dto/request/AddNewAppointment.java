@@ -17,6 +17,8 @@ public class AddNewAppointment {
 
     private Integer bookedForId;
 
+    private String reason;
+
     @NotNull(message = "Online status is required")
     private Boolean isOnline;
 
@@ -25,6 +27,4 @@ public class AddNewAppointment {
 
     @NotNull(message = "End date and time must not be null")
     private LocalDateTime endDateTime;
-
-    private String reasonType;
 }

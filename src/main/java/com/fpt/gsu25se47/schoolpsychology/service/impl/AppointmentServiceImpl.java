@@ -96,7 +96,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-
     private Appointment mapToEntity(AddNewAppointment request) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Account bookedBy = accountRepository.findByEmail(userDetails.getUsername())
@@ -137,6 +136,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .bookedBy(bookedBy)
                 .bookedFor(bookedFor)
                 .isOnline(request.getIsOnline())
+                .reason(request.getReason())
                 .status(request.getIsOnline() ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING)
                 .hostType(hostType)
                 .startDateTime(request.getStartDateTime())
@@ -144,7 +144,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .location(location)
                 .build();
     }
-
 
     private AppointmentResponse mapToResponse(Appointment appointment) {
         return AppointmentResponse.builder()
@@ -156,6 +155,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .hostName(appointment.getSlot().getHostedBy().getFullName())
                 .endDateTime(appointment.getEndDateTime())
                 .startDateTime(appointment.getStartDateTime())
+                .reason(appointment.getReason())
                 .status(appointment.getStatus())
                 .hostType(appointment.getHostType())
                 .build();

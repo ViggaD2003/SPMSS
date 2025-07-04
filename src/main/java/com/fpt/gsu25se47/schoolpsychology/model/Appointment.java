@@ -52,6 +52,8 @@ public class Appointment extends Auditable {
 
     private LocalDateTime endDateTime;
 
+    private String reason;
+
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL)
     private List<AppointmentRecord> appointmentRecords = new ArrayList<>();
 }
