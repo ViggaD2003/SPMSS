@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class AppointmentRecordResponse {
     private Integer id;
-    private Integer appointmentId;
+    private AppointmentResponse appointment;
 
     private String sessionFlow;
 
