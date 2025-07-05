@@ -20,6 +20,7 @@ public class AppointmentRecordMapper {
 
     private final AppointmentRepository appointmentRepository;
     private final AnswerRecordMapper answerRecordMapper;
+    private final AppointmentMapper appointmentMapper;
 
     public AppointmentRecord toAppointmentRecord(CreateAppointmentRecordRequest request) {
 
@@ -53,16 +54,16 @@ public class AppointmentRecordMapper {
 
         return AppointmentRecordResponse.builder()
                 .id(appointmentRecord.getId())
-                .appointmentId(appointmentRecord.getAppointment().getId())
+                .appointment(appointmentMapper.mapToResponse(appointmentRecord.getAppointment()))
                 .status(appointmentRecord.getStatus().name())
                 .totalScore(appointmentRecord.getTotalScore())
                 .studentCoopLevel(appointmentRecord.getStudentCoopLevel().name())
                 .sessionFlow(appointmentRecord.getSessionFlow().name())
                 .noteSummary(appointmentRecord.getNoteSummary())
-                .answerRecords(appointmentRecord.getAnswerRecords()
-                        .stream()
-                        .map(answerRecordMapper::mapToAnswerRecordResponse)
-                        .toList())
+//                .answerRecords(appointmentRecord.getAnswerRecords()
+//                        .stream()
+//                        .map(answerRecordMapper::mapToAnswerRecordResponse)
+//                        .toList())
                 .build();
     }
 
