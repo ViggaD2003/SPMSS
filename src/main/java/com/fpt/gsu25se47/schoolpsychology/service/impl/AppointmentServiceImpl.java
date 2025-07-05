@@ -52,7 +52,9 @@ public class AppointmentServiceImpl implements AppointmentService {
             Account account = accountRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Account not found"));
 
-            List<Appointment> appointments = appointmentRepository.findByBookedBy(account.getId());
+            List<Appointment> appointments = appointmentRepository.findByBookedBy(account.getId()).stream().filter(data ->
+                data.getStatus().name().equals("PENDING") || data.getStatus().name().equals("CONFIRMED")
+            ).toList();
 
             List<AppointmentResponse> responses = appointments.stream().map(this::mapToResponse).toList();
 
@@ -146,6 +148,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private AppointmentResponse mapToResponse(Appointment appointment) {
+
+
         return AppointmentResponse.builder()
                 .id(appointment.getId())
                 .location(appointment.getLocation())

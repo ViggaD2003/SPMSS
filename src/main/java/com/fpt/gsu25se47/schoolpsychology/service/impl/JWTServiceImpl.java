@@ -90,7 +90,7 @@ public class JWTServiceImpl implements JWTService {
             List<Map<String, Object>> childrenClaims = students.stream().map(child -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("userId", child.getId());
-                map.put("teacherId", child.getClasses().getTeacher().getId());
+                map.put("teacherId", child.getClasses().getTeacher() != null ? child.getClasses().getTeacher().getId() : null);
                 map.put("fullName", child.getAccount().getFullName());
                 map.put("isEnable", child.getIsEnableSurvey());
                 return map;

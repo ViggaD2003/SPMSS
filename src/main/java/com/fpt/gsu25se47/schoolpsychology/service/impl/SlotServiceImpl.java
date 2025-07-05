@@ -5,15 +5,11 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.BookedSlot;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotConflictError;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotResponse;
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
-import com.fpt.gsu25se47.schoolpsychology.model.Slot;
-import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotUsageType;
-import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +34,9 @@ public class SlotServiceImpl implements SlotService {
     private final AccountRepository accountRepository;
 
     private final StudentRepository studentRepository;
+    private final GuardianRepository guardianRepository;
+    private final TeacherRepository teacherRepository;
+    private final CounselorRepository counselorRepository;
 
     @Override
     public ResponseEntity<?> initSlot(List<AddSlotRequest> requests) {
@@ -119,38 +119,43 @@ public class SlotServiceImpl implements SlotService {
 
     @Override
     public Optional<List<SlotResponse>> getAllSlotsByHostBy(Integer hostById) {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            Account account = accountRepository.findByEmail(userDetails.getUsername())
-                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        Account account = getCurrentAccount();
+        Role role = account.getRole();
+        List<Slot> slots;
 
-            List<Slot> slots;
+        // Validate HOST ID for STUDENT or PARENTS
+        if ((role == Role.STUDENT || role == Role.PARENTS) && hostById == null) {
+            throw new IllegalArgumentException("Host By id is null");
+        }
 
-            if (account.getRole().name().equals("STUDENT")) {
-                Student student = studentRepository.findById(account.getId()).orElseThrow(() -> new IllegalArgumentException("Student not found"));
-
-                if (hostById == null) {
-                    if (student.getClasses() != null) {
-                        hostById = student.getClasses().getTeacher().getId();
-                    } else {
-                        throw new IllegalArgumentException("Student not in any class so dont have teacher to book slot !");
-                    }
-                }
-
-                slots = slotRepository.findAllByHostedById(hostById).stream()
-                        .filter(slot -> slot.getStatus().name().equals("PUBLISHED"))
-                        .toList();
-            } else {
-                slots = (hostById != null)
-                        ? slotRepository.findAllByHostedById(hostById)
-                        : slotRepository.findAll();
+        switch (role) {
+            case STUDENT -> {
+                validateStudentExists(account.getId());
+                slots = findPublishedSlotsByHost(hostById);
             }
+            case PARENTS -> {
+                validateGuardianExists(account.getId());
+                slots = findPublishedSlotsByHost(hostById);
+            }
+            case COUNSELOR -> {
+                validateCounselorExists(account.getId());
+                slots = slotRepository.findAllByHostedById(account.getId());
+            }
+            case TEACHER -> {
+                validateTeacherExists(account.getId());
+                slots = slotRepository.findAllByHostedById(account.getId());
+            }
+            default ->
+                slots = slotRepository.findAll();
+        }
 
-            List<SlotResponse> responses = slots.stream()
-                    .map(this::mapToResponse)
-                    .toList();
+        List<SlotResponse> responses = slots.stream()
+                .map(this::mapToResponse)
+                .toList();
 
-            return Optional.of(responses);
+        return Optional.of(responses);
     }
+
 
     @Override
     public Optional<?> getSlotById(Integer slotId) {
@@ -212,4 +217,38 @@ public class SlotServiceImpl implements SlotService {
                 .endDateTime(appointment.getEndDateTime())
                 .build();
     }
+
+
+    private Account getCurrentAccount() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return accountRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+    }
+
+    private void validateStudentExists(Integer id) {
+        studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+    }
+
+    private void validateGuardianExists(Integer id) {
+        guardianRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Guardian not found"));
+    }
+
+    private void validateTeacherExists(Integer id) {
+        teacherRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
+    }
+
+    private void validateCounselorExists(Integer id) {
+        counselorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Counselor not found"));
+    }
+
+    private List<Slot> findPublishedSlotsByHost(Integer hostById) {
+        return slotRepository.findAllByHostedById(hostById).stream()
+                .filter(slot -> slot.getStatus() == SlotStatus.PUBLISHED)
+                .toList();
+    }
+
 }
