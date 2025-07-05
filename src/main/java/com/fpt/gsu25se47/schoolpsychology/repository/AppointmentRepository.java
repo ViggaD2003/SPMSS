@@ -19,4 +19,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
     @Query("SELECT a FROM Appointment a WHERE a.status = :status and a.endDateTime < :now")
     List<Appointment> findAllAppointmentExpired(AppointmentStatus status, LocalDateTime now);
+
+    @Query("SELECT a FROM Appointment a WHERE a.slot.id = :slotId AND a.status <> 'CANCELED'")
+    List<Appointment> findAllBySlotId(Integer slotId);
 }

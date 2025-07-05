@@ -37,6 +37,7 @@ public class SlotServiceImpl implements SlotService {
     private final GuardianRepository guardianRepository;
     private final TeacherRepository teacherRepository;
     private final CounselorRepository counselorRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     public ResponseEntity<?> initSlot(List<AddSlotRequest> requests) {
@@ -194,7 +195,7 @@ public class SlotServiceImpl implements SlotService {
     }
 
     private SlotResponse mapToResponse(Slot slot) {
-        List<Appointment> appointments = slot.getAppointments();
+        List<Appointment> appointments = appointmentRepository.findAllBySlotId(slot.getId());
         List<BookedSlot> bookedSlots = appointments.stream().map(this::mapToBookedSlot).toList();
         return SlotResponse.builder()
                 .slotName(slot.getSlotName())

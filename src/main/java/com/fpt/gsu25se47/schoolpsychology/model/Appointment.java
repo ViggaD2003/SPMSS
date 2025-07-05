@@ -54,6 +54,8 @@ public class Appointment extends Auditable {
 
     private String reason;
 
+    private String reasonCanceled;
+
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL)
     private List<AppointmentRecord> appointmentRecords = new ArrayList<>();
 }
