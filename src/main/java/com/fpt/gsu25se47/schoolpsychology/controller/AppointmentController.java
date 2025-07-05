@@ -33,7 +33,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.showAllAppointmentsOfSlots());
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @PostMapping
     @Operation(summary = "Đặt cuộc hẹn mới", description = "Tạo một appointment mới giữa người đặt và người được đặt theo slot nhất định.")
     public ResponseEntity<?> addAppointment(@RequestBody AddNewAppointment request) {
