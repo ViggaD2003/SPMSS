@@ -39,7 +39,7 @@ public class SlotController {
         return ResponseEntity.ok(slotService.updateStatusSlot(slotId));
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('STUDENT')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam(required = false) Integer hostById) {
         return ResponseEntity.ok(slotService.getAllSlotsByHostBy(hostById));
