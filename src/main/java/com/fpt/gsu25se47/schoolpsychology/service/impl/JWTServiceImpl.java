@@ -82,42 +82,49 @@ public class JWTServiceImpl implements JWTService {
         Account account = accountRepo.findByEmail(user.getUsername())
                 .orElseThrow(() -> new RuntimeException("Unauthorized"));
 
-        Student student = null;
+        extraClaims.put("role", populateAuthorities(user.getAuthorities()));
+        extraClaims.put("fullname", account.getFullName());
+        extraClaims.put("user-id", account.getId());
 
-        if(account.getRole().name().equals("PARENTS")){
-            List<Student> students = relationshipRepo.findChildrenByParentAccountId(account.getId());
-
-            List<Map<String, Object>> childrenClaims = students.stream().map(child -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("userId", child.getId());
-                map.put("teacherId", child.getClasses().getTeacher() != null ? child.getClasses().getTeacher().getId() : null);
-                map.put("fullName", child.getAccount().getFullName());
-                map.put("isEnable", child.getIsEnableSurvey());
-                return map;
-            }).toList();
-
-            extraClaims.put("relationship_type", "PARENT");
-            extraClaims.put("children", childrenClaims);
-        } else if(account.getRole().name().equals("STUDENT")){
-             student = studentRepo.findById(account.getId()).orElseThrow(() -> new RuntimeException("Unauthorized"));
+        switch (account.getRole()) {
+            case PARENTS -> handleParentClaims(extraClaims, account);
+            case STUDENT -> handleStudentClaims(extraClaims, account);
+            default -> {
+            }
         }
 
-        JwtBuilder builder = Jwts.builder()
+        return Jwts.builder()
                 .setClaims(extraClaims)
-                .claim("role", populateAuthorities(user.getAuthorities()))
-                .claim("fullname", account.getFullName())
-                .claim("user-id", account.getId())
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiredTime));
-
-        if (student != null) {
-            builder.claim("isEnableSurvey", student.getIsEnableSurvey());
-        }
-
-        return builder
+                .setExpiration(new Date(System.currentTimeMillis() + expiredTime))
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512)
                 .compact();
+    }
+    private void handleParentClaims(Map<String, Object> claims, Account parent) {
+        List<Student> students = relationshipRepo.findChildrenByParentAccountId(parent.getId());
+
+        List<Map<String, Object>> childrenClaims = students.stream().map(child -> {
+            Map<String, Object> childMap = new HashMap<>();
+            childMap.put("userId", child.getId());
+            childMap.put("fullName", child.getAccount().getFullName());
+            childMap.put("isEnable", child.getIsEnableSurvey());
+            childMap.put("teacherId", child.getClasses() != null && child.getClasses().getTeacher() != null
+                    ? child.getClasses().getTeacher().getId() : null);
+            return childMap;
+        }).toList();
+
+        claims.put("relationship_type", "PARENT");
+        claims.put("children", childrenClaims);
+    }
+
+    private void handleStudentClaims(Map<String, Object> claims, Account studentAcc) {
+        Student student = studentRepo.findById(studentAcc.getId())
+                .orElseThrow(() -> new RuntimeException("Unauthorized"));
+
+        claims.put("isEnableSurvey", student.getIsEnableSurvey());
+        claims.put("teacherId", student.getClasses() != null && student.getClasses().getTeacher() != null
+                ? student.getClasses().getTeacher().getId() : null);
     }
 
     private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {

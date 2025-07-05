@@ -13,4 +13,6 @@ public interface AppointmentService {
     Optional<?> showAllAppointmentsOfSlots();
 
     Optional<?> updateAppointmentStatus(ConfirmAppointment request);
+
+    Optional<?> cancelAppointment(Integer AppointmentId, String reasonCancel);
 }

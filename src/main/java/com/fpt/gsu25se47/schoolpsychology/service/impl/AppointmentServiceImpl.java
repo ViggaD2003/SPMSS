@@ -98,6 +98,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    @Override
+    public Optional<?> cancelAppointment(Integer appointmentId, String reasonCancel) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointment.setReasonCanceled(reasonCancel);
+        appointmentRepository.save(appointment);
+        return Optional.of("Canceled appointment successfully");
+    }
+
     private Appointment mapToEntity(AddNewAppointment request) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Account bookedBy = accountRepository.findByEmail(userDetails.getUsername())
@@ -133,12 +144,17 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new RuntimeException("Start date and end date must be before end date time");
         }
 
+        if(slot.getStatus().name().equals("CLOSED")){
+            throw new RuntimeException("Slot is CLOSED");
+        }
+
         return Appointment.builder()
                 .slot(slot)
                 .bookedBy(bookedBy)
                 .bookedFor(bookedFor)
                 .isOnline(request.getIsOnline())
                 .reason(request.getReason())
+                .reasonCanceled(null)
                 .status(request.getIsOnline() ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING)
                 .hostType(hostType)
                 .startDateTime(request.getStartDateTime())
