@@ -47,6 +47,7 @@ public class AppointmentRecordMapper {
                 .sessionFlow(request.getSessionFlow())
                 .studentCoopLevel(request.getStudentCoopLevel())
                 .totalScore(request.getTotalScore())
+                .reason(request.getReason())
                 .build();
     }
 
@@ -60,6 +61,7 @@ public class AppointmentRecordMapper {
                 .studentCoopLevel(appointmentRecord.getStudentCoopLevel().name())
                 .sessionFlow(appointmentRecord.getSessionFlow().name())
                 .noteSummary(appointmentRecord.getNoteSummary())
+                .reason(appointmentRecord.getReason())
 //                .answerRecords(appointmentRecord.getAnswerRecords()
 //                        .stream()
 //                        .map(answerRecordMapper::mapToAnswerRecordResponse)

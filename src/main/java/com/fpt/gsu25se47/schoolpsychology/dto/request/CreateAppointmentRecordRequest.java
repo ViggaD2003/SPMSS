@@ -21,7 +21,11 @@ public class CreateAppointmentRecordRequest {
 
     private String noteSuggest;
 
+    private String reason;
+
     private Integer totalScore;
 
     private List<SubmitAnswerRecordRequest> answerRecordRequests;
+
+    private Integer categoryId;
 }
