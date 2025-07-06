@@ -1,10 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AppointmentRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.AppointmentRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentRole;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.utils.AnswerRecordUtil;
@@ -13,9 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +25,10 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     private final AppointmentRecordRepository appointmentRecordRepository;
     private final AppointmentRecordMapper appointmentRecordMapper;
     private final AnswerRecordUtil answerRecordUtil;
+    private final MentalEvaluationServiceImpl mentalEvaluationService;
 
     @Override
+    @Transactional
     public AppointmentRecordResponse createAppointmentRecord(CreateAppointmentRecordRequest request) {
 
         answerRecordUtil.validateAnswerIds(request.getAnswerRecordRequests());
@@ -34,6 +37,17 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
         appointmentRecord.getAnswerRecords().forEach(ar -> ar.setAppointmentRecord(appointmentRecord));
 
         AppointmentRecord savedAppointmentRecord = appointmentRecordRepository.save(appointmentRecord);
+
+        CreateMentalEvaluationRequest mentalEvaluationRequest = CreateMentalEvaluationRequest.builder()
+                .evaluationRecordId(appointmentRecord.getId())
+                .date(appointmentRecord.getCreatedDate().toLocalDate())
+                .evaluationType(EvaluationType.APPOINTMENT)
+                .totalScore(appointmentRecord.getTotalScore())
+                .studentId(appointmentRecord.getAppointment().getBookedFor().getId())
+                .categoryId(request.getCategoryId())
+                .build();
+
+        mentalEvaluationService.createMentalEvaluation(mentalEvaluationRequest);
 
         return appointmentRecordMapper.toAppointmentRecordResponse(savedAppointmentRecord);
     }

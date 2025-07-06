@@ -42,6 +42,8 @@ public class AppointmentRecord extends Auditable {
 
     private String noteSuggest;
 
+    private String reason;
+
     private Integer totalScore;
 
     @OneToMany(mappedBy = "appointmentRecord", cascade = CascadeType.ALL, orphanRemoval = true)

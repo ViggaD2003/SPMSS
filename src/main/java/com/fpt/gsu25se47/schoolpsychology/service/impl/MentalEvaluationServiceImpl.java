@@ -6,10 +6,7 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
-import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.ProgramRecordRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +22,7 @@ import java.time.LocalDate;
 public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
     private final MentalEvaluationRepository mentalEvaluationRepository;
+    private final AppointmentRecordRepository appointmentRecordRepository;
     private final SurveyRecordRepository surveyRecordRepository;
     private final ProgramRecordRepository programRecordRepository;
     private final MentalEvaluationMapper mentalEvaluationMapper;
@@ -45,10 +43,10 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
                             HttpStatus.BAD_REQUEST,
                             "Program record not found with ID: " + request.getEvaluationRecordId()));
 
-//            case APPOINTMENT -> appointmentRecordRepository.findById(request.getEvaluationRecordId())
-//                    .orElseThrow(() -> new ResponseStatusException(
-//                            HttpStatus.BAD_REQUEST,
-//                            "Appointment record not found with ID: " + request.getEvaluationRecordId()));
+            case APPOINTMENT -> appointmentRecordRepository.findById(request.getEvaluationRecordId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Appointment record not found with ID: " + request.getEvaluationRecordId()));
 
             default -> throw new IllegalStateException("Unexpected value: " + request.getEvaluationType());
         }

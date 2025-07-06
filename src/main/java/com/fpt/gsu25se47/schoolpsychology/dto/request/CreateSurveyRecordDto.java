@@ -10,10 +10,16 @@ import java.util.List;
 public class CreateSurveyRecordDto {
 
     private String noteSuggest;
+
     private SurveyRecordStatus status;
+
     private Integer surveyId;
+
     private Integer totalScore;
+
     private SurveyRecordLevel level;
+
     private List<SubmitAnswerRecordRequest> answerRecordRequests;
+
     private Integer categoryId;
 }
