@@ -2,12 +2,15 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RecordStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final TeacherRepository teacherRepository;
 
     private final CounselorRepository counselorRepository;
+
+    private final AppointmentRecordService appointmentRecordService;
 
     @Override
     public Optional<?> createAppointment(AddNewAppointment request) {
@@ -102,8 +107,14 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
-        appointment.setStatus(AppointmentStatus.CANCELED);
+        CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
+        request.setAppointmentId(appointmentId);
+        request.setReason(reasonCancel);
+        request.setStatus(RecordStatus.CANCELED);
+        request.setTotalScore(0);
+        appointmentRecordService.createAppointmentRecord(request);
 
+        appointment.setStatus(AppointmentStatus.CANCELED);
         appointmentRepository.save(appointment);
 
         return Optional.of("Canceled appointment successfully");
