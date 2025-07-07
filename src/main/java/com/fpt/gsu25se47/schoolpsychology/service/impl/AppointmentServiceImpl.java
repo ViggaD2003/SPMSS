@@ -32,13 +32,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final CounselorRepository counselorRepository;
 
-
     @Override
     public Optional<?> createAppointment(AddNewAppointment request) {
         try {
             Appointment appointment = this.mapToEntity(request);
-            appointmentRepository.save(appointment);
-            return Optional.of("Created appointment successfully");
+            AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
+            return Optional.of(response);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Could not create appointment. Please check your data.");
@@ -104,8 +103,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
         appointment.setStatus(AppointmentStatus.CANCELED);
-        appointment.setReasonCanceled(reasonCancel);
+
         appointmentRepository.save(appointment);
+
         return Optional.of("Canceled appointment successfully");
     }
 
@@ -154,7 +154,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .bookedFor(bookedFor)
                 .isOnline(request.getIsOnline())
                 .reason(request.getReason())
-                .reasonCanceled(null)
                 .status(request.getIsOnline() ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING)
                 .hostType(hostType)
                 .startDateTime(request.getStartDateTime())
@@ -164,8 +163,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private AppointmentResponse mapToResponse(Appointment appointment) {
-
-
         return AppointmentResponse.builder()
                 .id(appointment.getId())
                 .location(appointment.getLocation())

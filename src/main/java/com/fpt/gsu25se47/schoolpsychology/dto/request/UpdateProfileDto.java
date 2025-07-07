@@ -16,6 +16,4 @@ public class UpdateProfileDto {
     private Boolean gender;
 
     private LocalDate dob;
-
-    private Boolean isEnableSurvey;
 }

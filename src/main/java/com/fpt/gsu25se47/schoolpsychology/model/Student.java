@@ -37,4 +37,7 @@ public class Student {
 
     @OneToMany(mappedBy = "student")
     private List<Relationship> relationships = new ArrayList<>();
+
+    @OneToMany(mappedBy = "student")
+    private List<MentalEvaluation> mentalEvaluations = new ArrayList<>();
 }
