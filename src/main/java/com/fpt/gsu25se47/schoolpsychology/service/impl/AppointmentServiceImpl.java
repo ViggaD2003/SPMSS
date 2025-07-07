@@ -2,12 +2,15 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RecordStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,13 +35,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final CounselorRepository counselorRepository;
 
+    private final AppointmentRecordService appointmentRecordService;
 
     @Override
     public Optional<?> createAppointment(AddNewAppointment request) {
         try {
             Appointment appointment = this.mapToEntity(request);
-            appointmentRepository.save(appointment);
-            return Optional.of("Created appointment successfully");
+            AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
+            return Optional.of(response);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Could not create appointment. Please check your data.");
@@ -103,9 +107,16 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
+        CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
+        request.setAppointmentId(appointmentId);
+        request.setReason(reasonCancel);
+        request.setStatus(RecordStatus.CANCELED);
+        request.setTotalScore(0);
+        appointmentRecordService.createAppointmentRecord(request);
+
         appointment.setStatus(AppointmentStatus.CANCELED);
-        appointment.setReasonCanceled(reasonCancel);
         appointmentRepository.save(appointment);
+
         return Optional.of("Canceled appointment successfully");
     }
 
@@ -154,7 +165,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .bookedFor(bookedFor)
                 .isOnline(request.getIsOnline())
                 .reason(request.getReason())
-                .reasonCanceled(null)
                 .status(request.getIsOnline() ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING)
                 .hostType(hostType)
                 .startDateTime(request.getStartDateTime())
@@ -164,8 +174,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private AppointmentResponse mapToResponse(Appointment appointment) {
-
-
         return AppointmentResponse.builder()
                 .id(appointment.getId())
                 .location(appointment.getLocation())

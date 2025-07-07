@@ -44,8 +44,7 @@ public class MyCronjob {
     @Scheduled(cron = "0 */1 * * * *")
     public void updateSlotStatus(){
         LocalDateTime now = LocalDateTime.now();
-
-        List<Slot> toCompleted = slotRepository.findAllSlotsExpired(SlotStatus.PUBLISHED, now);
+        List<Slot> toCompleted = slotRepository.findAllSlotsExpired(now, SlotStatus.PUBLISHED, SlotStatus.DRAFT);
         toCompleted.forEach(slot -> slot.setStatus(SlotStatus.CLOSED));
         slotRepository.saveAll(toCompleted);
     }
