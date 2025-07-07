@@ -4,10 +4,13 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordReq
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AppointmentRecordMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.AppointmentRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentRole;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.utils.AnswerRecordUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     private final AppointmentRecordMapper appointmentRecordMapper;
     private final AnswerRecordUtil answerRecordUtil;
     private final MentalEvaluationServiceImpl mentalEvaluationService;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     @Transactional
@@ -34,6 +38,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
         answerRecordUtil.validateAnswerIds(request.getAnswerRecordRequests());
 
         AppointmentRecord appointmentRecord = appointmentRecordMapper.toAppointmentRecord(request);
+
         appointmentRecord.getAnswerRecords().forEach(ar -> ar.setAppointmentRecord(appointmentRecord));
 
         AppointmentRecord savedAppointmentRecord = appointmentRecordRepository.save(appointmentRecord);
@@ -48,6 +53,14 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
                 .build();
 
         mentalEvaluationService.createMentalEvaluation(mentalEvaluationRequest);
+
+        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Appointment not found with ID: " + request.getAppointmentId()));
+
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+
+        appointmentRepository.save(appointment);
 
         return appointmentRecordMapper.toAppointmentRecordResponse(savedAppointmentRecord);
     }
