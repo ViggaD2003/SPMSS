@@ -21,6 +21,8 @@ public class AppointmentRecordResponse {
 
     private String noteSuggest;
 
+    private String reason;
+
     private Integer totalScore;
 
     private List<AnswerRecordResponse> answerRecords;
