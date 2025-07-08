@@ -12,7 +12,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
-import com.fpt.gsu25se47.schoolpsychology.utils.AnswerRecordUtil;
+import com.fpt.gsu25se47.schoolpsychology.utils.DuplicateValidationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,13 +21,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class AppointmentRecordServiceImpl implements AppointmentRecordService {
 
     private final AppointmentRecordRepository appointmentRecordRepository;
     private final AppointmentRecordMapper appointmentRecordMapper;
-    private final AnswerRecordUtil answerRecordUtil;
+    private final DuplicateValidationUtils duplicateValidationUtils;
     private final MentalEvaluationServiceImpl mentalEvaluationService;
     private final AppointmentRepository appointmentRepository;
 
@@ -35,7 +37,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     @Transactional
     public AppointmentRecordResponse createAppointmentRecord(CreateAppointmentRecordRequest request) {
 
-        answerRecordUtil.validateAnswerIds(request.getAnswerRecordRequests());
+        duplicateValidationUtils.validateAnswerIds(request.getAnswerRecordRequests());
 
         AppointmentRecord appointmentRecord = appointmentRecordMapper.toAppointmentRecord(request);
 
@@ -43,16 +45,30 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
 
         AppointmentRecord savedAppointmentRecord = appointmentRecordRepository.save(appointmentRecord);
 
-        CreateMentalEvaluationRequest mentalEvaluationRequest = CreateMentalEvaluationRequest.builder()
-                .evaluationRecordId(appointmentRecord.getId())
-                .date(appointmentRecord.getCreatedDate().toLocalDate())
-                .evaluationType(EvaluationType.APPOINTMENT)
-                .totalScore(appointmentRecord.getTotalScore())
-                .studentId(appointmentRecord.getAppointment().getBookedFor().getId())
-                .categoryId(request.getCategoryId())
-                .build();
+        if (request.getReportCategoryRequests() != null) {
 
-        mentalEvaluationService.createMentalEvaluation(mentalEvaluationRequest);
+            duplicateValidationUtils.validateCategoryIds(request.getReportCategoryRequests());
+
+            int evaluationRecordId = appointmentRecord.getId();
+            LocalDate createdDate = appointmentRecord.getCreatedDate().toLocalDate();
+            EvaluationType evaluationType = EvaluationType.APPOINTMENT;
+//            int totalScore = appointmentRecord.getTotalScore();
+            int studentId = appointmentRecord.getAppointment().getBookedFor().getId();
+
+            request.getReportCategoryRequests()
+                    .forEach((t) -> {
+                        CreateMentalEvaluationRequest mentalEvaluationRequest = CreateMentalEvaluationRequest.builder()
+                                .evaluationRecordId(evaluationRecordId)
+                                .date(createdDate)
+                                .evaluationType(evaluationType)
+                                .totalScore(t.getScore())
+                                .studentId(studentId)
+                                .categoryId(t.getCategoryId())
+                                .build();
+
+                        mentalEvaluationService.createMentalEvaluation(mentalEvaluationRequest);
+                    });
+        }
 
         Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
