@@ -25,14 +25,14 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
 
     @Override
     public Optional<?> addNewPrgSurvey(AddNewProgramSurvey addNewProgramSurvey) {
-
+        return Optional.empty();
     }
 
 
     private ProgramSurvey mapToProgramSurvey(AddNewProgramSurvey addNewProgramSurvey) {
         return ProgramSurvey.builder()
                 .surveyType(SurveyType.valueOf(addNewProgramSurvey.surveyType()))
-                .questions()
+                .questions(null)
                 .build();
     }
 
