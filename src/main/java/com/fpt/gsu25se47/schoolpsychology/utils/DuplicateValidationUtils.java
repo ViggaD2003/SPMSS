@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.utils;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.request.ReportCategoryRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class AnswerRecordUtil {
+public class DuplicateValidationUtils {
 
     public void validateAnswerIds(List<SubmitAnswerRecordRequest> submitAnswerRecordRequests) {
         Set<Integer> seenAnswerIds = new HashSet<>();
@@ -20,6 +21,19 @@ public class AnswerRecordUtil {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Duplicate answerId found: " + submit.getAnswerId()
+                );
+            }
+        }
+    }
+
+    public void validateCategoryIds(List<ReportCategoryRequest> reportCategoryRequests) {
+        Set<Integer> seenCategoryIds = new HashSet<>();
+
+        for (ReportCategoryRequest request : reportCategoryRequests) {
+            if (!seenCategoryIds.add(request.getCategoryId())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Duplicate categoryId found: " + request.getCategoryId()
                 );
             }
         }

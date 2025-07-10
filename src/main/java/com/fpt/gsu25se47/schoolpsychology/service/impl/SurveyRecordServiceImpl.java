@@ -13,7 +13,7 @@ import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
-import com.fpt.gsu25se47.schoolpsychology.utils.AnswerRecordUtil;
+import com.fpt.gsu25se47.schoolpsychology.utils.DuplicateValidationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +31,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     private final SurveyRecordRepository surveyRecordRepository;
     private final AccountRepository accountRepository;
     private final SurveyRecordMapper surveyRecordMapper;
-    private final AnswerRecordUtil answerRecordUtil;
+    private final DuplicateValidationUtils duplicateValidationUtils;
     private final MentalEvaluationService mentalEvaluationService;
     private final AccountService accountService;
 
@@ -48,7 +48,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                 return surveyRecordMapper.mapToSurveyRecordResponse(saved);
             }
 
-            answerRecordUtil.validateAnswerIds(dto.getAnswerRecordRequests());
+            duplicateValidationUtils.validateAnswerIds(dto.getAnswerRecordRequests());
 
             SurveyRecord surveyRecord = surveyRecordMapper.mapToSurveyRecord(dto);
 

@@ -27,5 +27,6 @@ public class CreateAppointmentRecordRequest {
 
     private List<SubmitAnswerRecordRequest> answerRecordRequests;
 
-    private Integer categoryId;
+    private List<ReportCategoryRequest> reportCategoryRequests;
 }
+
