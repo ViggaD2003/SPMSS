@@ -37,8 +37,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final CounselorRepository counselorRepository;
 
     private final AppointmentRecordService appointmentRecordService;
+
     private final AppointmentRecordRepository appointmentRecordRepository;
 
+    @Transactional
     @Override
     public Optional<?> createAppointment(AddNewAppointment request) {
         try {
@@ -89,6 +91,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    @Transactional
     @Override
     public Optional<?> updateAppointmentStatus(Integer appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -96,6 +99,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setStatus(AppointmentStatus.COMPLETED);
         appointmentRepository.save(appointment);
+
         if (appointment.getAppointmentRecords().isEmpty()) {
             throw new RuntimeException("Appointment records is empty. Please submit record");
         }
@@ -137,6 +141,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Account bookedBy = accountRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Account not found"));
         Account bookedFor = null;
+
         if (request.getBookedForId() != null) {
             bookedFor = accountRepository.findById(request.getBookedForId())
                     .orElseThrow(() -> new RuntimeException("BookedFor not found"));
