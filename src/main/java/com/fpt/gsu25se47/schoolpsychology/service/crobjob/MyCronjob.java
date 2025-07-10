@@ -1,20 +1,21 @@
 package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -26,6 +27,8 @@ public class MyCronjob {
     private final SlotRepository slotRepository;
 
     private final AppointmentRepository appointmentRepository;
+
+    private final AppointmentRecordService appointmentRecordService;
 
     @Scheduled(cron = "0 0 0 * * *")
     public void updateSurveyStatus() {
@@ -42,7 +45,7 @@ public class MyCronjob {
     }
 
     @Scheduled(cron = "0 */1 * * * *")
-    public void updateSlotStatus(){
+    public void updateSlotStatus() {
         LocalDateTime now = LocalDateTime.now();
         List<Slot> toCompleted = slotRepository.findAllSlotsExpired(now, SlotStatus.PUBLISHED, SlotStatus.DRAFT);
         toCompleted.forEach(slot -> slot.setStatus(SlotStatus.CLOSED));
@@ -54,8 +57,18 @@ public class MyCronjob {
         LocalDateTime now = LocalDateTime.now();
 
         List<Appointment> appointments = appointmentRepository.findAllAppointmentExpired(AppointmentStatus.CONFIRMED, now);
-        appointments.forEach(appointment -> appointment.setStatus(AppointmentStatus.COMPLETED));
+        appointments.forEach(appointment -> {
+            appointment.setStatus(AppointmentStatus.EXPIRED);
+            CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
+
+            request.setAppointmentId(appointment.getId());
+            request.setStatus(RecordStatus.CANCELED);
+            request.setReason("The appointment expired due to no action taken by the student before the scheduled time.");
+            request.setAnswerRecordRequests(Collections.emptyList());
+            request.setReportCategoryRequests(Collections.emptyList());
+
+            appointmentRecordService.createAppointmentRecord(request);
+        });
         appointmentRepository.saveAll(appointments);
     }
-
 }

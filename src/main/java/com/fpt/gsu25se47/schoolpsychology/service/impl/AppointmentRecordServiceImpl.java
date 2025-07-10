@@ -74,9 +74,11 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Appointment not found with ID: " + request.getAppointmentId()));
 
-        appointment.setStatus(AppointmentStatus.COMPLETED);
+        if (request.getAppointmentStatus() == null) {
+            appointment.setStatus(AppointmentStatus.COMPLETED);
+            appointmentRepository.save(appointment);
+        }
 
-        appointmentRepository.save(appointment);
 
         return appointmentRecordMapper.toAppointmentRecordResponse(savedAppointmentRecord);
     }
