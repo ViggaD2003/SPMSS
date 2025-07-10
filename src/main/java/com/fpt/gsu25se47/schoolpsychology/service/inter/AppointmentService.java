@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
 
 import java.util.Optional;
 
@@ -12,7 +11,9 @@ public interface AppointmentService {
 
     Optional<?> showAllAppointmentsOfSlots();
 
-    Optional<?> updateAppointmentStatus(ConfirmAppointment request);
+    Optional<?> updateAppointmentStatus(Integer appointmentId);
 
     Optional<?> cancelAppointment(Integer AppointmentId, String reasonCancel);
+
+
 }

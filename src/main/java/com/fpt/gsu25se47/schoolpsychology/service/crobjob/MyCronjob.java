@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
+import com.fpt.gsu25se47.schoolpsychology.model.AppointmentRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
@@ -70,10 +71,18 @@ public class MyCronjob {
                 request.setStatus(RecordStatus.CANCELED);
                 request.setReason("Cuộc hẹn đã hết hiệu lực");
                 request.setReportCategoryRequests(Collections.emptyList());
-
                 appointmentRecordService.createAppointmentRecord(request);
+            } else {
+                appointment.setStatus(AppointmentStatus.COMPLETED);
+                List<AppointmentRecord> appointmentRecords = appointmentRecordRepository
+                        .findAllByAppointmentId(appointment.getId());
+                appointmentRecords.forEach(appointmentRecord -> {
+                    appointmentRecord.setStatus(RecordStatus.FINALIZED);
+                    appointmentRecordRepository.save(appointmentRecord);
+                });
             }
         });
+
         appointmentRepository.saveAll(appointments);
     }
 }

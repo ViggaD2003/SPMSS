@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,10 +47,10 @@ public class AppointmentController {
     }
 
     @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
-    @PatchMapping
-    @Operation(summary = "Xác nhận yêu cầu", description = "Xác nhận 1 yêu cầu mới từ appointment mới tạo của học sinh")
-    public ResponseEntity<?> updateStatusAppointment(@Valid @RequestBody ConfirmAppointment request) {
-        return ResponseEntity.ok(appointmentService.updateAppointmentStatus(request));
+    @PatchMapping("/{id}")
+    @Operation(summary = "Xác nhận yêu cầu đóng appointment", description = "Xác nhận 1 yêu cầu mới từ appointment mới tạo của học sinh")
+    public ResponseEntity<?> updateStatusAppointment(@PathVariable(name = "id") Integer appointmentId) {
+        return ResponseEntity.ok(appointmentService.updateAppointmentStatus(appointmentId));
     }
 
 

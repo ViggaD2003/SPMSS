@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
@@ -17,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +38,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRecordService appointmentRecordService;
 
+    private final AppointmentRecordRepository appointmentRecordRepository;
+
+    @Transactional
     @Override
     public Optional<?> createAppointment(AddNewAppointment request) {
         try {
@@ -87,21 +91,32 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    @Transactional
     @Override
-    public Optional<?> updateAppointmentStatus(ConfirmAppointment request) {
-        try{
-            Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
-                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
-            appointment.setLocation(request.getLocation());
-            appointment.setStatus(AppointmentStatus.CONFIRMED);
-            appointmentRepository.save(appointment);
-            return Optional.of("Updated status appointment successfully");
-        } catch (Exception e){
-            log.error("Failed to create survey: {}", e.getMessage(), e);
-            throw new RuntimeException("Could not update appointment. Please check your data.");
+    public Optional<?> updateAppointmentStatus(Integer appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointmentRepository.save(appointment);
+
+        if (appointment.getAppointmentRecords().isEmpty()) {
+            throw new RuntimeException("Appointment records is empty. Please submit record");
         }
+
+        List<AppointmentRecord> appointmentRecords = appointmentRecordRepository
+                .findAllByAppointmentId(appointment.getId());
+
+        appointmentRecords.forEach(appointmentRecord -> {
+            appointmentRecord.setStatus(RecordStatus.FINALIZED);
+            appointmentRecordRepository.save(appointmentRecord);
+        });
+
+
+        return Optional.of("Updated status appointment successfully");
     }
 
+    @Transactional
     @Override
     public Optional<?> cancelAppointment(Integer appointmentId, String reasonCancel) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -126,6 +141,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Account bookedBy = accountRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Account not found"));
         Account bookedFor = null;
+
         if (request.getBookedForId() != null) {
             bookedFor = accountRepository.findById(request.getBookedForId())
                     .orElseThrow(() -> new RuntimeException("BookedFor not found"));
