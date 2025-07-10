@@ -1,17 +1,20 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
+import com.fpt.gsu25se47.schoolpsychology.validations.StartBeforeEndDateConstraint;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 import java.time.LocalDate;
 
 @Data
+@StartBeforeEndDateConstraint
 public class CreateSupportProgramRequest {
 
     private String name;
 
     private String description;
-
+    @Range(min = 1, max = 200)
     private Integer maxParticipants;
 
     private LocalDate startDate;

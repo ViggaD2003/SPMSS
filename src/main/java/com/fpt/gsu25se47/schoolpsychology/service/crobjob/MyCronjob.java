@@ -69,7 +69,6 @@ public class MyCronjob {
                 request.setAppointmentId(appointment.getId());
                 request.setStatus(RecordStatus.CANCELED);
                 request.setReason("Cuộc hẹn đã hết hiệu lực");
-//                request.setAnswerRecordRequests(Collections.emptyList());
                 request.setReportCategoryRequests(Collections.emptyList());
 
                 appointmentRecordService.createAppointmentRecord(request);
