@@ -136,20 +136,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         Role role = slot.getHostedBy().getRole();
         HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
 
-        String linkMeet = null;
+        String location = null;
         if(request.getIsOnline()){
             if (hostType == HostType.TEACHER) {
                 Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
                         .orElseThrow(() -> new RuntimeException("Teacher not found"));
-                linkMeet = teacher.getLinkMeet();
+                location = teacher.getLinkMeet();
             } else {
                 Counselor counselor = counselorRepository.findById(slot.getHostedBy().getId())
                         .orElseThrow(() -> new RuntimeException("Counselor not found"));
-                linkMeet = counselor.getLinkMeet();
+                location = counselor.getLinkMeet();
             }
+        } else {
+            location = "Phòng chăm sóc tinh thần";
         }
-
-        String location = linkMeet;
 
         if(request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())){
             throw new RuntimeException("Start date and end date must be before end date time");
@@ -165,7 +165,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .bookedFor(bookedFor)
                 .isOnline(request.getIsOnline())
                 .reason(request.getReason())
-                .status(request.getIsOnline() ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING)
+                .status(AppointmentStatus.CONFIRMED)
                 .hostType(hostType)
                 .startDateTime(request.getStartDateTime())
                 .endDateTime(request.getEndDateTime())
