@@ -38,11 +38,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     @Transactional
     public AppointmentRecordResponse createAppointmentRecord(CreateAppointmentRecordRequest request) {
 
-//        duplicateValidationUtils.validateAnswerIds(request.getAnswerRecordRequests());
-
         AppointmentRecord appointmentRecord = appointmentRecordMapper.toAppointmentRecord(request);
-
-//        appointmentRecord.getAnswerRecords().forEach(ar -> ar.setAppointmentRecord(appointmentRecord));
 
         AppointmentRecord savedAppointmentRecord = appointmentRecordRepository.save(appointmentRecord);
 
@@ -53,7 +49,6 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
             int evaluationRecordId = appointmentRecord.getId();
             LocalDate createdDate = appointmentRecord.getCreatedDate().toLocalDate();
             EvaluationType evaluationType = EvaluationType.APPOINTMENT;
-//            int totalScore = appointmentRecord.getTotalScore();
             int studentId = appointmentRecord.getAppointment().getBookedFor().getId();
 
             request.getReportCategoryRequests()
@@ -75,7 +70,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Appointment not found with ID: " + request.getAppointmentId()));
 
-        if (request.getAppointmentStatus() == null || request.getStatus() != RecordStatus.CANCELED) {
+        if (request.getStatus() != RecordStatus.CANCELED) {
             appointment.setStatus(AppointmentStatus.COMPLETED);
             appointmentRepository.save(appointment);
         }

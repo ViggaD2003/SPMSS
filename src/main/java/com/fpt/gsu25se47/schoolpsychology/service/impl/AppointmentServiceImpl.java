@@ -59,7 +59,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     .orElseThrow(() -> new RuntimeException("Account not found"));
 
             List<Appointment> appointments = appointmentRepository.findByBookedBy(account.getId()).stream().filter(data ->
-                    data.getStatus().name().equals("PENDING") || data.getStatus().name().equals("CONFIRMED")
+                data.getStatus().name().equals("PENDING") || data.getStatus().name().equals("CONFIRMED")
             ).toList();
 
             List<AppointmentResponse> responses = appointments.stream().map(this::mapToResponse).toList();
@@ -73,7 +73,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Optional<?> showAllAppointmentsOfSlots() {
-        try {
+        try{
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             Account account = accountRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Account not found"));
@@ -128,6 +128,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         request.setTotalScore(0);
         appointmentRecordService.createAppointmentRecord(request);
 
+
         return Optional.of("Canceled appointment successfully");
     }
 
@@ -148,7 +149,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
 
         String location = null;
-        if (request.getIsOnline()) {
+        if(request.getIsOnline()){
             if (hostType == HostType.TEACHER) {
                 Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
                         .orElseThrow(() -> new RuntimeException("Teacher not found"));
@@ -162,11 +163,11 @@ public class AppointmentServiceImpl implements AppointmentService {
             location = "Phòng chăm sóc tinh thần";
         }
 
-        if (request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())) {
+        if(request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())){
             throw new RuntimeException("Start date and end date must be before end date time");
         }
 
-        if (slot.getStatus().name().equals("CLOSED")) {
+        if(slot.getStatus().name().equals("CLOSED")){
             throw new RuntimeException("Slot is CLOSED");
         }
 
