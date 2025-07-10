@@ -107,6 +107,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointmentRepository.save(appointment);
+
         CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
         request.setAppointmentId(appointmentId);
         request.setReason(reasonCancel);
@@ -114,8 +117,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         request.setTotalScore(0);
         appointmentRecordService.createAppointmentRecord(request);
 
-        appointment.setStatus(AppointmentStatus.CANCELED);
-        appointmentRepository.save(appointment);
 
         return Optional.of("Canceled appointment successfully");
     }
