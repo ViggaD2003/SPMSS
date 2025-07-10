@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.ConfirmAppointment;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
@@ -17,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final CounselorRepository counselorRepository;
 
     private final AppointmentRecordService appointmentRecordService;
+    private final AppointmentRecordRepository appointmentRecordRepository;
 
     @Override
     public Optional<?> createAppointment(AddNewAppointment request) {
@@ -57,7 +59,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     .orElseThrow(() -> new RuntimeException("Account not found"));
 
             List<Appointment> appointments = appointmentRepository.findByBookedBy(account.getId()).stream().filter(data ->
-                data.getStatus().name().equals("PENDING") || data.getStatus().name().equals("CONFIRMED")
+                    data.getStatus().name().equals("PENDING") || data.getStatus().name().equals("CONFIRMED")
             ).toList();
 
             List<AppointmentResponse> responses = appointments.stream().map(this::mapToResponse).toList();
@@ -71,7 +73,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Optional<?> showAllAppointmentsOfSlots() {
-        try{
+        try {
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             Account account = accountRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Account not found"));
@@ -88,24 +90,36 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Optional<?> updateAppointmentStatus(ConfirmAppointment request) {
-        try{
-            Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
-                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
-            appointment.setLocation(request.getLocation());
-            appointment.setStatus(AppointmentStatus.CONFIRMED);
-            appointmentRepository.save(appointment);
-            return Optional.of("Updated status appointment successfully");
-        } catch (Exception e){
-            log.error("Failed to create survey: {}", e.getMessage(), e);
-            throw new RuntimeException("Could not update appointment. Please check your data.");
+    public Optional<?> updateAppointmentStatus(Integer appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointmentRepository.save(appointment);
+        if (appointment.getAppointmentRecords().isEmpty()) {
+            throw new RuntimeException("Appointment records is empty. Please submit record");
         }
+
+        List<AppointmentRecord> appointmentRecords = appointmentRecordRepository
+                .findAllByAppointmentId(appointment.getId());
+
+        appointmentRecords.forEach(appointmentRecord -> {
+            appointmentRecord.setStatus(RecordStatus.FINALIZED);
+            appointmentRecordRepository.save(appointmentRecord);
+        });
+
+
+        return Optional.of("Updated status appointment successfully");
     }
 
+    @Transactional
     @Override
     public Optional<?> cancelAppointment(Integer appointmentId, String reasonCancel) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointmentRepository.save(appointment);
 
         CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
         request.setAppointmentId(appointmentId);
@@ -113,9 +127,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         request.setStatus(RecordStatus.CANCELED);
         request.setTotalScore(0);
         appointmentRecordService.createAppointmentRecord(request);
-
-        appointment.setStatus(AppointmentStatus.CANCELED);
-        appointmentRepository.save(appointment);
 
         return Optional.of("Canceled appointment successfully");
     }
@@ -137,7 +148,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
 
         String location = null;
-        if(request.getIsOnline()){
+        if (request.getIsOnline()) {
             if (hostType == HostType.TEACHER) {
                 Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
                         .orElseThrow(() -> new RuntimeException("Teacher not found"));
@@ -151,11 +162,11 @@ public class AppointmentServiceImpl implements AppointmentService {
             location = "Phòng chăm sóc tinh thần";
         }
 
-        if(request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())){
+        if (request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())) {
             throw new RuntimeException("Start date and end date must be before end date time");
         }
 
-        if(slot.getStatus().name().equals("CLOSED")){
+        if (slot.getStatus().name().equals("CLOSED")) {
             throw new RuntimeException("Slot is CLOSED");
         }
 

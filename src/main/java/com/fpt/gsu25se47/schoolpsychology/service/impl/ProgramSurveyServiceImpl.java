@@ -6,9 +6,11 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewQuestionDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Answer;
 import com.fpt.gsu25se47.schoolpsychology.model.ProgramSurvey;
 import com.fpt.gsu25se47.schoolpsychology.model.Question;
+import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.ProgramSurveyRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.SupportProgramRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ProgramSurveyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
     private final ProgramSurveyRepository programSurveyRepository;
 
     private final CategoryRepository categoryRepository;
+
+    private final SupportProgramRepository supportProgramRepository;
 
     @Override
     public Optional<?> addNewPrgSurvey(AddNewProgramSurvey addNewProgramSurvey, Integer programSupportId) {
@@ -47,17 +51,23 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
         return Optional.of("Successfully added program survey");
     }
 
+    @Override
+    public Optional<?> getAllPrgSurvey() {
+
+    }
+
 
     private ProgramSurvey mapToProgramSurvey(AddNewProgramSurvey addNewProgramSurvey, Integer programSupportId) {
         if (addNewProgramSurvey.questionDtos().isEmpty()) {
             throw new IllegalArgumentException("Questions cannot be empty");
         }
 
-
+        SupportProgram supportProgram = supportProgramRepository.findById(programSupportId)
+                .orElseThrow(() -> new IllegalArgumentException("Program survey not found"));
 
         return ProgramSurvey.builder()
                 .surveyType(SurveyType.valueOf(addNewProgramSurvey.surveyType()))
-//                .program()
+                .program(supportProgram)
                 .questions(addNewProgramSurvey.questionDtos().stream().map(this::mapToQuestion).toList())
                 .build();
     }

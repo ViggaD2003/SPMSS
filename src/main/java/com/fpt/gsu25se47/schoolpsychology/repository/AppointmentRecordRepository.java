@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 public interface AppointmentRecordRepository extends JpaRepository<AppointmentRecord, Integer> {
 
     @Query("""
@@ -30,4 +32,6 @@ public interface AppointmentRecordRepository extends JpaRepository<AppointmentRe
 
 
     boolean existsByAppointmentId(int appointmentId);
+
+    List<AppointmentRecord> findAllByAppointmentId(Integer appointmentId);
 }

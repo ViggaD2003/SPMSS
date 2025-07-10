@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewProgramSurvey;
-import com.fpt.gsu25se47.schoolpsychology.model.ProgramSurvey;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ProgramSurveyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
