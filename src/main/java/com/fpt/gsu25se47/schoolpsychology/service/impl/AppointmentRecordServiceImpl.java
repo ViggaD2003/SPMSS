@@ -9,6 +9,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.AppointmentRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentRole;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RecordStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
@@ -37,11 +38,11 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     @Transactional
     public AppointmentRecordResponse createAppointmentRecord(CreateAppointmentRecordRequest request) {
 
-        duplicateValidationUtils.validateAnswerIds(request.getAnswerRecordRequests());
+//        duplicateValidationUtils.validateAnswerIds(request.getAnswerRecordRequests());
 
         AppointmentRecord appointmentRecord = appointmentRecordMapper.toAppointmentRecord(request);
 
-        appointmentRecord.getAnswerRecords().forEach(ar -> ar.setAppointmentRecord(appointmentRecord));
+//        appointmentRecord.getAnswerRecords().forEach(ar -> ar.setAppointmentRecord(appointmentRecord));
 
         AppointmentRecord savedAppointmentRecord = appointmentRecordRepository.save(appointmentRecord);
 
@@ -74,11 +75,10 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Appointment not found with ID: " + request.getAppointmentId()));
 
-        if (request.getAppointmentStatus() == null) {
+        if (request.getAppointmentStatus() == null || request.getStatus() != RecordStatus.CANCELED) {
             appointment.setStatus(AppointmentStatus.COMPLETED);
             appointmentRepository.save(appointment);
         }
-
 
         return appointmentRecordMapper.toAppointmentRecordResponse(savedAppointmentRecord);
     }
