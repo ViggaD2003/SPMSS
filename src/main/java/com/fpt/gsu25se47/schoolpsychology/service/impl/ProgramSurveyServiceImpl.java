@@ -13,7 +13,9 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.ProgramSurveyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,15 +26,39 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public Optional<?> addNewPrgSurvey(AddNewProgramSurvey addNewProgramSurvey) {
-        return Optional.empty();
+    public Optional<?> addNewPrgSurvey(AddNewProgramSurvey addNewProgramSurvey, Integer programSupportId) {
+
+        ProgramSurvey programSurvey = this.mapToProgramSurvey(addNewProgramSurvey, programSupportId);
+
+        programSurvey.getQuestions().forEach(question -> {
+           question.setProgramSurvey(programSurvey);
+
+           if(question.getAnswers().isEmpty()){
+               throw new IllegalArgumentException("Answers cannot be empty");
+           }
+
+            question.getAnswers().forEach(answer -> {
+                answer.setQuestion(question);
+            });
+        });
+
+        programSurveyRepository.save(programSurvey);
+
+        return Optional.of("Successfully added program survey");
     }
 
 
-    private ProgramSurvey mapToProgramSurvey(AddNewProgramSurvey addNewProgramSurvey) {
+    private ProgramSurvey mapToProgramSurvey(AddNewProgramSurvey addNewProgramSurvey, Integer programSupportId) {
+        if (addNewProgramSurvey.questionDtos().isEmpty()) {
+            throw new IllegalArgumentException("Questions cannot be empty");
+        }
+
+
+
         return ProgramSurvey.builder()
                 .surveyType(SurveyType.valueOf(addNewProgramSurvey.surveyType()))
-                .questions(null)
+//                .program()
+                .questions(addNewProgramSurvey.questionDtos().stream().map(this::mapToQuestion).toList())
                 .build();
     }
 

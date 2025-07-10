@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface ProgramSurveyService {
 
-    Optional<?> addNewPrgSurvey(AddNewProgramSurvey addNewProgramSurvey);
+    Optional<?> addNewPrgSurvey(AddNewProgramSurvey addNewProgramSurvey, Integer programSupportId);
 }

@@ -48,7 +48,7 @@ public class SurveyServiceImpl implements SurveyService {
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
             Survey survey = this.mapToSurvey(addNewSurveyDto);
-            if (survey.getQuestions() != null) {
+            if (!survey.getQuestions().isEmpty()) {
                 for (Question question : survey.getQuestions()) {
                     question.setSurvey(survey);
 
