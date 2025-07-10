@@ -27,4 +27,7 @@ public interface AppointmentRecordRepository extends JpaRepository<AppointmentRe
 //            WHERE m.hostedBy.id = :accountId
 //            """)
 //    public List<AppointmentRecord> findAllByHostBy(int accountId);
+
+
+    boolean existsByAppointmentId(int appointmentId);
 }

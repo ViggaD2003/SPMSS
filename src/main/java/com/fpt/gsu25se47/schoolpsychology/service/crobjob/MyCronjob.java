@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
+import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
@@ -27,6 +28,8 @@ public class MyCronjob {
     private final SlotRepository slotRepository;
 
     private final AppointmentRepository appointmentRepository;
+
+    private final AppointmentRecordRepository appointmentRecordRepository;
 
     private final AppointmentRecordService appointmentRecordService;
 
@@ -58,16 +61,19 @@ public class MyCronjob {
 
         List<Appointment> appointments = appointmentRepository.findAllAppointmentExpired(AppointmentStatus.CONFIRMED, now);
         appointments.forEach(appointment -> {
-            appointment.setStatus(AppointmentStatus.EXPIRED);
-            CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
 
-            request.setAppointmentId(appointment.getId());
-            request.setStatus(RecordStatus.CANCELED);
-            request.setReason("The appointment expired due to no action taken by the student before the scheduled time.");
-            request.setAnswerRecordRequests(Collections.emptyList());
-            request.setReportCategoryRequests(Collections.emptyList());
+            if (!appointmentRecordRepository.existsByAppointmentId(appointment.getId())) {
+                appointment.setStatus(AppointmentStatus.EXPIRED);
 
-            appointmentRecordService.createAppointmentRecord(request);
+                CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
+                request.setAppointmentId(appointment.getId());
+                request.setStatus(RecordStatus.CANCELED);
+                request.setReason("Cuộc hẹn đã hết hiệu lực");
+//                request.setAnswerRecordRequests(Collections.emptyList());
+                request.setReportCategoryRequests(Collections.emptyList());
+
+                appointmentRecordService.createAppointmentRecord(request);
+            }
         });
         appointmentRepository.saveAll(appointments);
     }

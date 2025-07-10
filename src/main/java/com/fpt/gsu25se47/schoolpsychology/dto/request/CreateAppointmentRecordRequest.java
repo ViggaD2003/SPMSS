@@ -30,7 +30,7 @@ public class CreateAppointmentRecordRequest {
 
     private Integer totalScore;
 
-    private List<SubmitAnswerRecordRequest> answerRecordRequests;
+//    private List<SubmitAnswerRecordRequest> answerRecordRequests;
 
     private List<ReportCategoryRequest> reportCategoryRequests;
 }
