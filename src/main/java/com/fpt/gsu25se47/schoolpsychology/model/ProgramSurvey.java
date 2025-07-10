@@ -24,11 +24,8 @@ public class ProgramSurvey extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer questionId;
-
     @Enumerated(EnumType.STRING)
     private SurveyType surveyType;
-
 
     @ManyToOne
     @JoinColumn(name = "program_id", nullable = false)
