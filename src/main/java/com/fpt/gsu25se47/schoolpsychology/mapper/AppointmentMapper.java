@@ -2,24 +2,14 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class AppointmentMapper {
+@Mapper(componentModel = "spring")
+public interface AppointmentMapper {
 
-    public AppointmentResponse mapToResponse(Appointment appointment) {
-
-        return AppointmentResponse.builder()
-                .id(appointment.getId())
-                .bookForName(appointment.getBookedFor().getEmail())
-                .bookByName(appointment.getBookedBy().getEmail())
-                .hostName(appointment.getHostType().name())
-                .reason(appointment.getReason())
-                .status(appointment.getStatus())
-                .isOnline(appointment.getIsOnline())
-                .location(appointment.getLocation())
-                .startDateTime(appointment.getStartDateTime())
-                .endDateTime(appointment.getEndDateTime())
-                .build();
-    }
+    @Mapping(target = "hostName", source = "appointment.hostType")
+    @Mapping(target = "bookForName", source = "appointment.bookedFor.email")
+    @Mapping(target = "bookByName", source = "appointment.bookedBy.email")
+    AppointmentResponse mapToResponse(Appointment appointment);
 }

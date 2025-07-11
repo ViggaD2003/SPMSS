@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.common.ApiResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SupportProgramService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class SupportProgramController {
     private final SupportProgramService service;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<SupportProgramResponse>> createSupportProgram(@RequestBody CreateSupportProgramRequest request) {
+    public ResponseEntity<ApiResponse<SupportProgramResponse>> createSupportProgram(@Valid @RequestBody CreateSupportProgramRequest request) {
 
         return ResponseEntity.ok(ApiResponse.<SupportProgramResponse>builder()
                 .data(service.createSupportProgram(request))

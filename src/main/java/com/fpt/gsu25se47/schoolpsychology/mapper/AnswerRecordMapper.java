@@ -2,40 +2,24 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerRecordResponse;
+import com.fpt.gsu25se47.schoolpsychology.model.Answer;
 import com.fpt.gsu25se47.schoolpsychology.model.AnswerRecord;
-import com.fpt.gsu25se47.schoolpsychology.repository.AnswerRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-@RequiredArgsConstructor
-public class AnswerRecordMapper {
+@Mapper(componentModel = "spring", uses = QuestionMapper.class)
+public interface AnswerRecordMapper {
 
-    private final AnswerMapper answerResponseMapper;
-    private final QuestionMapper questionMapper;
-    private final AnswerRepository answerRepository;
+    @Mapping(target = "questionResponse", source = "answerRecord.answer.question")
+    @Mapping(target = "answerResponse", source = "answerRecord.answer")
+    AnswerRecordResponse mapToAnswerRecordResponse(AnswerRecord answerRecord);
 
-    public AnswerRecordResponse mapToAnswerRecordResponse(AnswerRecord answerRecord) {
-        return com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerRecordResponse.builder()
-                .id(answerRecord.getId())
-                .questionResponse(questionMapper.mapToQuestionResponse(answerRecord.getAnswer().getQuestion()))
-                .answerResponse(answerResponseMapper.mapToAnswerResponse(answerRecord.getAnswer()))
-                .skipped(answerRecord.isSkipped())
-                .build();
-    }
-
-    public AnswerRecord mapToAnswerRecord(CreateAnswerRecordRequest request) {
-        var answer = answerRepository.findById(
-                        request.getSubmitAnswerRecordRequests().getAnswerId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Answer not found with Id: " + request.getSubmitAnswerRecordRequests().getAnswerId())
-                );
-
-        return AnswerRecord.builder()
-                .answer(answer)
-                .isSkipped(request.getSubmitAnswerRecordRequests().isSkipped())
-                .build();
-    }
+    @Mapping(target = "surveyRecord", ignore = true)
+    @Mapping(target = "programRecord", ignore = true)
+    @Mapping(target = "isSkipped", source = "request.submitAnswerRecordRequests.skipped")
+    @Mapping(target = "appointmentRecord", ignore = true)
+    @Mapping(target = "answer", source = "answer")
+    @Mapping(target = "id", ignore = true)
+    AnswerRecord mapToAnswerRecord(CreateAnswerRecordRequest request,
+                                   Answer answer);
 }

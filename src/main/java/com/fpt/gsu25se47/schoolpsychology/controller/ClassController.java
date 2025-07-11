@@ -21,7 +21,7 @@ public class ClassController {
     private final ClassService classService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "Tạo một lớp mới", description = "Tạo một lớp mới, có thể tạo một lớp trống bằng cách bỏ trống dữ liệu list student codes," +
             " hoặc thêm list học sinh dựa vào studentCode")
     public ResponseEntity<ApiResponse<ClassDto>> createClass(@RequestBody ClassRequest request) {

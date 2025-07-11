@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.common.ApiResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateProgramSessionRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramSessionResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ProgramSessionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class ProgramSessionController {
     private final ProgramSessionService programSessionService;
 
     @PostMapping
-    ResponseEntity<ApiResponse<ProgramSessionResponse>> createProgramSession(@RequestBody CreateProgramSessionRequest request) {
+    ResponseEntity<ApiResponse<ProgramSessionResponse>> createProgramSession(@Valid @RequestBody CreateProgramSessionRequest request) {
 
         return ResponseEntity.ok(
                 ApiResponse.<ProgramSessionResponse>builder()

@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.MentalEvaluationResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Category;
 import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
@@ -25,6 +26,8 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     private final AppointmentRecordRepository appointmentRecordRepository;
     private final SurveyRecordRepository surveyRecordRepository;
     private final ProgramRecordRepository programRecordRepository;
+    private final CategoryRepository categoryRepository;
+    //    private final MentalEvaluationMapper mentalEvaluationMapper;
     private final MentalEvaluationMapper mentalEvaluationMapper;
     private final StudentRepository studentRepository;
 
@@ -50,8 +53,14 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
             default -> throw new IllegalStateException("Unexpected value: " + request.getEvaluationType());
         }
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found"));
 
-        MentalEvaluation mentalEvaluation = mentalEvaluationRepository.save(mentalEvaluationMapper.mapToMentalEvaluation(request));
+        Student student = studentRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student not found"));
+
+        MentalEvaluation mentalEvaluation = mentalEvaluationRepository.save(
+                mentalEvaluationMapper.mapToMentalEvaluation(request, student, category));
 
         return mentalEvaluationMapper.mapToEvaluationResponse(mentalEvaluation);
     }
