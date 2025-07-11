@@ -11,7 +11,7 @@ public interface JWTService {
 
     String generateRefreshToken(UserDetails user);
 
-    boolean checkIfNotExpired(String jwt);
+    boolean checkIfExpired(String jwt);
 
     String extractRoleFromJWT(String jwt);
 }

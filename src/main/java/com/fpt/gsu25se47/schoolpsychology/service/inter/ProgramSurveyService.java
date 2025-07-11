@@ -8,5 +8,7 @@ public interface ProgramSurveyService {
 
     Optional<?> addNewPrgSurvey(AddNewProgramSurvey addNewProgramSurvey, Integer programSupportId);
 
-    Optional<?> getAllPrgSurvey();
+    Optional<?> getAllPrgSurvey(Integer supportProgramId);
+
+    Optional<?> updatePrgSurvey(AddNewProgramSurvey addNewProgramSurvey, Integer programSurveyId);
 }

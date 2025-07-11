@@ -11,6 +11,9 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
 
     Optional<Token> findByValue(String value);
 
+    @Query("SELECT t FROM Token t WHERE t.status = 'active' and t.tokenType = 'refresh_token' and t.account.id = :account_id")
+    Token findRefreshTokenWithActiveStatusByAccountId(Integer account_id);
+
     List<Token> findAllByAccount_IdAndStatus(Integer accountId, String status);
 
     Optional<Token> findByValueAndStatus(String value, String status);
