@@ -30,15 +30,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.List;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
-
 
 
 @Service
@@ -129,7 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String accessToken = authToken.substring(7);
 
-        if (authToken == null){
+        if (authToken == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ResponseObject.builder()
                             .message("Logout failed")
@@ -162,9 +163,78 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ResponseEntity<ResponseObject> refresh(RefreshTokenRequest request) {
-        if(request.getToken() != null && jwtService.checkIfNotExpired(request.getToken())){
-            Token refresh = tokenRepo.findByValue(request.getToken()).orElse(null);
-            if(refresh != null && revokeAllActiveAccessTokens(refresh.getAccount())) {
+
+        if (request.getToken() == null || request.getToken().isBlank()) {
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .message("Refresh token is missing")
+                            .success(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        boolean isExpired;
+        try {
+            isExpired = jwtService.checkIfExpired(request.getToken());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ResponseObject.builder()
+                            .message("Invalid refresh token")
+                            .success(false)
+                            .data(null)
+                            .build()
+            );
+        }
+
+        if (isExpired) {
+            Token accessToken = tokenRepo.findByValue(request.getToken()).orElse(null);
+            if (accessToken == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        ResponseObject.builder()
+                                .message("Access token not found in database")
+                                .success(false)
+                                .data(null)
+                                .build()
+                );
+            }
+
+            Token refresh = tokenRepo.findRefreshTokenWithActiveStatusByAccountId(accessToken.getAccount().getId());
+
+            if (refresh == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ResponseObject.builder()
+                                .message("No valid refresh token found")
+                                .success(false)
+                                .data(null)
+                                .build()
+                );
+            }
+
+            // ✅ Kiểm tra xem refresh token có expired hay không
+            boolean refreshExpired;
+            try {
+                refreshExpired = jwtService.checkIfExpired(refresh.getValue());
+            } catch (Exception e) {
+                refreshExpired = true;
+            }
+
+            if (refreshExpired) {
+                // ✅ Cập nhật trạng thái refresh token trong DB
+                refresh.setStatus(Status.TOKEN_EXPIRED.getValue());
+                tokenRepo.save(refresh);
+
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        ResponseObject.builder()
+                                .message("Refresh token expired. Please login again.")
+                                .success(false)
+                                .data(null)
+                                .build()
+                );
+            }
+
+            // ✅ Tạo access token mới
+            if (revokeAllActiveAccessTokens(refresh.getAccount())) {
                 String newAccess = jwtService.generateAccessToken(refresh.getAccount());
                 tokenRepo.save(
                         Token.builder()
@@ -175,31 +245,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                 .build()
                 );
 
-                return ResponseEntity.status(HttpStatus.OK).body(
+                return ResponseEntity.ok(
                         ResponseObject.builder()
                                 .message("Refresh access token successfully")
                                 .success(true)
-                                .data(JwtAuthenticationResponse.builder()
-                                        .token(newAccess)
-                                        .build())
+                                .data(JwtAuthenticationResponse.builder().token(newAccess).build())
+                                .build()
+                );
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ResponseObject.builder()
+                                .message("No valid refresh token found")
+                                .success(false)
+                                .data(null)
                                 .build()
                 );
             }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     ResponseObject.builder()
-                            .message("No refresh token found")
+                            .message("Access token is still valid. No need to refresh.")
                             .success(false)
                             .data(null)
-                            .build());
+                            .build()
+            );
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                ResponseObject.builder()
-                        .message("Refresh invalid")
-                        .success(false)
-                        .data(null)
-                        .build()
-        );
     }
+
 
     @Override
     @Transactional
@@ -208,7 +281,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new IllegalArgumentException("Sign up request cannot be null");
         }
 
-        if(accountRepo.existsByEmail(request.getEmail())) {
+        if (accountRepo.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Email already exists");
         }
 
@@ -281,15 +354,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             var account = (Account) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-            if(account == null) {
+            if (account == null) {
                 throw new IllegalArgumentException("Account not found");
             }
 
-            if(!passwordEncoder.matches(request.getCurrentPassword(), account.getPassword())) {
+            if (!passwordEncoder.matches(request.getCurrentPassword(), account.getPassword())) {
                 throw new IllegalArgumentException("Current password doesn't match");
             }
 
-            if(!request.getNewPassword().equals(request.getConfirmNewPassword())){
+            if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
                 throw new IllegalArgumentException("New password doesn't match");
             }
 
@@ -298,7 +371,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             return ResponseEntity.ok("Change password success !");
 
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Something went wrong");
         }
@@ -346,7 +419,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
 
-
     private void revokeAllTokens(Account account) {
         List<Token> tokens = tokenRepo.findAllByAccount_IdAndStatus(account.getId(), Status.TOKEN_ACTIVE.getValue());
         for (Token token : tokens) {
@@ -389,9 +461,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return null;
     }
 
-    private boolean revokeAllActiveAccessTokens(Account account){
+    private boolean revokeAllActiveAccessTokens(Account account) {
         List<Token> tokens = tokenRepo.findAllByTokenTypeAndStatusAndAccount_Id(TokenType.ACCESS_TOKEN.getValue(), Status.TOKEN_ACTIVE.getValue(), account.getId());
-        for(Token t: tokens){
+        for (Token t : tokens) {
             TokenUtil.handleExpiredToken(t.getValue(), tokenRepo);
         }
         return true;

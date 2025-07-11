@@ -57,11 +57,15 @@ public class JWTServiceImpl implements JWTService {
     }
 
     private Claims extractAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigninKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigninKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return e.getClaims(); // vẫn lấy được phần payload
+        }
     }
 
     private Key getSigninKey() {
@@ -134,7 +138,16 @@ public class JWTServiceImpl implements JWTService {
     }
 
     @Override
-    public boolean checkIfNotExpired(String jwt) {
-        return !getClaim(jwt, Claims::getExpiration).before(new Date());
+    public boolean checkIfExpired(String jwt) {
+        try {
+            Date expiration = getClaim(jwt, Claims::getExpiration);
+            return expiration.before(new Date());
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            // Nếu token đã hết hạn, thì return true
+            return true;
+        } catch (Exception e) {
+            // Nếu lỗi khác (ví dụ sai định dạng), thì log hoặc throw tiếp
+            throw new RuntimeException("Invalid JWT token", e);
+        }
     }
 }

@@ -4,10 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.RecordStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
@@ -18,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -140,8 +138,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Account bookedBy = accountRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Account not found"));
-        Account bookedFor = null;
 
+        Account bookedFor = null;
         if (request.getBookedForId() != null) {
             bookedFor = accountRepository.findById(request.getBookedForId())
                     .orElseThrow(() -> new RuntimeException("BookedFor not found"));
@@ -153,7 +151,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Role role = slot.getHostedBy().getRole();
         HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
 
-        String location = null;
+        String location;
         if(request.getIsOnline()){
             if (hostType == HostType.TEACHER) {
                 Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
@@ -168,12 +166,23 @@ public class AppointmentServiceImpl implements AppointmentService {
             location = "Phòng chăm sóc tinh thần";
         }
 
-        if(request.getStartDateTime().isBefore(slot.getStartDateTime()) || request.getEndDateTime().isAfter(slot.getEndDateTime())){
+        if(request.getStartDateTime().isBefore(slot.getStartDateTime())
+                || request.getEndDateTime().isAfter(slot.getEndDateTime())){
             throw new RuntimeException("Start date and end date must be before end date time");
         }
 
-        if(slot.getStatus().name().equals("CLOSED")){
+        if(slot.getStatus() == SlotStatus.CLOSED){
             throw new RuntimeException("Slot is CLOSED");
+        }
+
+        LocalTime officeStart = LocalTime.of(8, 0);
+        LocalTime officeEnd = LocalTime.of(18, 0);
+
+        LocalTime appointmentStart = request.getStartDateTime().toLocalTime();
+        LocalTime appointmentEnd = request.getEndDateTime().toLocalTime();
+
+        if (appointmentStart.isBefore(officeStart) || appointmentEnd.isAfter(officeEnd)) {
+            throw new RuntimeException("Appointment must be within office hours (08:00 - 18:00)");
         }
 
         return Appointment.builder()
