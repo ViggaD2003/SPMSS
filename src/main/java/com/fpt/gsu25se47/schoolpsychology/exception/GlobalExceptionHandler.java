@@ -24,7 +24,9 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
+            String fieldName = error instanceof FieldError fieldError
+                    ? fieldError.getField()
+                    : error.getObjectName();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
@@ -72,7 +74,8 @@ public class GlobalExceptionHandler {
         return switch (exception.getStatusCode()) {
             case HttpStatus.NOT_FOUND -> createResponseEntity(HttpStatus.NOT_FOUND.value(), exception.getReason());
             case HttpStatus.BAD_REQUEST -> createResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getReason());
-            case HttpStatus.INTERNAL_SERVER_ERROR -> createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+            case HttpStatus.INTERNAL_SERVER_ERROR ->
+                    createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
             default -> throw new IllegalStateException("Unexpected value: " + exception.getStatusCode());
         };
     }
