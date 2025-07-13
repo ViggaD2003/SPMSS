@@ -34,7 +34,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     private final SurveyRepository surveyRepository;
     private final StudentRepository studentRepository;
     private final AnswerRepository answerRepository;
-    //    private final SurveyRecordMapper surveyRecordMapper;
     private final AnswerRecordMapper answerRecordMapper;
     private final SurveyRecordMapper surveyRecordMapper;
     private final DuplicateValidationUtils duplicateValidationUtils;
@@ -54,7 +53,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             if (dto.getStatus() == SurveyRecordStatus.SKIPPED) {
                 dto.setTotalScore(null);
                 dto.setCategoryId(null);
-//                SurveyRecord skippedRecord = surveyRecordMapper.mapToSurveyRecord(dto);
                 SurveyRecord skippedRecord = surveyRecordMapper.mapToSurveyRecord(dto,
                         survey,
                         account,
@@ -64,7 +62,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
                 Student student = getStudent(saved.getAccount().getId());
 
-//                return surveyRecordMapper.mapToSurveyRecordResponse(saved);
                 return surveyRecordMapper.mapToSurveyRecordResponse(saved, student);
 
             }
@@ -121,8 +118,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found for ID: " + accountId));
 
         Student student = getStudent(accountId);
-//        return surveyRecordRepository.findAllByAccountId(account.getId(), pageable)
-//                .map(surveyRecordMapper::mapToSurveyRecordResponse);
 
         return surveyRecordRepository.findAllByAccountId(account.getId(), pageable)
                 .map(t -> surveyRecordMapper.mapToSurveyRecordResponse(t,

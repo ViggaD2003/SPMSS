@@ -1,11 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSupportProgramRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
+import org.mapstruct.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +14,10 @@ public interface SupportProgramMapper {
     @Mappings({
             @Mapping(target = "category", source = "category"),
             @Mapping(target = "name", source = "request.name"),
-            @Mapping(target = "id", ignore = true)
+            @Mapping(target = "id", ignore = true),
     })
-    SupportProgram toSupportProgram(CreateSupportProgramRequest request,
+    @BeanMapping(builder = @Builder(disableBuilder = true))
+    SupportProgram toSupportProgram(SupportProgramRequest request,
                                     Category category);
 
     @Mappings({
@@ -28,6 +27,8 @@ public interface SupportProgramMapper {
             @Mapping(target = "programSurveys", expression = "java(mapSurveyIds(supportProgram.getProgramSurveys()))")
     })
     SupportProgramResponse toSupportProgramResponse(SupportProgram supportProgram);
+
+    SupportProgram updateSupportProgramFromRequest(SupportProgramRequest request, @MappingTarget SupportProgram supportProgram);
 
     default List<Integer> mapSessionIds(List<ProgramSession> sessions) {
         return sessions == null ? new ArrayList<>() : sessions.stream().map(ProgramSession::getId).toList();
@@ -39,5 +40,14 @@ public interface SupportProgramMapper {
 
     default List<Integer> mapSurveyIds(List<ProgramSurvey> surveys) {
         return surveys == null ? new ArrayList<>() : surveys.stream().map(ProgramSurvey::getId).toList();
+    }
+
+    @AfterMapping
+    default void setSupportProgramForSessions(@MappingTarget SupportProgram supportProgram) {
+
+        if (supportProgram.getSessions() != null) {
+            supportProgram.getSessions()
+                    .forEach(s -> s.setProgram(supportProgram));
+        }
     }
 }

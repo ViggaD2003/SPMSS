@@ -1,7 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.validations;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateProgramSessionRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSupportProgramRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
 import com.fpt.gsu25se47.schoolpsychology.repository.ProgramSessionRepository;
@@ -25,10 +25,11 @@ public class StartBeforeEndDateValidator implements ConstraintValidator<StartBef
         if (object == null) return true;
 
         return switch (object) {
-            case CreateSupportProgramRequest request -> {
+            case SupportProgramRequest request -> {
                 if (request.getStartDate() == null || request.getEndDate() == null) {
                     yield true;
                 }
+
                 yield request.getEndDate().isAfter(request.getStartDate());
             }
             case CreateProgramSessionRequest request -> {

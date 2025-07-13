@@ -1,8 +1,14 @@
 package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSupportProgramRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 
+import java.util.List;
+
 public interface SupportProgramService {
-    SupportProgramResponse createSupportProgram(CreateSupportProgramRequest request);
+    SupportProgramResponse createSupportProgram(SupportProgramRequest request);
+    SupportProgramResponse getSupportProgramById(Integer id);
+    List<SupportProgramResponse> getAllSupportPrograms();
+    void deleteSupportProgram(Integer id);
+    SupportProgramResponse updateSupportProgram(Integer id, SupportProgramRequest request);
 }

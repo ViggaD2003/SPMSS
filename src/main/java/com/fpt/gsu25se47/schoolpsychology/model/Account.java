@@ -51,6 +51,18 @@ public class Account extends Auditable implements UserDetails {
 
     private LocalDate dob;
 
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Counselor counselor;
+
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Teacher teacher;
+
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Student student;
+
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Guardian guardian;
+
     @OneToMany(mappedBy = "hostBy")
     private List<ProgramSession> programSessions = new ArrayList<>();
 

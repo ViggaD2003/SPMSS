@@ -7,11 +7,10 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @StartBeforeEndDateConstraint
-public class CreateSupportProgramRequest {
+public class SupportProgramRequest {
 
     private String name;
 
@@ -33,5 +32,5 @@ public class CreateSupportProgramRequest {
 
     private Integer categoryId;
 
-    private List<Integer> sessionIds;
+//    private List<Integer> sessionIds;
 }
