@@ -13,6 +13,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.RecordStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import com.fpt.gsu25se47.schoolpsychology.utils.DuplicateValidationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,16 +30,21 @@ import java.time.LocalDate;
 public class AppointmentRecordServiceImpl implements AppointmentRecordService {
 
     private final AppointmentRecordRepository appointmentRecordRepository;
+//    private final AppointmentRecordMapper appointmentRecordMapper;
     private final AppointmentRecordMapper appointmentRecordMapper;
     private final DuplicateValidationUtils duplicateValidationUtils;
-    private final MentalEvaluationServiceImpl mentalEvaluationService;
+    private final MentalEvaluationService mentalEvaluationService;
     private final AppointmentRepository appointmentRepository;
 
     @Override
     @Transactional
     public AppointmentRecordResponse createAppointmentRecord(CreateAppointmentRecordRequest request) {
 
-        AppointmentRecord appointmentRecord = appointmentRecordMapper.toAppointmentRecord(request);
+        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Appointment not found with ID: " + request.getAppointmentId()));
+
+        AppointmentRecord appointmentRecord = appointmentRecordMapper.toAppointmentRecord(request, appointment);
 
         AppointmentRecord savedAppointmentRecord = appointmentRecordRepository.save(appointmentRecord);
 
@@ -66,9 +72,9 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
                     });
         }
 
-        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Appointment not found with ID: " + request.getAppointmentId()));
+//        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+//                        "Appointment not found with ID: " + request.getAppointmentId()));
 
         if (request.getStatus() != RecordStatus.CANCELED) {
             appointment.setStatus(AppointmentStatus.COMPLETED);

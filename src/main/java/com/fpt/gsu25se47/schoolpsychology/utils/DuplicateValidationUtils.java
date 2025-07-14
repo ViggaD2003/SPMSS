@@ -38,4 +38,17 @@ public class DuplicateValidationUtils {
             }
         }
     }
+
+    public void validateStudentCodes(List<String> studentCodes) {
+        Set<String> seenStudentCodes = new HashSet<>();
+
+        for (String sd : studentCodes) {
+            if (!seenStudentCodes.add(sd)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Duplicate studentCodes found: " + sd
+                );
+            }
+        }
+    }
 }

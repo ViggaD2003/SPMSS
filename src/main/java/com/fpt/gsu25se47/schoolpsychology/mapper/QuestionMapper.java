@@ -2,23 +2,16 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.QuestionResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Question;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-@RequiredArgsConstructor
-public class QuestionMapper {
+@Mapper(componentModel = "spring")
+public interface QuestionMapper {
 
-    private final CategoryMapper categoryMapper;
-
-    public QuestionResponse mapToQuestionResponse(Question question) {
-        return QuestionResponse.builder()
-                .questionId(question.getId())
-                .text(question.getText())
-                .questionType(question.getQuestionType().name())
-                .category(categoryMapper.toResponse(question.getCategory()))
-                .description(question.getDescription())
-                .moduleType(question.getModuleType().name())
-                .build();
-    }
+    @Mapping(target = "questionId", source = "question.id")
+    @Mapping(target = "createdAt", source = "question.createdDate")
+    @Mapping(target = "updatedAt", source = "question.updatedDate")
+    @Mapping(target = "isRequired", source = "question.required")
+    @Mapping(target = "isActive", source = "question.active")
+    QuestionResponse mapToQuestionResponse(Question question);
 }

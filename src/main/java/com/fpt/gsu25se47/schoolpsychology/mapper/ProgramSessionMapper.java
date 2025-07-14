@@ -25,44 +25,40 @@ public interface ProgramSessionMapper {
                                     SupportProgram supportProgram,
                                     Account hostBy);
 
-    @Mapping(target = "supportProgramId", expression = "java(mapSupportProgramId(programSession))")
-    @Mapping(target = "hostBy", expression = "java(setAccountDto(programSession.getHostBy(), teacher, counselor))")
+    @Mapping(target = "supportProgramId", source = "program.id")
+    @Mapping(target = "hostBy", expression = "java(setAccountDto(programSession.getHostBy()))")
     ProgramSessionResponse toProgramSessionResponse(ProgramSession programSession,
-                                                    @Context Teacher teacher,
-                                                    @Context Counselor counselor);
+                                                    @Context Account account);
 
-    default Integer mapSupportProgramId(ProgramSession programSession) {
-        return programSession.getId();
-    }
-
-    default AccountDto setAccountDto(Account account, Teacher teacher, Counselor counselor) {
+    default AccountDto setAccountDto(Account account) {
 
         if (account != null) {
             switch (account.getRole()) {
                 case TEACHER -> {
-                    return getTeacherDto(account, teacher);
+                    return getTeacherDto(account);
                 }
                 case COUNSELOR -> {
-                    return getCounselorDto(account, counselor);
+                    return getCounselorDto(account);
                 }
             }
         }
         return null;
     }
 
-    private static CounselorDto getCounselorDto(Account account, Counselor counselor) {
+    private static CounselorDto getCounselorDto(Account account) {
+        Counselor counselor = account.getCounselor();
         CounselorDto counselorDto = new CounselorDto();
         counselorDto.setCounselorCode(counselor.getCounselorCode());
         counselorDto.setLinkMeet(counselor.getLinkMeet());
         counselorDto.setGender(account.getGender());
         counselorDto.setEmail(account.getEmail());
         counselorDto.setFullName(account.getFullName());
-        counselorDto.setPhoneNumber(counselorDto.getPhoneNumber());
-
+        counselorDto.setPhoneNumber(account.getPhoneNumber());
         return counselorDto;
     }
 
-    private static TeacherDto getTeacherDto(Account account, Teacher teacher) {
+    private static TeacherDto getTeacherDto(Account account) {
+        Teacher teacher = account.getTeacher();
         TeacherDto teacherDto = new TeacherDto();
         teacherDto.setGender(account.getGender());
         teacherDto.setEmail(account.getEmail());

@@ -2,20 +2,15 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class SurveyMapper {
+@Mapper(componentModel = "spring", uses = QuestionMapper.class)
+public interface SurveyMapper {
 
-    public SurveyResponse mapToSurveyResponse(Survey survey) {
-
-        return SurveyResponse.builder()
-                .surveyId(survey.getId())
-                .name(survey.getName())
-                .description(survey.getDescription())
-                .surveyCode(survey.getSurveyCode())
-                .isRequired(survey.getIsRequired())
-                .recurringCycle(survey.getRecurringCycle())
-                .build();
-    }
+    @Mapping(target = "surveyId", source = "survey.id")
+    @Mapping(target = "updatedAt", source = "survey.updatedDate")
+    @Mapping(target = "createdAt", source = "survey.createdDate")
+    @Mapping(target = "questions", source = "questions")
+    SurveyResponse mapToSurveyResponse(Survey survey);
 }

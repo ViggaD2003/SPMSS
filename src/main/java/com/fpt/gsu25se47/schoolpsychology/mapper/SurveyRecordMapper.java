@@ -1,82 +1,38 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordResponse;
-import com.fpt.gsu25se47.schoolpsychology.model.AnswerRecord;
-import com.fpt.gsu25se47.schoolpsychology.model.Student;
-import com.fpt.gsu25se47.schoolpsychology.model.Survey;
-import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
-import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class SurveyRecordMapper {
+@Mapper(componentModel = "spring",
+        imports = {LocalDate.class},
+        uses = {SurveyMapper.class,
+                AnswerRecordMapper.class,
+                ClassMapper.class,
+                StudentMapper.class,
+                SurveyMapper.class})
+public interface SurveyRecordMapper {
 
-    private final StudentRepository studentRepository;
-    private final SurveyRepository surveyRepository;
-    private final AnswerRecordMapper answerRecordMapper;
-    private final StudentMapper studentMapper;
-    private final SurveyMapper surveyMapper;
-    private final AccountService accountService;
+    @Mapping(target = "survey", source = "survey")
+    @Mapping(target = "completedAt", expression = "java(LocalDate.now())")
+    @Mapping(target = "answerRecords", source = "answerRecords")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "account", source = "account")
+    @Mapping(target = "status", source = "dto.status")
+    SurveyRecord mapToSurveyRecord(CreateSurveyRecordDto dto,
+                                   Survey survey,
+                                   Account account,
+                                   List<AnswerRecord> answerRecords);
 
-    public SurveyRecord mapToSurveyRecord(CreateSurveyRecordDto dto) {
-
-        Survey survey = surveyRepository.findById(dto.getSurveyId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Survey not found with ID: " + dto.getSurveyId()));
-
-        List<AnswerRecord> answerRecords = dto.getAnswerRecordRequests()
-                .stream()
-                .map(t -> {
-                    var createAnswerRecordRequest = CreateAnswerRecordRequest.builder()
-                            .submitAnswerRecordRequests(t)
-                            .build();
-                    return answerRecordMapper.mapToAnswerRecord(createAnswerRecordRequest);
-                })
-                .toList();
-
-        return SurveyRecord.builder()
-                .survey(survey)
-                .answerRecords(answerRecords)
-                .noteSuggest(dto.getNoteSuggest())
-                .level(dto.getLevel())
-                .status(dto.getStatus())
-                .account(accountService.getCurrentAccount())
-                .completedAt(LocalDate.now())
-                .totalScore(dto.getTotalScore())
-                .build();
-    }
-
-    public SurveyRecordResponse mapToSurveyRecordResponse(SurveyRecord surveyRecord) {
-
-        List<AnswerRecordResponse> answerRecordResponses = surveyRecord.getAnswerRecords()
-                .stream()
-                .map(answerRecordMapper::mapToAnswerRecordResponse)
-                .toList();
-
-        Student student = studentRepository.findById(surveyRecord.getAccount().getId()).get();
-
-        return SurveyRecordResponse.builder()
-                .id(surveyRecord.getId())
-                .survey(surveyMapper.mapToSurveyResponse(surveyRecord.getSurvey()))
-                .answerRecords(answerRecordResponses)
-                .totalScore(surveyRecord.getTotalScore())
-                .level(surveyRecord.getLevel().name())
-                .noteSuggest(surveyRecord.getNoteSuggest())
-                .completedAt(surveyRecord.getCompletedAt())
-                .studentDto(studentMapper.mapToStudentDto(student))
-                .status(surveyRecord.getStatus().name())
-                .build();
-    }
+    @Mapping(target = "studentDto", source = "student")
+    @Mapping(target = "id", source = "surveyRecord.id")
+    @Mapping(target = "answerRecords", source = "surveyRecord.answerRecords")
+    @Mapping(target = "survey", source = "surveyRecord.survey")
+    SurveyRecordResponse mapToSurveyRecordResponse(SurveyRecord surveyRecord,
+                                                   Student student);
 }
