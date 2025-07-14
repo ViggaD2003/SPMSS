@@ -37,6 +37,8 @@ public class SurveyRecord extends Auditable {
 
     private LocalDate completedAt;
 
+    private Integer round;
+
     @ManyToOne
     @JoinColumn(name = "survey_id", nullable = false)
     private Survey survey;

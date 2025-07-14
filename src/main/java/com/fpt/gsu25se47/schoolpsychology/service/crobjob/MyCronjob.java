@@ -85,4 +85,37 @@ public class MyCronjob {
 
         appointmentRepository.saveAll(appointments);
     }
+
+
+    @Scheduled(cron = "0 0 0 * * ?") // chạy mỗi ngày lúc 00:00
+    public void processRecurringSurveys() {
+        List<Survey> recurringSurveys = surveyRepository.findAllRecurringSurveys();
+
+        LocalDate today = LocalDate.now();
+
+        for (Survey survey : recurringSurveys) {
+            if (shouldOpenNewRound(survey, today)) {
+                survey.setRound(survey.getRound() + 1);
+                survey.setStartDate(today);
+                survey.setEndDate(today.plusDays(7)); // hoặc tuỳ theo recurring_cycle
+                survey.setStatus(SurveyStatus.PUBLISHED);
+                surveyRepository.save(survey);
+
+                System.out.printf("✔ Mở survey mới: id=%d, round=%d%n", survey.getId(), survey.getRound());
+            }
+        }
+    }
+
+    private boolean shouldOpenNewRound(Survey survey, LocalDate today) {
+        if (!survey.getIsRecurring()) return false;
+        if (survey.getStartDate() == null) return true;
+
+        return switch (survey.getRecurringCycle()) {
+            case "DAILY" -> survey.getStartDate().isBefore(today);
+            case "WEEKLY" -> survey.getStartDate().plusWeeks(1).isBefore(today);
+            case "MONTHLY" -> survey.getStartDate().plusMonths(1).isBefore(today);
+            default -> false;
+        };
+    }
 }
+

@@ -34,6 +34,8 @@ public class Survey extends Auditable {
 
     private Boolean isRecurring;
 
+    private Integer round;
+
     private String surveyCode;
 
     private String recurringCycle; // e.g., "WEEKLY", "MONTHLY", etc.

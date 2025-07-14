@@ -66,6 +66,7 @@ public class SurveyServiceImpl implements SurveyService {
                 survey.setStatus(SurveyStatus.DRAFT);
             }
 
+            survey.setRound(1);
             survey.setAccount(account);
             surveyRepository.save(survey);
 
