@@ -46,6 +46,9 @@ public class Question extends Auditable {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
 
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnswerRecord> answerRecords = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "survey_id")
     private Survey survey;

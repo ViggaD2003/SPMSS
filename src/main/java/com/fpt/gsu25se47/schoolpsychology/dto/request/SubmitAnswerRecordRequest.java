@@ -7,5 +7,6 @@ import lombok.Data;
 @Builder
 public class SubmitAnswerRecordRequest {
     private Integer answerId;
+    private Integer questionId;
     private boolean isSkipped;
 }

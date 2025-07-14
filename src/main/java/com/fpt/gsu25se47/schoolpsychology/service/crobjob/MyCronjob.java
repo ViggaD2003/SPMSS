@@ -34,7 +34,7 @@ public class MyCronjob {
 
     private final AppointmentRecordService appointmentRecordService;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 */12 * * *")
     public void updateSurveyStatus() {
         LocalDate now = LocalDate.now();
 

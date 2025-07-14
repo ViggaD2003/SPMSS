@@ -31,6 +31,10 @@ public class AnswerRecord {
     private AppointmentRecord appointmentRecord;
 
     @ManyToOne
+    @JoinColumn(name = "question_id", referencedColumnName = "id")
+    private Question question;
+
+    @ManyToOne
     @JoinColumn(name = "program_record_id", referencedColumnName = "id")
     private ProgramRecord programRecord;
 
