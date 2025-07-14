@@ -175,16 +175,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new RuntimeException("Slot is CLOSED");
         }
 
-        LocalTime officeStart = LocalTime.of(8, 0);
-        LocalTime officeEnd = LocalTime.of(18, 0);
-
-        LocalTime appointmentStart = request.getStartDateTime().toLocalTime();
-        LocalTime appointmentEnd = request.getEndDateTime().toLocalTime();
-
-        if (appointmentStart.isBefore(officeStart) || appointmentEnd.isAfter(officeEnd)) {
-            throw new RuntimeException("Appointment must be within office hours (08:00 - 18:00)");
-        }
-
         return Appointment.builder()
                 .slot(slot)
                 .bookedBy(bookedBy)

@@ -14,6 +14,9 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
+ARG GEMINI_KEY
+ENV GEMINI_KEY=$GEMINI_KEY
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

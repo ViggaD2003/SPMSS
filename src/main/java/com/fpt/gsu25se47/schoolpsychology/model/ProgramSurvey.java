@@ -27,6 +27,12 @@ public class ProgramSurvey extends Auditable {
     @Enumerated(EnumType.STRING)
     private SurveyType surveyType;
 
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "description")
+    private String description;
+
     @ManyToOne
     @JoinColumn(name = "program_id", nullable = false)
     private SupportProgram program;

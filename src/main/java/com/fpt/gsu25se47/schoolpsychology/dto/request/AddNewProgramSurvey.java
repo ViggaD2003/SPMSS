@@ -8,7 +8,8 @@ import java.util.List;
 public record AddNewProgramSurvey(
         @NotBlank(message = "Survey type must not be blank")
         String surveyType,
-
+        String name,
+        String description,
         @NotEmpty(message = "Question list must not be empty")
         @Valid
         List<AddNewQuestionDto> questionDtos

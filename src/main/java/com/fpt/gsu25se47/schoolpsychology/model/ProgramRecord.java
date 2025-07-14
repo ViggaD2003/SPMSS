@@ -24,7 +24,7 @@ public class ProgramRecord extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String decription;
+    private String description;
 
     private String summary;
 

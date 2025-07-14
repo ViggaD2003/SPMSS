@@ -15,7 +15,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     @Query("SELECT s FROM Survey s WHERE s.startDate = :date AND s.status = 'DRAFT'")
     List<Survey> findByStartDateAndStatusDraft(LocalDate date);
 
-    @Query("SELECT s FROM Survey s WHERE s.endDate = :date AND s.status = 'PUBLISHED'")
+    @Query("SELECT s FROM Survey s WHERE s.endDate <= :date AND s.status = 'PUBLISHED'")
     List<Survey> findByEndDateAndStatusPublished(LocalDate date);
 
     @Query("""
@@ -24,7 +24,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     JOIN Student st ON st.account.id = :accountId
     WHERE sr.id IS NULL
       AND s.status = 'PUBLISHED'
-      AND st.isEnableSurvey = true
+      AND st.isEnableSurvey = false
 """)
     List<Survey> findUnansweredExpiredSurveysByAccountId(@Param("accountId") Integer accountId);
 

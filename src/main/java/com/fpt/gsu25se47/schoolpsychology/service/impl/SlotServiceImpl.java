@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,28 @@ public class SlotServiceImpl implements SlotService {
                 .orElseThrow(() -> new IllegalArgumentException("Unauthorized"));
 
         for (AddSlotRequest req : requests) {
+            if (req.getSlotType().equals(SlotUsageType.APPOINTMENT.name())) {
+                LocalTime officeStart = LocalTime.of(8, 0);
+                LocalTime officeEnd = LocalTime.of(18, 0);
+
+                LocalTime slotStart = req.getStartDateTime().toLocalTime();
+                LocalTime slotEnd = req.getEndDateTime().toLocalTime();
+
+                if (slotStart.isBefore(officeStart) || slotEnd.isAfter(officeEnd)) {
+                    throw new RuntimeException("Slot must be within office hours (08:00 - 18:00)");
+                }
+            } else if (req.getSlotType().equals(SlotUsageType.PROGRAM.name())) {
+                LocalTime officeStart = LocalTime.of(18, 0);
+                LocalTime officeEnd = LocalTime.of(21, 30);
+
+                LocalTime slotStart = req.getStartDateTime().toLocalTime();
+                LocalTime slotEnd = req.getEndDateTime().toLocalTime();
+
+                if (slotStart.isBefore(officeStart) || slotEnd.isAfter(officeEnd)) {
+                    throw new RuntimeException("Slot must be within office hours (18:00 - 21:30)");
+                }
+            }
+
             List<Slot> conflicts = slotRepository.findConflictingSlots(
                     account.getId(),
                     req.getStartDateTime(),
@@ -76,6 +99,7 @@ public class SlotServiceImpl implements SlotService {
                     "conflicts", conflictErrors
             ));
         }
+
 
         slotRepository.saveAll(slotsToCreate);
         return ResponseEntity.ok("Khởi tạo slot thành công!");
@@ -146,8 +170,7 @@ public class SlotServiceImpl implements SlotService {
                 validateTeacherExists(account.getId());
                 slots = slotRepository.findAllByHostedById(account.getId());
             }
-            default ->
-                slots = slotRepository.findAll();
+            default -> slots = slotRepository.findAll();
         }
 
         List<SlotResponse> responses = slots.stream()

@@ -101,6 +101,8 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
         return ProgramSurvey.builder()
                 .surveyType(SurveyType.valueOf(addNewProgramSurvey.surveyType()))
                 .program(supportProgram)
+                .name(addNewProgramSurvey.name())
+                .description(addNewProgramSurvey.description())
                 .questions(addNewProgramSurvey.questionDtos().stream().map(this::mapToQuestion).toList())
                 .build();
     }
@@ -130,6 +132,10 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
         return ProgramSurveyResponse.builder()
                 .id(programSurvey.getId())
                 .surveyType(programSurvey.getSurveyType().name())
+                .name(programSurvey.getName())
+                .description(programSurvey.getDescription())
+                .createdAt(programSurvey.getCreatedDate())
+                .updatedAt(programSurvey.getUpdatedDate())
                 .questions(programSurvey.getQuestions().stream().map(this::mapToQuestionResponse).toList())
                 .build();
     }
