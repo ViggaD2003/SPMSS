@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class StartBeforeEndDateValidator implements ConstraintValidator<StartBeforeEndDateConstraint, Object> {
+public class    StartBeforeEndDateValidator implements ConstraintValidator<StartBeforeEndDateConstraint, Object> {
 
     private final SlotRepository slotRepository;
     private final ProgramSessionRepository programSessionRepository;

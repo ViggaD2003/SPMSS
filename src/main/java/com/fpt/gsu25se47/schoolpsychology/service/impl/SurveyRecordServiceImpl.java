@@ -89,7 +89,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     answerRecords);
 
             surveyRecord.getAnswerRecords().forEach(ar -> ar.setSurveyRecord(surveyRecord));
-
+            surveyRecord.setRound(survey.getRound());
             SurveyRecord surveyRecordCreated = surveyRecordRepository.save(surveyRecord);
 
             Student student = getStudent(surveyRecordCreated.getAccount().getId());
