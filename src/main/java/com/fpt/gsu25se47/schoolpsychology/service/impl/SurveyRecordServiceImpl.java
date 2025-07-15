@@ -1,6 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordResponse;
@@ -11,6 +10,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AnswerRecordService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
 import com.fpt.gsu25se47.schoolpsychology.utils.DuplicateValidationUtils;
@@ -39,6 +39,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     private final DuplicateValidationUtils duplicateValidationUtils;
     private final MentalEvaluationService mentalEvaluationService;
     private final AccountService accountService;
+    private final AnswerRecordService answerRecordService;
 
     @Override
     @Transactional
@@ -68,17 +69,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
             List<AnswerRecord> answerRecords = dto.getAnswerRecordRequests()
                     .stream()
-                    .map(t -> {
-                        var createAnswerRecordRequest = CreateAnswerRecordRequest.builder()
-                                .submitAnswerRecordRequests(t)
-                                .build();
-                        var answer = answerRepository.findById(
-                                        t.getAnswerId())
-                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "Answer not found with Id: " + t.getAnswerId())
-                                );
-                        return answerRecordMapper.mapToAnswerRecord(createAnswerRecordRequest, answer);
-                    })
+                    .map(answerRecordService::createAnswerRecord)
                     .toList();
 
             duplicateValidationUtils.validateAnswerIds(dto.getAnswerRecordRequests());
