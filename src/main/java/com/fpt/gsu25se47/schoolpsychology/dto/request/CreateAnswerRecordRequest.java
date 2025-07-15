@@ -7,5 +7,5 @@ import lombok.Data;
 @Builder
 public class CreateAnswerRecordRequest {
     private SubmitAnswerRecordRequest submitAnswerRecordRequests;
-    private int surveyRecordId;
+//    private int surveyRecordId;
 }
