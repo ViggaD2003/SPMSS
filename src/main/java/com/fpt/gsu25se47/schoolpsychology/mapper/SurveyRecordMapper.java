@@ -29,10 +29,10 @@ public interface SurveyRecordMapper {
                                    Account account,
                                    List<AnswerRecord> answerRecords);
 
-    @Mapping(target = "studentDto", source = "student")
     @Mapping(target = "id", source = "surveyRecord.id")
     @Mapping(target = "answerRecords", source = "surveyRecord.answerRecords")
     @Mapping(target = "survey", source = "surveyRecord.survey")
+    @Mapping(target = "studentDto", source = "student", qualifiedByName = "mapStudentWithoutEvaluations")
     SurveyRecordResponse mapToSurveyRecordResponse(SurveyRecord surveyRecord,
                                                    Student student);
 }

@@ -1,11 +1,11 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAnswerRecordRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Answer;
 import com.fpt.gsu25se47.schoolpsychology.model.AnswerRecord;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.fpt.gsu25se47.schoolpsychology.model.Question;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", uses = QuestionMapper.class)
 public interface AnswerRecordMapper {
@@ -14,12 +14,17 @@ public interface AnswerRecordMapper {
     @Mapping(target = "answerResponse", source = "answerRecord.answer")
     AnswerRecordResponse mapToAnswerRecordResponse(AnswerRecord answerRecord);
 
-    @Mapping(target = "surveyRecord", ignore = true)
-    @Mapping(target = "programRecord", ignore = true)
-    @Mapping(target = "isSkipped", source = "request.submitAnswerRecordRequests.skipped")
-    @Mapping(target = "appointmentRecord", ignore = true)
-    @Mapping(target = "answer", source = "answer")
     @Mapping(target = "id", ignore = true)
-    AnswerRecord mapToAnswerRecord(CreateAnswerRecordRequest request,
-                                   Answer answer);
+    @BeanMapping(builder = @Builder(disableBuilder = true))
+    AnswerRecord mapToAnswerRecord(SubmitAnswerRecordRequest request,
+                                   @Context Answer answer,
+                                   @Context Question question);
+
+    @AfterMapping
+    default void setAnswerAndQuestion(@MappingTarget AnswerRecord answerRecord,
+                                      @Context Answer answer,
+                                      @Context Question question) {
+        answerRecord.setAnswer(answer);
+        answerRecord.setQuestion(question);
+    }
 }
