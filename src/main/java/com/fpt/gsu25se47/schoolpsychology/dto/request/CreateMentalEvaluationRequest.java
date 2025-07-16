@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -18,7 +19,7 @@ public class CreateMentalEvaluationRequest {
     private Integer evaluationRecordId;
 
     @NotNull
-    private Integer totalScore;
+    private BigDecimal totalScore;
 
     @NotNull
     private LocalDate date;

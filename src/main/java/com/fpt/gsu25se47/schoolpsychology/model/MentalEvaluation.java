@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -26,7 +27,7 @@ public class MentalEvaluation {
     @Enumerated(EnumType.STRING)
     private EvaluationType evaluationType;
 
-    private Integer totalScore;
+    private BigDecimal totalScore;
 
     private LocalDate date;
 
