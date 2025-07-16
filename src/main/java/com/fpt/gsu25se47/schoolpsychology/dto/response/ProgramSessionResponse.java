@@ -14,7 +14,7 @@ public class ProgramSessionResponse {
 
     private SlotResponse slot;
 
-    private AccountDto hostBy;
+//    private AccountDto hostBy;
 
     private String topic;
 

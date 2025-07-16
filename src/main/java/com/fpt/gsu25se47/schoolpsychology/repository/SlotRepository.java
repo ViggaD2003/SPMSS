@@ -34,5 +34,19 @@ public interface SlotRepository extends JpaRepository<Slot, Integer> {
             @Param("newEnd") LocalDateTime newEnd
     );
 
+    @Query("""
+                SELECT s FROM Slot s
+                WHERE s.hostedBy.id = :hostId
+                  AND FUNCTION('DATE_FORMAT', s.startDateTime, '%Y-%m-%d %H:%i') =
+                      FUNCTION('DATE_FORMAT', :startDateTime, '%Y-%m-%d %H:%i')
+                  AND FUNCTION('DATE_FORMAT', s.endDateTime, '%Y-%m-%d %H:%i') =
+                      FUNCTION('DATE_FORMAT', :endDateTime, '%Y-%m-%d %H:%i')
+            """)
+    List<Slot> findExactSlotByStartAndEndMinute(
+            @Param("hostId") Integer hostId,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
+    );
+
 
 }

@@ -63,8 +63,8 @@ public class Account extends Auditable implements UserDetails {
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private Guardian guardian;
 
-    @OneToMany(mappedBy = "hostBy")
-    private List<ProgramSession> programSessions = new ArrayList<>();
+//    @OneToMany(mappedBy = "hostBy")
+//    private List<ProgramSession> programSessions = new ArrayList<>();
 
     @OneToMany(mappedBy = "account")
     private List<ProgramRegistration> programRegistrations = new ArrayList<>();

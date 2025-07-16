@@ -1,4 +1,4 @@
-package com.fpt.gsu25se47.schoolpsychology.utils;
+package com.fpt.gsu25se47.schoolpsychology.validations;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.ReportCategoryRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class DuplicateValidationUtils {
+public class DuplicateValidator {
 
     public void validateAnswerIds(List<SubmitAnswerRecordRequest> submitAnswerRecordRequests) {
         Set<Integer> seenAnswerIds = new HashSet<>();
