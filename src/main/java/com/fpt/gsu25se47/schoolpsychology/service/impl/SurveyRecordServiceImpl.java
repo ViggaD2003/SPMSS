@@ -72,7 +72,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .map(answerRecordService::createAnswerRecord)
                     .toList();
 
-            duplicateValidator.validateAnswerIds(dto.getAnswerRecordRequests());
+//            duplicateValidator.validateAnswerIds(dto.getAnswerRecordRequests());
 
             SurveyRecord surveyRecord = surveyRecordMapper.mapToSurveyRecord(dto,
                     survey,
