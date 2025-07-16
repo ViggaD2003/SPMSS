@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -16,7 +17,7 @@ public class MentalEvaluationResponse {
 
     private Integer evaluationRecordId;
 
-    private Integer totalScore;
+    private BigDecimal totalScore;
 
     private LocalDate date;
 

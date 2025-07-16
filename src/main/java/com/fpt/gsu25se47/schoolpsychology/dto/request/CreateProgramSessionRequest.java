@@ -1,20 +1,14 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramSessionStatus;
-import com.fpt.gsu25se47.schoolpsychology.validations.StartBeforeEndDateConstraint;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
-@StartBeforeEndDateConstraint
 public class CreateProgramSessionRequest {
 
-    private Integer slotId;
-
     private Integer supportProgramId;
-
-    private Integer hostById;
 
     private String topic;
 
@@ -23,4 +17,6 @@ public class CreateProgramSessionRequest {
     private ProgramSessionStatus status;
 
     private LocalDate date;
+
+    private CreateSlotRequest createSlotRequest;
 }

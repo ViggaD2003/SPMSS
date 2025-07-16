@@ -29,9 +29,9 @@ public class ProgramSession {
     @JoinColumn(name = "program_id", nullable = false)
     private SupportProgram program;
 
-    @ManyToOne
-    @JoinColumn(name = "host_by", nullable = false)
-    private Account hostBy;
+//    @ManyToOne
+//    @JoinColumn(name = "host_by", nullable = false)
+//    private Account hostBy;
 
     private String topic;
 

@@ -14,7 +14,7 @@ import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
-import com.fpt.gsu25se47.schoolpsychology.utils.DuplicateValidationUtils;
+import com.fpt.gsu25se47.schoolpsychology.validations.DuplicateValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +32,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     private final AppointmentRecordRepository appointmentRecordRepository;
 //    private final AppointmentRecordMapper appointmentRecordMapper;
     private final AppointmentRecordMapper appointmentRecordMapper;
-    private final DuplicateValidationUtils duplicateValidationUtils;
+    private final DuplicateValidator duplicateValidator;
     private final MentalEvaluationService mentalEvaluationService;
     private final AppointmentRepository appointmentRepository;
 
@@ -50,7 +50,7 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
 
         if (request.getReportCategoryRequests() != null) {
 
-            duplicateValidationUtils.validateCategoryIds(request.getReportCategoryRequests());
+            duplicateValidator.validateCategoryIds(request.getReportCategoryRequests());
 
             int evaluationRecordId = appointmentRecord.getId();
             LocalDate createdDate = appointmentRecord.getCreatedDate().toLocalDate();

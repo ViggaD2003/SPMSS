@@ -3,12 +3,13 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateProgramSessionRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramSessionResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ProgramSessionMapper;
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.ProgramSession;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ProgramSessionService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
+import com.fpt.gsu25se47.schoolpsychology.validations.SlotValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProgramSessionServiceImpl implements ProgramSessionService {
 
+    private final SlotService slotService;
     private final ProgramSessionRepository programSessionRepository;
     private final SlotRepository slotRepository;
     private final SupportProgramRepository supportProgramRepository;
@@ -35,14 +37,16 @@ public class ProgramSessionServiceImpl implements ProgramSessionService {
 
         SupportProgram supportProgram = supportProgramRepository.findById(request.getSupportProgramId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Support program not found with ID: " + request.getSupportProgramId()));
 
-        Slot slot = slotRepository.findById(request.getSlotId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found with ID: " + request.getSupportProgramId()));
+        SlotValidator.validateSlotWithinSession(request.getCreateSlotRequest().getStartDateTime(),
+                request.getCreateSlotRequest().getEndDateTime(),
+                request.getDate());
 
-        Account account = accountRepository.findById(request.getHostById()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found with ID: " + request.getHostById()));
+        Slot slot = slotService.createSlot(request.getCreateSlotRequest());
 
-        ProgramSession programSession = programSessionMapper.toProgramSession(request, slot, supportProgram, account);
+        ProgramSession programSession = programSessionMapper.toProgramSession(request, slot, supportProgram);
 
         return programSessionMapper.toProgramSessionResponse(
-                programSessionRepository.save(programSession), account);
+                programSessionRepository.save(programSession));
     }
 
     @Override
@@ -51,8 +55,7 @@ public class ProgramSessionServiceImpl implements ProgramSessionService {
         List<ProgramSession> programSessions = programSessionRepository.findAllByProgramId(supportProgramId);
 
         return programSessions.stream()
-                .map(t -> programSessionMapper.toProgramSessionResponse(t,
-                        t.getHostBy()))
+                .map(programSessionMapper::toProgramSessionResponse)
                 .toList();
     }
 
@@ -61,7 +64,7 @@ public class ProgramSessionServiceImpl implements ProgramSessionService {
 
         return programSessionRepository.findAll()
                 .stream()
-                .map(t -> programSessionMapper.toProgramSessionResponse(t, t.getHostBy()))
+                .map(programSessionMapper::toProgramSessionResponse)
                 .toList();
     }
 
@@ -74,7 +77,7 @@ public class ProgramSessionServiceImpl implements ProgramSessionService {
                         "Program session not found with ID: " + id
                 ));
 
-        return programSessionMapper.toProgramSessionResponse(programSession, programSession.getHostBy());
+        return programSessionMapper.toProgramSessionResponse(programSession);
     }
 
     @Override

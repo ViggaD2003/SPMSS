@@ -6,29 +6,29 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.CounselorDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramSessionResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = SlotMapper.class)
 public interface ProgramSessionMapper {
 
     @Mappings({
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "slot", source = "slot"),
             @Mapping(target = "program", source = "supportProgram"),
-            @Mapping(target = "hostBy", source = "hostBy"),
             @Mapping(target = "description", source = "request.description"),
             @Mapping(target = "status", source = "request.status")
     })
     ProgramSession toProgramSession(CreateProgramSessionRequest request,
                                     Slot slot,
-                                    SupportProgram supportProgram,
-                                    Account hostBy);
+                                    SupportProgram supportProgram);
 
     @Mapping(target = "supportProgramId", source = "program.id")
-    @Mapping(target = "hostBy", expression = "java(setAccountDto(programSession.getHostBy()))")
-    ProgramSessionResponse toProgramSessionResponse(ProgramSession programSession,
-                                                    @Context Account account);
+//    @Mapping(target = "slot.fullName", expression = "java(setAccountDto(programSession.getSlot().getHostedBy()).getFullName())")
+//    @Mapping(target = "slot.roleName", expression = "java(setAccountDto(programSession.getSlot().getHostedBy()).getFullName())")
+    ProgramSessionResponse toProgramSessionResponse(ProgramSession programSession);
 
     default AccountDto setAccountDto(Account account) {
 

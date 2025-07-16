@@ -27,7 +27,11 @@ public class ProgramSessionController {
 
     @Operation(
             summary = "Create a new program session",
-            description = "Creates a new program session for a specific support program. " +
+            description = "Create a new program session for a specific support program.\n" +
+                    "Create a slot by this session, default values for slot fields if not pass the fields params: \n" +
+                    "SlotName  : Slot_the_time_created \n" +
+                    "Status (type: SlotStatus)  : PUBLISHED ( DRAFT, PUBLISHED, CLOSED ) \n" +
+                    "Type (type: SlotUsageType)  : PROGRAM ( APPOINTMENT, PROGRAM )\n" +
                     "Role: COUNSELOR, MANAGER"
     )
     @ApiResponses(value = {

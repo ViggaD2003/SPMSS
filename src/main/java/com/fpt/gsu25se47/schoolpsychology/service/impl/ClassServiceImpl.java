@@ -10,7 +10,7 @@ import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.TeacherRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
-import com.fpt.gsu25se47.schoolpsychology.utils.DuplicateValidationUtils;
+import com.fpt.gsu25se47.schoolpsychology.validations.DuplicateValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class ClassServiceImpl implements ClassService {
     private final ClassRepository classRepository;
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
-    private final DuplicateValidationUtils duplicateValidationUtils;
+    private final DuplicateValidator duplicateValidator;
 
     @Override
     public ClassDto createClass(ClassRequest request) {
@@ -40,7 +40,7 @@ public class ClassServiceImpl implements ClassService {
             );
         }
 
-        duplicateValidationUtils.validateStudentCodes(request.getStudentCodes());
+        duplicateValidator.validateStudentCodes(request.getStudentCodes());
 
         List<Student> students;
 
