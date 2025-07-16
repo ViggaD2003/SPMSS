@@ -3,14 +3,12 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAnswerDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewProgramSurvey;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewQuestionDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramSurveyResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.QuestionResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.ProgramSurveyRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.SubTypeRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SupportProgramRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ProgramSurveyService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +22,7 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
 
     private final ProgramSurveyRepository programSurveyRepository;
 
-    private final CategoryRepository categoryRepository;
+    private final SubTypeRepository subTypeRepository;
 
     private final SupportProgramRepository supportProgramRepository;
 
@@ -108,10 +106,12 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
     }
 
     private Question mapToQuestion(AddNewQuestionDto dto) {
+        SubType subType = subTypeRepository.findById(dto.getSubTypeId()).orElseThrow(() ->
+                new RuntimeException("SubType not found"));
+
         return Question.builder()
                 .answers(dto.getAnswers().stream().map(this::mapToAnswer).toList())
-                .category(categoryRepository.findById(dto.getCategoryId())
-                        .orElseThrow(() -> new IllegalArgumentException("Category not found")))
+                .subType(subType)
                 .description(dto.getDescription())
                 .text(dto.getText())
                 .isActive(true)
@@ -151,8 +151,15 @@ public class ProgramSurveyServiceImpl implements ProgramSurveyService {
                 .isActive(question.isActive())
                 .isRequired(question.isRequired())
                 .questionType(question.getQuestionType().name())
-                .category(mapToCategoryResponse(question.getCategory()))
+                .subType(mapToResponse(question.getSubType()))
                 .answers(question.getAnswers().stream().map(this::mapToAnswerResponse).toList())
+                .build();
+    }
+
+    private SubTypeResponse mapToResponse(SubType subType) {
+        return SubTypeResponse.builder()
+                .id(subType.getId())
+                .codeName(subType.getCodeName())
                 .build();
     }
 

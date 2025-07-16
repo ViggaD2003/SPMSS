@@ -3,10 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAnswerDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewQuestionDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AnswerResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.QuestionResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
@@ -19,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +28,7 @@ public class SurveyServiceImpl implements SurveyService {
 
     private final SurveyRepository surveyRepository;
 
-    private final CategoryRepository categoryRepository;
+    private final SubTypeRepository subTypeRepository;
 
     private final AccountRepository accountRepository;
 
@@ -199,9 +195,12 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     private Question mapToQuestion(AddNewQuestionDto dto) {
+        SubType subType = subTypeRepository.findById(dto.getSubTypeId()).orElseThrow(() ->
+                new RuntimeException("SubType not found"));
+
         return Question.builder()
                 .answers(dto.getAnswers().stream().map(this::mapToAnswer).toList())
-                .category(categoryRepository.findById(dto.getCategoryId()).orElse(null))
+                .subType(subType)
                 .description(dto.getDescription())
                 .text(dto.getText())
                 .isActive(true)
@@ -259,7 +258,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .isActive(question.isActive())
                 .isRequired(question.isRequired())
                 .questionType(question.getQuestionType().name())
-                .category(mapToCategoryResponse(question.getCategory()))
+                .subType(mapToResponse(question.getSubType()))
                 .answers(question.getAnswers().stream().map(this::mapToAnswerResponse).toList())
                 .build();
     }
@@ -271,12 +270,10 @@ public class SurveyServiceImpl implements SurveyService {
                 .text(answer.getText())
                 .build();
     }
-
-    private CategoryResponse mapToCategoryResponse(Category category) {
-        return CategoryResponse.builder()
-                .code(category.getCode())
-                .id(category.getId())
-                .name(category.getName())
+    private SubTypeResponse mapToResponse(SubType subType) {
+        return SubTypeResponse.builder()
+                .id(subType.getId())
+                .codeName(subType.getCodeName())
                 .build();
     }
 }

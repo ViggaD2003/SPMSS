@@ -122,7 +122,7 @@ public class ProgramSurveyRecordServiceImpl implements ProgramSurveyRecordServic
                 .isActive(question.isActive())
                 .isRequired(question.isRequired())
                 .questionType(question.getQuestionType().name())
-                .category(mapToCategoryResponse(question.getCategory()))
+                .subType(mapToResponse(question.getSubType()))
                 .answers(question.getAnswers().stream().map(this::mapToAnswerResponse).toList())
                 .build();
     }
@@ -135,11 +135,10 @@ public class ProgramSurveyRecordServiceImpl implements ProgramSurveyRecordServic
                 .build();
     }
 
-    private CategoryResponse mapToCategoryResponse(Category category) {
-        return CategoryResponse.builder()
-                .code(category.getCode())
-                .id(category.getId())
-                .name(category.getName())
+    private SubTypeResponse mapToResponse(SubType subType) {
+        return SubTypeResponse.builder()
+                .id(subType.getId())
+                .codeName(subType.getCodeName())
                 .build();
     }
 

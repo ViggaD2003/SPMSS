@@ -28,14 +28,11 @@ public class Category extends Auditable {
     private String code;
 
     @OneToMany(mappedBy = "category")
-    private List<Question> questions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "category")
     private List<SupportProgram> supportPrograms = new ArrayList<>();
 
     @OneToMany(mappedBy = "category")
     private List<MentalEvaluation> mentalEvaluations = new ArrayList<>();
 
     @OneToMany(mappedBy = "category")
-    private List<Level> levels = new ArrayList<>();
+    private List<SubType> subTypes = new ArrayList<>();
 }

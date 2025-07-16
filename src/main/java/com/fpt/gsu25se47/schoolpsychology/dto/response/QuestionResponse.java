@@ -24,7 +24,8 @@ public class QuestionResponse {
     private String moduleType;
 
     private String questionType;
-    private CategoryResponse category;
+
+    private SubTypeResponse subType;
 
     private String text;
 

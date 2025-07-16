@@ -54,6 +54,6 @@ public class Question extends Auditable {
     private Survey survey;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "subType_id")
+    private SubType subType;
 }

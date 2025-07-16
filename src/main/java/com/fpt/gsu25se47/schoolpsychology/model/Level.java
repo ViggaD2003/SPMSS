@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.LevelName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,17 +19,15 @@ public class Level {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String text;
+    private String label;
 
-    private String description;
+    private Integer minScore;
 
-    private int minScore;
+    private Integer maxScore;
 
-    private int maxScore;
-
-    private boolean isRequired;
+    private LevelName levelName;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "subType_id")
+    private SubType subType;
 }

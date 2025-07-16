@@ -28,8 +28,8 @@ public class AddNewQuestionDto {
     @NotNull(message = "Require không được để trống")
     private boolean isRequired;
 
-    @NotNull(message = "Category ID không được để trống")
-    private Integer categoryId;
+    @NotNull(message = "SubType ID không được để trống")
+    private Integer subTypeId;
 
     @NotNull(message = "Danh sách câu trả lời không được để trống")
     @Size(min = 1, message = "Phải có ít nhất một câu trả lời")
