@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +42,7 @@ public class SurveyServiceImpl implements SurveyService {
         try {
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-            if(userDetails == null) {
+            if (userDetails == null) {
                 throw new BadRequestException("Unauthorized");
             }
 
@@ -60,7 +61,7 @@ public class SurveyServiceImpl implements SurveyService {
                 }
             }
 
-            if(LocalDate.now().isEqual(addNewSurveyDto.getStartDate())){
+            if (LocalDate.now().isEqual(addNewSurveyDto.getStartDate())) {
                 survey.setStatus(SurveyStatus.PUBLISHED);
             } else {
                 survey.setStatus(SurveyStatus.DRAFT);
@@ -72,7 +73,7 @@ public class SurveyServiceImpl implements SurveyService {
 
             return Optional.of("Create survey successfull");
 
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Could not create survey. Please check your data.");
         }
@@ -84,7 +85,7 @@ public class SurveyServiceImpl implements SurveyService {
             List<Survey> surveys = surveyRepository.findAll();
             List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
             return Optional.of(surveyResponses);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
@@ -95,13 +96,13 @@ public class SurveyServiceImpl implements SurveyService {
         try {
             Survey survey = surveyRepository.findById(id).orElse(null);
 
-            if(survey == null){
+            if (survey == null) {
                 throw new RuntimeException("Survey not found");
             }
 
             SurveyResponse response = this.mapToSurveyResponse(survey);
             return Optional.of(response);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
@@ -110,51 +111,54 @@ public class SurveyServiceImpl implements SurveyService {
     @Override
     @Transactional
     public Optional<?> updateSurveyById(Integer id, AddNewSurveyDto updateSurveyRequest) {
-        try {
             Survey survey = surveyRepository.findById(id).orElseThrow(() ->
                     new RuntimeException("Survey not found"));
 
             // Cập nhật các field của survey
             survey.setName(updateSurveyRequest.getName());
             survey.setDescription(updateSurveyRequest.getDescription());
-            survey.setEndDate(updateSurveyRequest.getEndDate());
-            survey.setStartDate(updateSurveyRequest.getStartDate());
             survey.setIsRecurring(updateSurveyRequest.getIsRecurring());
             survey.setIsRequired(updateSurveyRequest.getIsRequired());
             survey.setRecurringCycle(updateSurveyRequest.getRecurringCycle());
 
-            // Xoá và thay thế câu hỏi
-            //kĩ thuật update
-            //chỉ xoá phần tử trong danh sách trước đó (trước đó là khi tạo mới 1 object đã lưu danh sách đó vào)
-            survey.getQuestions().clear();
+            if (survey.getStatus() != SurveyStatus.PUBLISHED) {
+                survey.setEndDate(updateSurveyRequest.getEndDate());
+                survey.setStartDate(updateSurveyRequest.getStartDate());
+            } else {
+                throw new IllegalArgumentException("Survey with Published status can not be updated");
+            }
 
-            List<Question> newQuestions = updateSurveyRequest.getQuestions()
-                    .stream()
-                    .map(dto -> {
-                        Question question = this.mapToQuestion(dto);
-                        question.setSurvey(survey);
-                        if (question.getAnswers() != null) {
-                            question.getAnswers().forEach(answer -> answer.setQuestion(question));
-                        }
-                        return question;
-                    }).toList();
+           if(survey.getStatus() != SurveyStatus.DRAFT) {
+               // Xoá và thay thế câu hỏi
+               //kĩ thuật update
+               //chỉ xoá phần tử trong danh sách trước đó (trước đó là khi tạo mới 1 object đã lưu danh sách đó vào)
+               survey.getQuestions().clear();
 
-            //sau khi xoá phần tử
-            //thì lưu phần tử mới vào danh sách trước đó
-            survey.getQuestions().addAll(newQuestions);
+               List<Question> newQuestions = updateSurveyRequest.getQuestions()
+                       .stream()
+                       .map(dto -> {
+                           Question question = this.mapToQuestion(dto);
+                           question.setSurvey(survey);
+                           if (question.getAnswers() != null) {
+                               question.getAnswers().forEach(answer -> answer.setQuestion(question));
+                           }
+                           return question;
+                       }).toList();
+
+               //sau khi xoá phần tử
+               //thì lưu phần tử mới vào danh sách trước đó
+               survey.getQuestions().addAll(newQuestions);
+           } else {
+               throw new IllegalArgumentException("Survey which is not status Draft can not be updated");
+           }
 
             Survey updatedSurvey = surveyRepository.save(survey);
             return Optional.of(this.mapToSurveyResponse(updatedSurvey));
-
-        } catch (Exception e) {
-            log.error("Failed to update survey: {}", e.getMessage(), e);
-            throw new RuntimeException("Something went wrong");
-        }
     }
 
     @Override
     public Optional<?> getAllSurveyByCounselorId() {
-        try{
+        try {
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
@@ -163,7 +167,7 @@ public class SurveyServiceImpl implements SurveyService {
 
             List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
             return Optional.of(surveyResponses);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
@@ -180,21 +184,21 @@ public class SurveyServiceImpl implements SurveyService {
 
             List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
             return Optional.of(surveyResponses);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
     }
 
 
-    private Answer mapToAnswer(AddNewAnswerDto dto){
+    private Answer mapToAnswer(AddNewAnswerDto dto) {
         return Answer.builder()
                 .score(dto.getScore())
                 .text(dto.getText())
                 .build();
     }
 
-    private Question mapToQuestion(AddNewQuestionDto dto){
+    private Question mapToQuestion(AddNewQuestionDto dto) {
         return Question.builder()
                 .answers(dto.getAnswers().stream().map(this::mapToAnswer).toList())
                 .category(categoryRepository.findById(dto.getCategoryId()).orElse(null))
@@ -208,7 +212,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     private Survey mapToSurvey(AddNewSurveyDto dto) {
-        if(dto.getEndDate().isEqual(dto.getStartDate())){
+        if (dto.getEndDate().isEqual(dto.getStartDate())) {
             throw new RuntimeException("End date must be after than start date");
         }
 
@@ -226,7 +230,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
 
-    private SurveyResponse mapToSurveyResponse(Survey survey){
+    private SurveyResponse mapToSurveyResponse(Survey survey) {
         return SurveyResponse.builder()
                 .surveyId(survey.getId())
                 .createdAt(survey.getCreatedDate())
@@ -244,7 +248,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .build();
     }
 
-    private QuestionResponse mapToQuestionResponse(Question question){
+    private QuestionResponse mapToQuestionResponse(Question question) {
         return QuestionResponse.builder()
                 .questionId(question.getId())
                 .updatedAt(question.getUpdatedDate())
@@ -260,7 +264,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .build();
     }
 
-    private AnswerResponse mapToAnswerResponse(Answer answer){
+    private AnswerResponse mapToAnswerResponse(Answer answer) {
         return AnswerResponse.builder()
                 .id(answer.getId())
                 .score(answer.getScore())
@@ -268,7 +272,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .build();
     }
 
-    private CategoryResponse mapToCategoryResponse(Category category){
+    private CategoryResponse mapToCategoryResponse(Category category) {
         return CategoryResponse.builder()
                 .code(category.getCode())
                 .id(category.getId())
