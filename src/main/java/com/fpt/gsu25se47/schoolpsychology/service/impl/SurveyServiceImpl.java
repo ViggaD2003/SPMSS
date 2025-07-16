@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,12 +61,13 @@ public class SurveyServiceImpl implements SurveyService {
                     }
                 }
             }
-
-            if (LocalDate.now().isEqual(addNewSurveyDto.getStartDate())) {
+            LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+            if (today.isEqual(addNewSurveyDto.getStartDate())) {
                 survey.setStatus(SurveyStatus.PUBLISHED);
             } else {
                 survey.setStatus(SurveyStatus.DRAFT);
             }
+
 
             survey.setRound(1);
             survey.setAccount(account);
