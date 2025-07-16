@@ -1,7 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddSlotRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
+import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -18,4 +20,6 @@ public interface SlotService {
     Optional<?> getAllSlotsByHostBy(Integer hostById);
 
     Optional<?> getSlotById(Integer slotId);
+
+    Slot createSlot(CreateSlotRequest request);
 }

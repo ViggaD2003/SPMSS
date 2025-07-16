@@ -1,11 +1,15 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddSlotRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.BookedSlot;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotConflictError;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotResponse;
-import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.mapper.SlotMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Account;
+import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
+import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotUsageType;
@@ -13,10 +17,12 @@ import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -39,6 +45,8 @@ public class SlotServiceImpl implements SlotService {
     private final TeacherRepository teacherRepository;
     private final CounselorRepository counselorRepository;
     private final AppointmentRepository appointmentRepository;
+
+    private final SlotMapper slotMapper;
 
     @Override
     public ResponseEntity<?> initSlot(List<AddSlotRequest> requests) {
@@ -192,6 +200,33 @@ public class SlotServiceImpl implements SlotService {
             log.error("Failed to view slot: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");
         }
+    }
+
+    @Override
+    public Slot createSlot(CreateSlotRequest request) {
+
+        List<Slot> slots = slotRepository.findExactSlotByStartAndEndMinute(
+                request.getHostById(),
+                request.getStartDateTime(),
+                request.getEndDateTime()
+        );
+
+        if (!slots.isEmpty()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "This slot is already taken"
+            );
+        }
+
+        Account account = accountRepository.findById(request.getHostById())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Account not found by ID: " + request.getHostById()
+                ));
+        Slot slot = slotMapper.toSlot(request, account);
+
+        return slotRepository.save(slot);
     }
 
 
