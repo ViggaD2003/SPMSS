@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordLevel;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -15,7 +16,7 @@ public class CreateSurveyRecordDto {
 
     private Integer surveyId;
 
-    private Integer totalScore;
+    private BigDecimal totalScore;
 
     private SurveyRecordLevel level;
 
