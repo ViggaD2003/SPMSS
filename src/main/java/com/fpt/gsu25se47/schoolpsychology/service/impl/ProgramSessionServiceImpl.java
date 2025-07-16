@@ -24,11 +24,7 @@ public class ProgramSessionServiceImpl implements ProgramSessionService {
 
     private final SlotService slotService;
     private final ProgramSessionRepository programSessionRepository;
-    private final SlotRepository slotRepository;
     private final SupportProgramRepository supportProgramRepository;
-    private final AccountRepository accountRepository;
-    private final CounselorRepository counselorRepository;
-    private final TeacherRepository teacherRepository;
     private final ProgramSessionMapper programSessionMapper;
 
     @Override
