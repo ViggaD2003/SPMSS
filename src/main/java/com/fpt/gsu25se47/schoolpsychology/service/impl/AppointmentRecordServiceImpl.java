@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AppointmentRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
@@ -30,7 +31,6 @@ import java.time.LocalDate;
 public class AppointmentRecordServiceImpl implements AppointmentRecordService {
 
     private final AppointmentRecordRepository appointmentRecordRepository;
-//    private final AppointmentRecordMapper appointmentRecordMapper;
     private final AppointmentRecordMapper appointmentRecordMapper;
     private final DuplicateValidator duplicateValidator;
     private final MentalEvaluationService mentalEvaluationService;
@@ -115,5 +115,22 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
         }
 
         return records.map(appointmentRecordMapper::toAppointmentRecordResponse);
+    }
+
+    @Override
+    public AppointmentRecordResponse updateAppointmentRecord(Integer appointmentRecordId, UpdateAppointmentRecordRequest request) {
+
+        AppointmentRecord appointmentRecord = appointmentRecordRepository.findById(appointmentRecordId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Appointment record not found with ID: " + appointmentRecordId
+                ));
+
+        AppointmentRecord updatedAR = appointmentRecordMapper.updateAppointmentRecordFromRequest(request,
+                appointmentRecord);
+
+        AppointmentRecord saved = appointmentRecordRepository.save(updatedAR);
+
+        return appointmentRecordMapper.toAppointmentRecordResponse(saved);
     }
 }

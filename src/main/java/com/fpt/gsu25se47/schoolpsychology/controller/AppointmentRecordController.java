@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.common.ApiResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentRole;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
@@ -90,6 +91,18 @@ public class AppointmentRecordController {
                 .message("Retrieved all Appointment Records successfully")
                 .data(appointmentRecordResponses.getContent())
                 .pagination(paginationUtil.getPaginationResponse(pageRequest, appointmentRecordResponses))
+                .build());
+    }
+
+    @PutMapping
+    ResponseEntity<ApiResponse<AppointmentRecordResponse>> update(@RequestParam Integer appointmentRecordId,
+                                                                  @RequestBody UpdateAppointmentRecordRequest request) {
+
+        return ResponseEntity.ok(ApiResponse.<AppointmentRecordResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .success(true)
+                .message("Update appointment record successfully")
+                .data(appointmentRecordService.updateAppointmentRecord(appointmentRecordId, request))
                 .build());
     }
 }

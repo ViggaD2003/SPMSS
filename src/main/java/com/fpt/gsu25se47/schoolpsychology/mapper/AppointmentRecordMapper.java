@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.AppointmentRecord;
@@ -21,6 +22,9 @@ public interface AppointmentRecordMapper {
     @BeanMapping(builder = @Builder(disableBuilder = true))
     AppointmentRecord toAppointmentRecord(CreateAppointmentRecordRequest request,
                                            @Context Appointment appointment);
+
+    AppointmentRecord updateAppointmentRecordFromRequest(UpdateAppointmentRecordRequest request,
+                                                         @MappingTarget AppointmentRecord appointmentRecord);
 
     @AfterMapping
     default void setAppointment(@MappingTarget AppointmentRecord record,
