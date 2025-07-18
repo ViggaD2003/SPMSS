@@ -15,7 +15,11 @@ public class MentalEvaluationResponse {
 
     private String evaluationType;
 
-    private Integer evaluationRecordId;
+    private Integer appointmentRecordId;
+
+    private Integer surveyRecordId;
+
+    private Integer programRecordId;
 
     private BigDecimal totalScore;
 

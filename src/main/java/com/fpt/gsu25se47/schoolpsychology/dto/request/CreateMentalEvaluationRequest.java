@@ -1,6 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
-import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
@@ -12,11 +11,11 @@ import java.time.LocalDate;
 @Builder
 public class CreateMentalEvaluationRequest {
 
-    @NotNull
-    private EvaluationType evaluationType;
+    private Integer appointmentRecordId;
 
-    @NotNull
-    private Integer evaluationRecordId;
+    private Integer programRecordId;
+
+    private Integer surveyRecordId;
 
     @NotNull
     private BigDecimal totalScore;

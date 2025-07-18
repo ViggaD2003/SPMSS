@@ -5,14 +5,13 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequ
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentRecordResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AppointmentRecordMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.AppointmentRecord;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentRole;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.RecordStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import com.fpt.gsu25se47.schoolpsychology.validations.DuplicateValidator;
@@ -33,8 +32,9 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
     private final AppointmentRecordRepository appointmentRecordRepository;
     private final AppointmentRecordMapper appointmentRecordMapper;
     private final DuplicateValidator duplicateValidator;
-    private final MentalEvaluationService mentalEvaluationService;
     private final AppointmentRepository appointmentRepository;
+    private final MentalEvaluationService mentalEvaluationService;
+    private final AccountService accountService;
 
     @Override
     @Transactional
@@ -60,9 +60,8 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
             request.getReportCategoryRequests()
                     .forEach((t) -> {
                         CreateMentalEvaluationRequest mentalEvaluationRequest = CreateMentalEvaluationRequest.builder()
-                                .evaluationRecordId(evaluationRecordId)
+                                .appointmentRecordId(evaluationRecordId)
                                 .date(createdDate)
-                                .evaluationType(evaluationType)
                                 .totalScore(t.getScore())
                                 .studentId(studentId)
                                 .categoryId(t.getCategoryId())
@@ -71,10 +70,6 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
                         mentalEvaluationService.createMentalEvaluation(mentalEvaluationRequest);
                     });
         }
-
-//        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-//                        "Appointment not found with ID: " + request.getAppointmentId()));
 
         if (request.getStatus() != RecordStatus.CANCELED) {
             appointment.setStatus(AppointmentStatus.COMPLETED);
@@ -126,11 +121,26 @@ public class AppointmentRecordServiceImpl implements AppointmentRecordService {
                         "Appointment record not found with ID: " + appointmentRecordId
                 ));
 
-        AppointmentRecord updatedAR = appointmentRecordMapper.updateAppointmentRecordFromRequest(request,
-                appointmentRecord);
+        if (appointmentRecord.getStatus() == RecordStatus.FINALIZED) {
 
-        AppointmentRecord saved = appointmentRecordRepository.save(updatedAR);
+            Account account = accountService.getCurrentAccount();
 
-        return appointmentRecordMapper.toAppointmentRecordResponse(saved);
+            if (account.getRole() != Role.MANAGER) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Only manager can edit this appointment record with status FINALIZED"
+                );
+            } else {
+
+                AppointmentRecord updatedAR = appointmentRecordMapper.updateAppointmentRecordFromRequest(request,
+                        appointmentRecord);
+
+                AppointmentRecord saved = appointmentRecordRepository.save(updatedAR);
+
+                return appointmentRecordMapper.toAppointmentRecordResponse(saved);
+            }
+        }
+        return null;
     }
 }

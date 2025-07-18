@@ -22,14 +22,12 @@ public class MentalEvaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer evaluationRecordId;
-
-    @Enumerated(EnumType.STRING)
-    private EvaluationType evaluationType;
-
     private BigDecimal totalScore;
 
     private LocalDate date;
+
+    @Enumerated(EnumType.STRING)
+    private EvaluationType evaluationType;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -38,4 +36,16 @@ public class MentalEvaluation {
     @ManyToOne
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
+
+    @OneToOne
+    @JoinColumn(name = "appointment_record_id", unique = true)
+    private AppointmentRecord appointmentRecord;
+
+    @OneToOne
+    @JoinColumn(name = "survey_record_id", unique = true)
+    private SurveyRecord surveyRecord;
+
+    @OneToOne
+    @JoinColumn(name = "program_record_id", unique = true)
+    private ProgramRecord programRecord;
 }

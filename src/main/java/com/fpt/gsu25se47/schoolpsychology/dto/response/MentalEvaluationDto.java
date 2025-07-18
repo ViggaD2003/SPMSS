@@ -16,7 +16,11 @@ public class MentalEvaluationDto {
 
     private Integer id;
 
-    private Integer evaluationRecordId;
+    private Integer appointmentRecordId;
+
+    private Integer surveyRecordId;
+
+    private Integer programRecordId;
 
     private String evaluationType;
 

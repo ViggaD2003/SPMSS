@@ -3,9 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.MentalEvaluationResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
-import com.fpt.gsu25se47.schoolpsychology.model.Category;
-import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
-import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
@@ -34,25 +32,54 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
     @Override
     public MentalEvaluationResponse createMentalEvaluation(CreateMentalEvaluationRequest request) {
-        switch (request.getEvaluationType()) {
-            case SURVEY -> surveyRecordRepository.findById(request.getEvaluationRecordId())
+//        switch (request.getEvaluationType()) {
+//            case SURVEY -> surveyRecordRepository.findById(request.getEvaluationRecordId())
+//                    .orElseThrow(() -> new ResponseStatusException(
+//                            HttpStatus.BAD_REQUEST,
+//                            "Survey record not found with ID: " + request.getEvaluationRecordId()
+//                    ));
+//
+//            case PROGRAM -> programRecordRepository.findById(request.getEvaluationRecordId())
+//                    .orElseThrow(() -> new ResponseStatusException(
+//                            HttpStatus.BAD_REQUEST,
+//                            "Program record not found with ID: " + request.getEvaluationRecordId()));
+//
+//            case APPOINTMENT -> appointmentRecordRepository.findById(request.getEvaluationRecordId())
+//                    .orElseThrow(() -> new ResponseStatusException(
+//                            HttpStatus.BAD_REQUEST,
+//                            "Appointment record not found with ID: " + request.getEvaluationRecordId()));
+//
+//            default -> throw new IllegalStateException("Unexpected value: " + request.getEvaluationType());
+//        }
+        AppointmentRecord appointmentRecord = null;
+        ProgramRecord programRecord = null;
+        SurveyRecord surveyRecord = null;
+
+        if (request.getAppointmentRecordId() != null) {
+
+            appointmentRecord = appointmentRecordRepository.findById(request.getAppointmentRecordId())
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.BAD_REQUEST,
-                            "Survey record not found with ID: " + request.getEvaluationRecordId()
-                    ));
-
-            case PROGRAM -> programRecordRepository.findById(request.getEvaluationRecordId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Program record not found with ID: " + request.getEvaluationRecordId()));
-
-            case APPOINTMENT -> appointmentRecordRepository.findById(request.getEvaluationRecordId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Appointment record not found with ID: " + request.getEvaluationRecordId()));
-
-            default -> throw new IllegalStateException("Unexpected value: " + request.getEvaluationType());
+                            "Appointment record not found with ID: " + request.getAppointmentRecordId()));
         }
+
+        if (request.getProgramRecordId() != null) {
+
+            programRecord = programRecordRepository.findById(request.getProgramRecordId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Program record not found with ID: " + request.getProgramRecordId()));
+        }
+
+        if (request.getSurveyRecordId() != null) {
+
+            surveyRecord = surveyRecordRepository.findById(request.getSurveyRecordId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Survey record not found with ID: " + request.getSurveyRecordId()
+                    ));
+        }
+
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found"));
 
@@ -60,7 +87,8 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student not found"));
 
         MentalEvaluation mentalEvaluation = mentalEvaluationRepository.save(
-                mentalEvaluationMapper.mapToMentalEvaluation(request, student, category));
+                mentalEvaluationMapper.mapToMentalEvaluation(request, student, category, programRecord,
+                        appointmentRecord, surveyRecord));
 
         return mentalEvaluationMapper.mapToEvaluationResponse(mentalEvaluation);
     }

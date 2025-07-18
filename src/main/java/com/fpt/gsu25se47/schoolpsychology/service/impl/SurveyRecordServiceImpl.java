@@ -86,9 +86,8 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             Student student = getStudent(surveyRecordCreated.getAccount().getId());
 
             CreateMentalEvaluationRequest request = CreateMentalEvaluationRequest.builder()
-                    .evaluationRecordId(surveyRecord.getId())
+                    .surveyRecordId(surveyRecord.getId())
                     .date(surveyRecord.getCompletedAt())
-                    .evaluationType(EvaluationType.SURVEY)
                     .totalScore(surveyRecord.getTotalScore())
                     .studentId(accountService.getCurrentAccount().getId())
                     .categoryId(dto.getCategoryId())
