@@ -1,14 +1,11 @@
--- Insert Accounts
 INSERT INTO accounts (email, password, role, status, phone_number, full_name, gender, dob, created_date)
 VALUES
 -- Existing records
-('manager@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'MANAGER', 1, '0123456789', 'Khuat Van Thanh Danh', 1, '1990-01-01', NOW()),
+('danhkvtse172932@fpt.edu.vn', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'MANAGER', 1, '0123456789', 'Khuat Van Thanh Danh', 1, '1990-01-01', NOW()),
 ('student@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'STUDENT', 1, '0123456788', 'Nguyen Van A', 1, '2005-09-01', NOW()),
 ('teacher@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'TEACHER', 1, '0123456787', 'Tran Thi B', 0, '1985-06-10', NOW()),
 ('counselor@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'COUNSELOR', 1, '0123456786', 'Pham Van C', 1, '1988-03-15', NOW()),
 ('parent@school.com', '$2a$10$jJWwV0NgBmkJYF1VgmOm2O1fFth2U7HN9RWHf5Bee7/rSuDWkBUnC', 'PARENTS', 1, '0123456785', 'Le Thi D', 0, '1975-12-20', NOW());
-
-
 
 -- Insert Classes
 INSERT INTO classes (code_class, class_year) VALUES ('SE1800', '2024-01-01');
@@ -33,47 +30,46 @@ VALUES (5, 5, '123 ABC Street');
 INSERT INTO relationship (student_id, guardian_id, relationship_type)
 VALUES (2, 5, 'PARENT');
 
--- Dummy data for Category
-INSERT INTO categories (name, code, created_date)
+INSERT INTO categories (id, created_date, code, name)
 VALUES
-    ('Tâm lý học đường', 'PSY',  NOW()),
-    ('Kỹ năng sống', 'LIFE',  NOW());
+    (1, NOW(), 'MENTAL_HEALTH', 'Mental Health'),
+    (2, NOW(), 'ACADEMIC_PERFORMANCE', 'Academic Performance');
 
--- Dummy data for Level
-INSERT INTO levels (text, description, min_score, max_score, is_required, category_id)
+INSERT INTO sub_type (category_id, length, limited_questions, code_name, description)
 VALUES
-    ('Bình thường', 'Không có dấu hiệu bất thường', 0, 5, 1, 1),
-    ('Cần hỗ trợ', 'Có dấu hiệu cần hỗ trợ', 6, 10, 1, 1),
-    ('Ổn định', 'Kỹ năng tốt', 0, 5, 1, 2),
-    ('Cần cải thiện', 'Kỹ năng cần cải thiện', 6, 10, 1, 2);
+    (1, 30, 0, 'GAD-7', 'Basic mental evaluation'),
+    ( 1, 20, 1, 'PHQ-8', 'Basic academic evaluation');
 
--- Dummy data for Survey
-INSERT INTO survey (
-    name, description, status, is_required, is_recurring,
-    recurring_cycle, start_date, end_date, created_date, account_id, survey_code
-)
-VALUES (
-           'Khảo sát tâm lý học đường',
-           'Khảo sát đánh giá tâm lý học sinh',
-           1, 1, 0, 'MONTHLY',
-           '2024-01-01', '2024-12-31',
-           NOW(), 1, 'FAMILY_ENV'
-       );
 
--- Dummy Question
-INSERT INTO questions (
-    text, description, is_active, question_type, module_type,
-    is_required, survey_id, category_id, created_date
-)
-VALUES (
-           'Bạn có thường xuyên cảm thấy bị quá tải với khối lượng bài tập và kỳ vọng học tập không?',
-           'Đánh giá mức độ áp lực từ việc học.',
-           1, 'MULTIPLE_CHOICE', 'SURVEY',
-           1, 1, 1, NOW()
-       );
-
--- Dummy Answers
-INSERT INTO answers (text, score, question_id)
+INSERT INTO levels (level_name, max_score, min_score, sub_type_id, label)
 VALUES
-    ('Có', 1, 1),
-    ('Không', 0, 1);
+    (1, 10, 0, 1, 'Low'),
+    (2, 20, 11, 1, 'Medium'),
+    (3, 30, 21, 1, 'High'),
+    (4, 10, 0, 2, 'Low'),
+    (5, 20, 11, 2, 'Medium'),
+    (6, 30, 21, 2, 'High');
+INSERT INTO survey (id, account_id, is_recurring, is_required, round, start_date, end_date, created_date, name, description, survey_code, status)
+VALUES
+    (1, 1, 0, 1, 1, '2025-07-01', '2025-07-31', NOW(), 'Mental Health Survey July', 'Survey for mental health status', 'GAD-7', 'PUBLISHED');
+INSERT INTO questions (is_active, is_required, survey_id, sub_type_id, created_date, description, text, module_type, question_type)
+VALUES
+    (1, 1, 1, 1, NOW(), 'How often do you feel anxious?', 'Do you often feel anxious?', 'SURVEY', 'LINKERT_SCALE'),
+    (1, 1, 1, 1, NOW(), 'How is your sleep quality?', 'Rate your sleep quality', 'SURVEY', 'LINKERT_SCALE');
+-- Answers for question 1
+INSERT INTO answers (question_id, score, text)
+VALUES
+    (1, 1, 'Never'),
+    (1, 2, 'Rarely'),
+    (1, 3, 'Sometimes'),
+    (1, 4, 'Often'),
+    (1, 5, 'Always');
+
+-- Answers for question 2
+INSERT INTO answers (question_id, score, text)
+VALUES
+    (2, 1, 'Very poor'),
+    (2, 2, 'Poor'),
+    (2, 3, 'Average'),
+    (2, 4, 'Good'),
+    (2, 5, 'Excellent');

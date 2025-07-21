@@ -26,9 +26,12 @@ public class SurveyResponse {
 
     private String surveyCode;
 
+    private CategorySurveyResponse categories;
+
     private LocalDate endDate;
 
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
     private String status;

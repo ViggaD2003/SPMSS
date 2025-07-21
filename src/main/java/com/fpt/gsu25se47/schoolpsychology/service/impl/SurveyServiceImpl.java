@@ -12,10 +12,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -32,12 +36,16 @@ public class SurveyServiceImpl implements SurveyService {
 
     private final AccountRepository accountRepository;
 
+    private final CategoryRepository categoryRepository;
+
     @Override
     @Transactional
     public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request) {
         try {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !(auth.getPrincipal() instanceof UserDetails userDetails)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+            }
             if (userDetails == null) {
                 throw new BadRequestException("Unauthorized");
             }
@@ -45,6 +53,23 @@ public class SurveyServiceImpl implements SurveyService {
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
             Survey survey = this.mapToSurvey(addNewSurveyDto);
+            List<Question> questions = survey.getQuestions();
+
+            boolean isSameSubType = questions.stream()
+                    .map(Question::getSubType)
+                    .distinct()
+                    .count() <= 1;
+
+            if (!isSameSubType) {
+                throw new IllegalStateException("All questions must have the same subType.");
+            }
+
+            // (Tùy chọn) Lấy subtype nếu muốn
+            SubType commonSubType = questions.isEmpty() ? null : questions.get(0).getSubType();
+
+            assert commonSubType != null;
+            survey.setSurveyCode(commonSubType.getCodeName());
+
             if (!survey.getQuestions().isEmpty()) {
                 for (Question question : survey.getQuestions()) {
                     question.setSurvey(survey);
@@ -107,55 +132,75 @@ public class SurveyServiceImpl implements SurveyService {
     @Override
     @Transactional
     public Optional<?> updateSurveyById(Integer id, AddNewSurveyDto updateSurveyRequest) {
-            Survey survey = surveyRepository.findById(id).orElseThrow(() ->
-                    new RuntimeException("Survey not found"));
+        Survey survey = surveyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Survey not found"));
 
-            // Cập nhật các field của survey
-            survey.setName(updateSurveyRequest.getName());
-            survey.setDescription(updateSurveyRequest.getDescription());
-            survey.setIsRecurring(updateSurveyRequest.getIsRecurring());
-            survey.setIsRequired(updateSurveyRequest.getIsRequired());
-            survey.setRecurringCycle(updateSurveyRequest.getRecurringCycle());
+        switch (survey.getStatus()) {
+            case DRAFT -> {
+                if (survey.getRound() == 1) {
+                    updateBasicSurveyInfo(survey, updateSurveyRequest);
 
-            if (survey.getStatus() != SurveyStatus.PUBLISHED) {
-                survey.setEndDate(updateSurveyRequest.getEndDate());
-                survey.setStartDate(updateSurveyRequest.getStartDate());
-            } else {
-                throw new IllegalArgumentException("Survey with Published status can not be updated");
+                    // Xóa hết các câu hỏi cũ
+                    survey.getQuestions().clear();
+
+                    // Thêm câu hỏi mới
+                    List<Question> newQuestions = updateSurveyRequest.getQuestions().stream()
+                            .map(dto -> {
+                                Question question = mapToQuestion(dto);
+                                question.setSurvey(survey);
+                                if (question.getAnswers() != null) {
+                                    question.getAnswers().forEach(answer -> answer.setQuestion(question));
+                                }
+                                return question;
+                            }).toList();
+
+                    survey.getQuestions().addAll(newQuestions);
+
+                    // Kiểm tra tất cả câu hỏi có cùng subtype không
+                    boolean isSameSubType = survey.getQuestions().stream()
+                            .map(Question::getSubType)
+                            .distinct()
+                            .count() <= 1;
+
+                    if (!isSameSubType) {
+                        throw new IllegalStateException("All questions must have the same subType.");
+                    }
+
+                    // Cập nhật surveyCode theo subtype
+                    SubType commonSubType = survey.getQuestions().isEmpty() ? null : survey.getQuestions().get(0).getSubType();
+                    if (commonSubType != null) {
+                        survey.setSurveyCode(commonSubType.getCodeName());
+                    }
+                } else {
+                    updateBasicSurveyInfo(survey, updateSurveyRequest);
+                    survey.setStartDate(updateSurveyRequest.getStartDate());
+                    survey.setEndDate(updateSurveyRequest.getEndDate());
+                }
             }
 
-           if(survey.getStatus() != SurveyStatus.DRAFT) {
-               // Xoá và thay thế câu hỏi
-               //kĩ thuật update
-               //chỉ xoá phần tử trong danh sách trước đó (trước đó là khi tạo mới 1 object đã lưu danh sách đó vào)
-               survey.getQuestions().clear();
+            case ARCHIVED -> {
+                updateBasicSurveyInfo(survey, updateSurveyRequest);
+                survey.setStartDate(updateSurveyRequest.getStartDate());
+                survey.setEndDate(updateSurveyRequest.getEndDate());
+                survey.setRound(survey.getRound() + 1);
+                survey.setStatus(SurveyStatus.DRAFT); // quay về DRAFT để tạo lại bản mới
+            }
 
-               List<Question> newQuestions = updateSurveyRequest.getQuestions()
-                       .stream()
-                       .map(dto -> {
-                           Question question = this.mapToQuestion(dto);
-                           question.setSurvey(survey);
-                           if (question.getAnswers() != null) {
-                               question.getAnswers().forEach(answer -> answer.setQuestion(question));
-                           }
-                           return question;
-                       }).toList();
+            default -> throw new IllegalStateException("Unsupported survey status: " + survey.getStatus());
+        }
 
-               //sau khi xoá phần tử
-               //thì lưu phần tử mới vào danh sách trước đó
-               survey.getQuestions().addAll(newQuestions);
-           } else {
-               throw new IllegalArgumentException("Survey which is not status Draft can not be updated");
-           }
-
-            Survey updatedSurvey = surveyRepository.save(survey);
-            return Optional.of(this.mapToSurveyResponse(updatedSurvey));
+        Survey updatedSurvey = surveyRepository.save(survey);
+        return Optional.of(mapToSurveyResponse(updatedSurvey));
     }
+
 
     @Override
     public Optional<?> getAllSurveyByCounselorId() {
         try {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !(auth.getPrincipal() instanceof UserDetails userDetails)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+            }
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
 
@@ -172,7 +217,10 @@ public class SurveyServiceImpl implements SurveyService {
     @Override
     public Optional<?> getAllSurveyWithPublished() {
         try {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !(auth.getPrincipal() instanceof UserDetails userDetails)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+            }
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
 
@@ -211,7 +259,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     private Survey mapToSurvey(AddNewSurveyDto dto) {
-        if (dto.getEndDate().isEqual(dto.getStartDate())) {
+        if (!dto.getEndDate().isAfter(dto.getStartDate())) {
             throw new RuntimeException("End date must be after than start date");
         }
 
@@ -224,12 +272,13 @@ public class SurveyServiceImpl implements SurveyService {
                 .questions(dto.getQuestions().stream().map(this::mapToQuestion).collect(Collectors.toList()))
                 .recurringCycle(dto.getRecurringCycle())
                 .startDate(dto.getStartDate())
-                .surveyCode(dto.getSurveyCode())
                 .build();
     }
 
 
     private SurveyResponse mapToSurveyResponse(Survey survey) {
+        SubType subType = subTypeRepository.findByCodeName(survey.getSurveyCode());
+
         return SurveyResponse.builder()
                 .surveyId(survey.getId())
                 .createdAt(survey.getCreatedDate())
@@ -243,6 +292,7 @@ public class SurveyServiceImpl implements SurveyService {
                 .startDate(survey.getStartDate())
                 .description(survey.getDescription())
                 .recurringCycle(survey.getRecurringCycle())
+                .categories(subType == null ? null : this.mapToResponse(subType.getCategory()))
                 .questions(survey.getQuestions().stream().map(this::mapToQuestionResponse).toList())
                 .build();
     }
@@ -276,4 +326,20 @@ public class SurveyServiceImpl implements SurveyService {
                 .codeName(subType.getCodeName())
                 .build();
     }
+
+    private CategorySurveyResponse mapToResponse(Category category) {
+        return CategorySurveyResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .build();
+    }
+
+    private void updateBasicSurveyInfo(Survey survey, AddNewSurveyDto dto) {
+        survey.setName(dto.getName());
+        survey.setDescription(dto.getDescription());
+        survey.setIsRecurring(dto.getIsRecurring());
+        survey.setIsRequired(dto.getIsRequired());
+        survey.setRecurringCycle(dto.getRecurringCycle());
+    }
+
 }
