@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.CounselorDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import org.apache.coyote.BadRequestException;
 
@@ -22,4 +23,6 @@ public interface AccountService {
     Account getCurrentAccount();
 
     Optional<?> listAllCounselors();
+
+    List<CounselorDto> getAllCounselors();
 }

@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
+import com.fpt.gsu25se47.schoolpsychology.mapper.CounselorMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
@@ -32,6 +33,8 @@ public class AccountServiceImpl implements AccountService {
     private final TeacherRepository teacherRepository;
 
     private final GuardianRepository guardianRepository;
+
+    private final CounselorMapper counselorMapper;
 
     @Override
     public Optional<?> profileAccount() {
@@ -283,6 +286,15 @@ public class AccountServiceImpl implements AccountService {
             log.error(e.getMessage());
             return Optional.of(e.getMessage());
         }
+    }
+
+    @Override
+    public List<CounselorDto> getAllCounselors() {
+        List<Counselor> counselors = counselorRepository.findAll();
+
+        return counselors.stream()
+                .map(counselorMapper::mapToCounselorDto)
+                .toList();
     }
 
 

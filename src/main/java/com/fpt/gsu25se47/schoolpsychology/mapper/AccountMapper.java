@@ -41,11 +41,12 @@ public abstract class AccountMapper {
         return teacherDto;
     }
 
-    private CounselorDto toCounselorDto(Account account) {
+    public CounselorDto toCounselorDto(Account account) {
         Counselor counselor = account.getCounselor();
         if (counselor == null) return null;
 
         CounselorDto counselorDto = new CounselorDto();
+        counselorDto.setId(counselor.getAccount().getId());
         counselorDto.setCounselorCode(counselor.getCounselorCode());
         counselorDto.setLinkMeet(counselor.getLinkMeet());
         counselorDto.setGender(account.getGender());
