@@ -48,7 +48,7 @@ public class AccountController {
             description = "Chỉ tài khoản có vai trò STUDENT hoặc PARENTS mới được phép gọi API này để xem danh sách tư vấn viên"
     )
     @ApiResponse(responseCode = "200", description = "Lấy danh sách tư vấn viên thành công")
-    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS') or hasRole('MANAGER')")
     @GetMapping("/view-counselor")
     public ResponseEntity<?> getViewCounselor() {
         return ResponseEntity.ok(accountService.listAllCounselors());
