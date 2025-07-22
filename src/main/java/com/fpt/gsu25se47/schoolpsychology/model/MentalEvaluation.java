@@ -1,13 +1,13 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
+import com.assignment.test.model.enums.Source;
+import com.assignment.test.model.enums.SourceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -22,20 +22,27 @@ public class MentalEvaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer evaluationRecordId;
+    @Enumerated(EnumType.STRING)
+    private Source source;
 
     @Enumerated(EnumType.STRING)
-    private EvaluationType evaluationType;
+    private SourceType sourceType;
 
-    private BigDecimal totalScore;
+    private Float weightedScore;
 
-    private LocalDate date;
+    private LocalDate firstEvaluatedAt;
+
+    private LocalDate lastEvaluatedAt;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "appointment_id", referencedColumnName = "id")
+    private Appointment appointment;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "survey_record_id", referencedColumnName = "id")
+    private SurveyRecord surveyRecord;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
-    @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
-    private Student student;
+    @JoinColumn(name = "student_id")
+    private Account student;
 }

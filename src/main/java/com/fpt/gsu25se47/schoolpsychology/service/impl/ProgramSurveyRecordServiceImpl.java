@@ -33,7 +33,7 @@ public class ProgramSurveyRecordServiceImpl implements ProgramSurveyRecordServic
     @Override
     public Optional<?> submitProgramRecord(CreateProgramRecordDto dto) {
         // Bước 1: Load entities gốc
-        ProgramRegistration registration = programRegistrationRepository.findById(dto.getProgramRegistrationId())
+        ProgramParticipants registration = programRegistrationRepository.findById(dto.getProgramRegistrationId())
                 .orElseThrow(() -> new RuntimeException("Program Registration Not Found"));
 
         ProgramSurvey programSurvey = programSurveyRepository.findById(dto.getProgramSurveyId())

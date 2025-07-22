@@ -1,8 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordLevel;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;
+import com.assignment.test.common.Auditable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,28 +24,27 @@ public class SurveyRecord extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String noteSuggest;
-
     private BigDecimal totalScore;
-
-    @Enumerated(EnumType.STRING)
-    private SurveyRecordStatus status;
-
-    @Enumerated(EnumType.STRING)
-    private SurveyRecordLevel level;
 
     private LocalDate completedAt;
 
     private Integer round;
 
     @ManyToOne
-    @JoinColumn(name = "survey_id", nullable = false)
+    @JoinColumn(name = "survey_id")
     private Survey survey;
 
     @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+    @JoinColumn(name = "level_id")
+    private Level level;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account student;
 
     @OneToMany(mappedBy = "surveyRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerRecord> answerRecords = new ArrayList<>();
+
+    @OneToOne(mappedBy = "surveyRecord")
+    private MentalEvaluation mentalEvaluation;
 }

@@ -63,11 +63,11 @@ public class Account extends Auditable implements UserDetails {
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private Guardian guardian;
 
-//    @OneToMany(mappedBy = "hostBy")
-//    private List<ProgramSession> programSessions = new ArrayList<>();
+    @OneToMany(mappedBy = "student")
+    private List<MentalEvaluation> mentalEvaluations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "account")
-    private List<ProgramRegistration> programRegistrations = new ArrayList<>();
+    @OneToMany(mappedBy = "student")
+    private List<ProgramParticipants> programRegistrations = new ArrayList<>();
 
     @OneToMany(mappedBy = "bookedFor")
     private List<Appointment> appointmentsForMe = new ArrayList<>();
@@ -78,13 +78,13 @@ public class Account extends Auditable implements UserDetails {
     @OneToMany(mappedBy = "hostedBy")
     private List<Slot> slotsHostBy = new ArrayList<>();
 
-    @OneToMany(mappedBy = "account")
+    @OneToMany(mappedBy = "student")
     private List<SurveyRecord> surveyRecords = new ArrayList<>();
 
     @OneToMany(mappedBy = "account")
     private List<Token> tokens = new ArrayList<>();
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "createBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Survey> surveys = new ArrayList<>();
 
     @Override

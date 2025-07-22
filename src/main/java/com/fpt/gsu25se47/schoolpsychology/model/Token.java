@@ -1,6 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.model.enums.TokenType;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -34,8 +34,8 @@ public interface SupportProgramMapper {
         return sessions == null ? new ArrayList<>() : sessions.stream().map(ProgramSession::getId).toList();
     }
 
-    default List<Integer> mapRegistrationIds(List<ProgramRegistration> registrations) {
-        return registrations == null ? new ArrayList<>() : registrations.stream().map(ProgramRegistration::getId).toList();
+    default List<Integer> mapRegistrationIds(List<ProgramParticipants> registrations) {
+        return registrations == null ? new ArrayList<>() : registrations.stream().map(ProgramParticipants::getId).toList();
     }
 
     default List<Integer> mapSurveyIds(List<ProgramSurvey> surveys) {

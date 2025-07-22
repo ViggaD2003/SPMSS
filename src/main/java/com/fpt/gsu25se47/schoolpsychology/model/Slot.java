@@ -1,8 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotUsageType;
+import com.assignment.test.model.enums.SlotStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,13 +17,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Slot extends Auditable {
+public class Slot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    private String slotName;
 
     private LocalDateTime startDateTime;
 
@@ -36,12 +32,6 @@ public class Slot extends Auditable {
     @ManyToOne
     @JoinColumn(name = "hosted_by")
     private Account hostedBy;
-
-    @Enumerated(EnumType.STRING)
-    private SlotUsageType type;
-
-    @OneToMany(mappedBy = "slot")
-    private List<ProgramSession> programSessions = new ArrayList<>();
 
     @OneToMany(mappedBy = "slot")
     private List<Appointment> appointments = new ArrayList<>();

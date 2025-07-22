@@ -4,7 +4,6 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.AddCategoryDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CategoryMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
-import com.fpt.gsu25se47.schoolpsychology.model.SubType;
 import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SubTypeRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CategoryService;

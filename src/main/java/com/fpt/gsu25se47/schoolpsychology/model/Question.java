@@ -1,15 +1,13 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ModuleType;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.QuestionType;
+import com.assignment.test.common.Auditable;
+import com.assignment.test.model.enums.QuestionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,19 +27,12 @@ public class Question extends Auditable {
 
     private String description;
 
-    private boolean isActive;
+    private Boolean isActive;
 
     @Enumerated(EnumType.STRING)
     private QuestionType questionType;
 
-    @Enumerated(EnumType.STRING)
-    private ModuleType moduleType;
-
-    private boolean isRequired;
-
-    @ManyToOne
-    @JoinColumn(name = "program_survey_id")
-    private ProgramSurvey programSurvey;
+    private Boolean isRequired;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
@@ -52,8 +43,4 @@ public class Question extends Auditable {
     @ManyToOne
     @JoinColumn(name = "survey_id")
     private Survey survey;
-
-    @ManyToOne
-    @JoinColumn(name = "subType_id")
-    private SubType subType;
 }

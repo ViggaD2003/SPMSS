@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "teachers")
 @Data
@@ -19,7 +22,8 @@ public class Teacher {
     private Integer id;
 
     @OneToOne
-    @JoinColumn(name = "account_id")
+    @MapsId // dùng id của account luôn
+    @JoinColumn(name = "id") // dùng chung cột "id"
     private Account account;
 
     @Column(nullable = false, unique = true)
@@ -27,7 +31,6 @@ public class Teacher {
 
     private String linkMeet;
 
-    @OneToOne
-    @JoinColumn(name = "class_id", referencedColumnName = "id")
-    private Classes classes;
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL)
+    private List<Classes> classes = new ArrayList<>();
 }

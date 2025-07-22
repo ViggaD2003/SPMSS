@@ -1,14 +1,14 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
+import com.assignment.test.common.Auditable;
+import com.assignment.test.model.enums.ProgramStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,27 +30,31 @@ public class SupportProgram extends Auditable {
 
     private Integer maxParticipants;
 
-    private LocalDate startDate;
+    private LocalDateTime startTime;
 
-    private LocalDate endDate;
-
-    private Boolean isOnline;
+    private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
     private ProgramStatus status;
 
-    private String location;
+    private String linkMeet;
+
+    private String thumbnail;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProgramSession> sessions = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "hosted_by", nullable = false)
+    private Account hostedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "survey_id", nullable = false)
+    private Survey survey;
+
 
     @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProgramRegistration> programRegistrations = new ArrayList<>();
+    private List<ProgramParticipants> programRegistrations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProgramSurvey> programSurveys = new ArrayList<>();
 }

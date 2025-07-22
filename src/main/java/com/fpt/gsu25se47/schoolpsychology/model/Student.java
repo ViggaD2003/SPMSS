@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +22,8 @@ public class Student {
     private Integer id;
 
     @OneToOne
-    @JoinColumn(name = "account_id")
+    @MapsId // dùng id của account luôn
+    @JoinColumn(name = "id") // dùng chung cột "id"
     private Account account;
 
     @Column(nullable = false, unique = true)
@@ -38,6 +38,7 @@ public class Student {
     @OneToMany(mappedBy = "student")
     private List<Relationship> relationships = new ArrayList<>();
 
-    @OneToMany(mappedBy = "student")
-    private List<MentalEvaluation> mentalEvaluations = new ArrayList<>();
+    @OneToMany(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<Enrollment> enrollments = new ArrayList<>();
+
 }

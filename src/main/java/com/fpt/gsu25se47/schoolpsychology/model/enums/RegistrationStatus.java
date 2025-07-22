@@ -1,8 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.model.enums;
 
 public enum RegistrationStatus {
-    REGISTERED,
-    CHECKIN,
-    CHECKOUT,
-    COMPLETED
+    ENROLLED,
+    ACTIVE,
+    COMPLETED,
+    ABSENT
 }

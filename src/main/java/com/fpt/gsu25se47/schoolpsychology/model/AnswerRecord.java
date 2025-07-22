@@ -27,16 +27,8 @@ public class AnswerRecord {
     private SurveyRecord surveyRecord;
 
     @ManyToOne
-    @JoinColumn(name = "appointment_record_id", referencedColumnName = "id")
-    private AppointmentRecord appointmentRecord;
-
-    @ManyToOne
     @JoinColumn(name = "question_id", referencedColumnName = "id")
     private Question question;
-
-    @ManyToOne
-    @JoinColumn(name = "program_record_id", referencedColumnName = "id")
-    private ProgramRecord programRecord;
 
     private boolean isSkipped;
 }

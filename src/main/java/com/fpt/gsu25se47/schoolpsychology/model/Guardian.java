@@ -22,7 +22,8 @@ public class Guardian {
     private Integer id;
 
     @OneToOne
-    @JoinColumn(name = "account_id")
+    @MapsId // dùng id của account luôn
+    @JoinColumn(name = "id") // dùng chung cột "id"
     private Account account;
 
     private String address;

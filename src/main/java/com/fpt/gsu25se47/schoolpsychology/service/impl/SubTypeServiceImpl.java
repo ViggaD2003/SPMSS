@@ -4,7 +4,6 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewLevelDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SubTypeRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SubTypeResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Level;
-import com.fpt.gsu25se47.schoolpsychology.model.SubType;
 import com.fpt.gsu25se47.schoolpsychology.repository.SubTypeRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SubTypeService;
 import lombok.RequiredArgsConstructor;
