@@ -41,7 +41,7 @@ public abstract class AccountMapper {
         return teacherDto;
     }
 
-    public CounselorDto toCounselorDto(Account account) {
+    private CounselorDto toCounselorDto(Account account) {
         Counselor counselor = account.getCounselor();
         if (counselor == null) return null;
 
