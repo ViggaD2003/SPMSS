@@ -1,7 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.assignment.test.common.Auditable;
-import com.assignment.test.model.enums.QuestionType;
+import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.QuestionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

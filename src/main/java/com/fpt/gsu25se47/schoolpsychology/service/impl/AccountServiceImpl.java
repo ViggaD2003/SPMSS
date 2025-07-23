@@ -128,7 +128,7 @@ public class AccountServiceImpl implements AccountService {
                 .evaluationRecordId(mentalEvaluation.getEvaluationRecordId())
                 .date(mentalEvaluation.getDate())
                 .totalScore(mentalEvaluation.getTotalScore())
-                .categoryResponse(CategoryResponse.builder()
+                .categoryResponse(CategoryDetailResponse.builder()
                         .name(mentalEvaluation.getCategory().getName())
                         .id(mentalEvaluation.getCategory().getId())
                         .code(mentalEvaluation.getCategory().getCode())

@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
-import com.fpt.gsu25se47.schoolpsychology.mapper.AnswerRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Answer;
 import com.fpt.gsu25se47.schoolpsychology.model.AnswerRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.Question;

@@ -1,9 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.assignment.test.common.Auditable;
-import com.assignment.test.model.enums.Grade;
-import com.assignment.test.model.enums.SurveyStatus;
-import com.assignment.test.model.enums.TargetScope;
+import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,9 +34,10 @@ public class Survey extends Auditable {
 
     private Integer round;
 
-    private String surveyCode;
+    @Enumerated(EnumType.STRING)
+    private SurveyType surveyType;
 
-    private String recurringCycle; // e.g., "WEEKLY", "MONTHLY", etc.
+    private RecurringCycle recurringCycle;
 
     private LocalDate startDate;
 

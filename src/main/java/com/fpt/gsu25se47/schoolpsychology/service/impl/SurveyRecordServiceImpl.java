@@ -3,8 +3,6 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordResponse;
-import com.fpt.gsu25se47.schoolpsychology.mapper.AnswerRecordMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordStatus;

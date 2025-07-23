@@ -1,6 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ModuleType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.QuestionType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -22,14 +21,8 @@ public class AddNewQuestionDto {
     @NotNull(message = "Loại câu hỏi không được để trống")
     private QuestionType questionType;
 
-    @NotNull(message = "Loại module không được để trống")
-    private ModuleType moduleType;
-
     @NotNull(message = "Require không được để trống")
-    private boolean isRequired;
-
-    @NotNull(message = "SubType ID không được để trống")
-    private Integer subTypeId;
+    private Boolean isRequired;
 
     @NotNull(message = "Danh sách câu trả lời không được để trống")
     @Size(min = 1, message = "Phải có ít nhất một câu trả lời")

@@ -1,5 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RecurringCycle;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.TargetScope;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
@@ -12,11 +16,13 @@ import java.util.List;
 @Builder
 public class AddNewSurveyDto {
 
-    @NotBlank(message = "Tên khảo sát không được để trống")
-    private String name;
+    @NotBlank(message = "Title khảo sát không được để trống")
+    private String title;
 
     @NotBlank(message = "Mô tả không được để trống")
     private String description;
+
+    private SurveyType surveyType;
 
     @NotNull(message = "Vui lòng xác định khảo sát có bắt buộc không")
     private Boolean isRequired;
@@ -26,7 +32,7 @@ public class AddNewSurveyDto {
 
     // Nếu isRecurring = true thì recurringCycle phải có giá trị (handled in custom validator or service logic)
     @Size(max = 50, message = "Chu kỳ lặp không được vượt quá 50 ký tự")
-    private String recurringCycle;
+    private RecurringCycle recurringCycle;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
         @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc sau đó")
@@ -35,6 +41,12 @@ public class AddNewSurveyDto {
     @NotNull(message = "Ngày kết thúc không được để trống")
     @Future(message = "Ngày kết thúc phải sau ngày hiện tại")
     private LocalDate endDate;
+
+    private Integer categoryId;
+
+    private TargetScope targetScope;
+
+    private Grade targetGrade;
 
     @NotEmpty(message = "Danh sách câu hỏi không được để trống")
     @Valid

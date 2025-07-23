@@ -9,7 +9,7 @@
     import java.util.List;
 
     public interface SurveyRepository extends JpaRepository<Survey, Integer> {
-        @Query("SELECT s FROM Survey s WHERE s.account.id = :accountId")
+        @Query("SELECT s FROM Survey s WHERE s.createBy.id = :accountId")
         List<Survey> findByAccountId(int accountId);
 
         @Query("SELECT s FROM Survey s WHERE s.startDate = :date AND s.status = 'DRAFT'")
@@ -20,7 +20,7 @@
 
         @Query("""
         SELECT s FROM Survey s
-        LEFT JOIN SurveyRecord sr ON sr.survey.id = s.id AND sr.account.id = :accountId AND sr.round = s.round
+        LEFT JOIN SurveyRecord sr ON sr.survey.id = s.id AND sr.student.id = :accountId AND sr.round = s.round
         JOIN Student st ON st.account.id = :accountId
         WHERE sr.id IS NULL
           AND s.status = 'PUBLISHED'

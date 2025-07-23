@@ -21,11 +21,7 @@ public class QuestionResponse {
 
     private boolean isRequired;
 
-    private String moduleType;
-
     private String questionType;
-
-    private SubTypeResponse subType;
 
     private String text;
 

@@ -2,17 +2,17 @@ package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
-public class SurveyResponse {
+public class SurveyGetAllResponse {
 
     private Integer surveyId;
 
-    private String name;
+    private String title;
 
     private String description;
 
@@ -22,19 +22,25 @@ public class SurveyResponse {
 
     private String recurringCycle;
 
+    private Integer round;
+
+    private String surveyType;
+
+    private String status;
+
+    private String targetScope;
+
+    private String targetGrade;
+
     private LocalDate startDate;
 
-    private String surveyCode;
-
-    private CategorySurveyResponse categories;
-
     private LocalDate endDate;
+
+    private CategoryResponse category;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
 
-    private String status;
-
-    private List<QuestionResponse> questions;
+    private Integer createdBy;
 }

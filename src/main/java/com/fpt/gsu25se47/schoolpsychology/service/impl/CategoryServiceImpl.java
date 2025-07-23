@@ -1,20 +1,22 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddCategoryDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewLevelDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
-import com.fpt.gsu25se47.schoolpsychology.mapper.CategoryMapper;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.LevelResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
+import com.fpt.gsu25se47.schoolpsychology.model.Level;
 import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.SubTypeRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.LevelRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,44 +24,101 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryMapper categoryMapper;
 
-    private final SubTypeRepository subTypeRepository;
+    private final LevelRepository levelRepository;
 
     @Override
     @Transactional
-    public Optional<CategoryResponse> createCategory(AddCategoryDto addCategoryDto) {
-        try {
-            if (categoryRepository.findByName(addCategoryDto.getName()).isPresent() ||
-                    categoryRepository.findByCode(addCategoryDto.getCode()).isPresent()) {
-                log.warn("This category existed in the system with name: {}\n\t code: {}",
-                        addCategoryDto.getName(), addCategoryDto.getCode());
-                log.warn("Return empty category here");
-                return Optional.empty();
-            }
-            Category category = categoryMapper.toEntity(addCategoryDto);
+    public Optional<?> createCategory(AddCategoryDto addCategoryDto) {
+        Category category = this.mapToCategory(addCategoryDto);
 
-            List<SubType> subTypes = new ArrayList<>();
+        List<Level> levels = category.getLevels();
+        levels.forEach(level -> level.setCategory(category));
 
-            addCategoryDto.getListSubTypeIds().forEach(item -> {
-                SubType subType = subTypeRepository.findById(item).orElseThrow(() -> new RuntimeException("SubType not found"));
-                subTypes.add(subType);
-            });
-
-            category.setSubTypes(subTypes);
-            Category categorySaved = categoryRepository.save(category);
-            return Optional.of(categoryMapper.toResponse(categorySaved));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException("Could not create category due to exception");
-        }
+        categoryRepository.save(category);
+        return Optional.of("Category created");
     }
 
     @Override
-    public List<CategoryResponse> findAllCategories() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(categoryMapper::toResponse)
+    public Optional<?> findAllCategories() {
+        List<Category> categories = categoryRepository.findAll();
+
+        List<CategoryResponse> responses = categories.stream()
+                .map(this::mapToCategoryGetAllResponse)
                 .toList();
+
+        return Optional.of(responses);
     }
+
+    @Override
+    public Optional<?> findAllLevelByCategoryId(Integer categoryId) {
+        List<Level> levels = levelRepository.findAllByCategoryId(categoryId);
+
+        List<LevelResponse> responses = levels.stream()
+                .map(this::mapToLevelResponse)
+                .toList();
+
+        return Optional.of(responses);
+    }
+
+
+    private CategoryResponse mapToCategoryGetAllResponse(Category category) {
+        return  CategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .code(category.getCode())
+                .description(category.getDescription())
+                .isSum(category.getIsSum())
+                .isLimited(category.getIsLimited())
+                .questionLength(category.getQuestionLength())
+                .severityWeight(category.getSeverityWeight())
+                .isActive(category.getIsActive())
+                .maxScore(category.getMaxScore())
+                .minScore(category.getMinScore())
+                .build();
+    }
+
+    private LevelResponse mapToLevelResponse(Level level) {
+        return LevelResponse.builder()
+                .id(level.getId())
+                .label(level.getLabel())
+                .minScore(level.getMinScore())
+                .maxScore(level.getMaxScore())
+                .levelType(level.getLevelType())
+                .code(level.getCode())
+                .description(level.getDescription())
+                .symptomsDescription(level.getSymptomsDescription())
+                .interventionRequired(level.getInterventionRequired())
+                .build();
+    }
+
+    private Category mapToCategory(AddCategoryDto dto) {
+        return Category.builder()
+                .name(dto.getName())
+                .code(dto.getCode())
+                .description(dto.getDescription())
+                .isSum(dto.getIsSum())
+                .isLimited(dto.getIsLimited())
+                .questionLength(dto.getQuestionLength())
+                .severityWeight(dto.getSeverityWeight())
+                .isActive(true)
+                .maxScore(dto.getMaxScore())
+                .minScore(dto.getMinScore())
+                .levels(dto.getLevels().stream().map(this::mapToLevel).collect(Collectors.toList()))
+                .build();
+    }
+
+    private Level mapToLevel(AddNewLevelDto dto) {
+        return Level.builder()
+                .label(dto.getLabel())
+                .minScore(dto.getMinScore())
+                .maxScore(dto.getMaxScore())
+                .levelType(dto.getLevelType())
+                .code(dto.getCode())
+                .description(dto.getDescription())
+                .symptomsDescription(dto.getSymptomsDescription())
+                .interventionRequired(dto.getInterventionRequired())
+                .build();
+    }
+
 }

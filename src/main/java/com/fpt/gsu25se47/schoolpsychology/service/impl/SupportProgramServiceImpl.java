@@ -2,7 +2,6 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
-import com.fpt.gsu25se47.schoolpsychology.mapper.SupportProgramMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
 import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;

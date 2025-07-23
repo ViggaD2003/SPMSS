@@ -8,18 +8,14 @@ import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
+import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -32,20 +28,16 @@ public class SurveyServiceImpl implements SurveyService {
 
     private final SurveyRepository surveyRepository;
 
-    private final SubTypeRepository subTypeRepository;
-
     private final AccountRepository accountRepository;
 
     private final CategoryRepository categoryRepository;
+
 
     @Override
     @Transactional
     public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null || !(auth.getPrincipal() instanceof UserDetails userDetails)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-            }
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
             if (userDetails == null) {
                 throw new BadRequestException("Unauthorized");
             }
@@ -53,22 +45,6 @@ public class SurveyServiceImpl implements SurveyService {
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
             Survey survey = this.mapToSurvey(addNewSurveyDto);
-            List<Question> questions = survey.getQuestions();
-
-            boolean isSameSubType = questions.stream()
-                    .map(Question::getSubType)
-                    .distinct()
-                    .count() <= 1;
-
-            if (!isSameSubType) {
-                throw new IllegalStateException("All questions must have the same subType.");
-            }
-
-            // (Tùy chọn) Lấy subtype nếu muốn
-            SubType commonSubType = questions.isEmpty() ? null : questions.get(0).getSubType();
-
-            assert commonSubType != null;
-            survey.setSurveyCode(commonSubType.getCodeName());
 
             if (!survey.getQuestions().isEmpty()) {
                 for (Question question : survey.getQuestions()) {
@@ -88,8 +64,7 @@ public class SurveyServiceImpl implements SurveyService {
                 survey.setStatus(SurveyStatus.DRAFT);
             }
 
-            survey.setRound(1);
-            survey.setAccount(account);
+            survey.setCreateBy(account);
             surveyRepository.save(survey);
 
             return Optional.of("Create survey successfull");
@@ -104,7 +79,12 @@ public class SurveyServiceImpl implements SurveyService {
     public Optional<?> getAllSurveys() {
         try {
             List<Survey> surveys = surveyRepository.findAll();
-            List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
+            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(this::mapToSurveyGetAllResponse).toList();
+
+            surveyResponses.forEach(response -> {
+               surveys.forEach(survey ->  response.setCreatedBy(survey.getCreateBy().getId()));
+            });
+
             return Optional.of(surveyResponses);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -121,7 +101,7 @@ public class SurveyServiceImpl implements SurveyService {
                 throw new RuntimeException("Survey not found");
             }
 
-            SurveyResponse response = this.mapToSurveyResponse(survey);
+            SurveyDetailResponse response = this.mapToSurveyDetailResponse(survey);
             return Optional.of(response);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -129,84 +109,88 @@ public class SurveyServiceImpl implements SurveyService {
         }
     }
 
-    @Override
-    @Transactional
-    public Optional<?> updateSurveyById(Integer id, AddNewSurveyDto updateSurveyRequest) {
-        Survey survey = surveyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Survey not found"));
-
-        switch (survey.getStatus()) {
-            case DRAFT -> {
-                if (survey.getRound() == 1) {
-                    updateBasicSurveyInfo(survey, updateSurveyRequest);
-
-                    // Xóa hết các câu hỏi cũ
-                    survey.getQuestions().clear();
-
-                    // Thêm câu hỏi mới
-                    List<Question> newQuestions = updateSurveyRequest.getQuestions().stream()
-                            .map(dto -> {
-                                Question question = mapToQuestion(dto);
-                                question.setSurvey(survey);
-                                if (question.getAnswers() != null) {
-                                    question.getAnswers().forEach(answer -> answer.setQuestion(question));
-                                }
-                                return question;
-                            }).toList();
-
-                    survey.getQuestions().addAll(newQuestions);
-
-                    // Kiểm tra tất cả câu hỏi có cùng subtype không
-                    boolean isSameSubType = survey.getQuestions().stream()
-                            .map(Question::getSubType)
-                            .distinct()
-                            .count() <= 1;
-
-                    if (!isSameSubType) {
-                        throw new IllegalStateException("All questions must have the same subType.");
-                    }
-
-                    // Cập nhật surveyCode theo subtype
-                    SubType commonSubType = survey.getQuestions().isEmpty() ? null : survey.getQuestions().get(0).getSubType();
-                    if (commonSubType != null) {
-                        survey.setSurveyCode(commonSubType.getCodeName());
-                    }
-                } else {
-                    updateBasicSurveyInfo(survey, updateSurveyRequest);
-                    survey.setStartDate(updateSurveyRequest.getStartDate());
-                    survey.setEndDate(updateSurveyRequest.getEndDate());
-                }
-            }
-
-            case ARCHIVED -> {
-                updateBasicSurveyInfo(survey, updateSurveyRequest);
-                survey.setStartDate(updateSurveyRequest.getStartDate());
-                survey.setEndDate(updateSurveyRequest.getEndDate());
-                survey.setRound(survey.getRound() + 1);
-                survey.setStatus(SurveyStatus.DRAFT); // quay về DRAFT để tạo lại bản mới
-            }
-
-            default -> throw new IllegalStateException("Unsupported survey status: " + survey.getStatus());
-        }
-
-        Survey updatedSurvey = surveyRepository.save(survey);
-        return Optional.of(mapToSurveyResponse(updatedSurvey));
-    }
+//    @Override
+//    @Transactional
+//    public Optional<?> updateSurveyById(Integer id, AddNewSurveyDto updateSurveyRequest) {
+//        Survey survey = surveyRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Survey not found"));
+//
+//        switch (survey.getStatus()) {
+//            case DRAFT -> {
+//                if (survey.getRound() == 1) {
+//                    updateBasicSurveyInfo(survey, updateSurveyRequest);
+//
+//                    // Xóa hết các câu hỏi cũ
+//                    survey.getQuestions().clear();
+//
+//                    // Thêm câu hỏi mới
+//                    List<Question> newQuestions = updateSurveyRequest.getQuestions().stream()
+//                            .map(dto -> {
+//                                Question question = mapToQuestion(dto);
+//                                question.setSurvey(survey);
+//                                if (question.getAnswers() != null) {
+//                                    question.getAnswers().forEach(answer -> answer.setQuestion(question));
+//                                }
+//                                return question;
+//                            }).toList();
+//
+//                    survey.getQuestions().addAll(newQuestions);
+//
+//                    // Kiểm tra tất cả câu hỏi có cùng subtype không
+//                    boolean isSameSubType = survey.getQuestions().stream()
+//                            .map(Question::getSubType)
+//                            .distinct()
+//                            .count() <= 1;
+//
+//                    if (!isSameSubType) {
+//                        throw new IllegalStateException("All questions must have the same subType.");
+//                    }
+//
+//                    // Cập nhật surveyCode theo subtype
+//                    SubType commonSubType = survey.getQuestions().isEmpty() ? null : survey.getQuestions().get(0).getSubType();
+//                    if (commonSubType != null) {
+//                        survey.setSurveyCode(commonSubType.getCodeName());
+//                    }
+//                } else {
+//                    updateBasicSurveyInfo(survey, updateSurveyRequest);
+//                    survey.setStartDate(updateSurveyRequest.getStartDate());
+//                    survey.setEndDate(updateSurveyRequest.getEndDate());
+//                }
+//            }
+//
+//            case ARCHIVED -> {
+//                updateBasicSurveyInfo(survey, updateSurveyRequest);
+//                survey.setStartDate(updateSurveyRequest.getStartDate());
+//                survey.setEndDate(updateSurveyRequest.getEndDate());
+//                survey.setRound(survey.getRound() + 1);
+//                survey.setStatus(SurveyStatus.DRAFT); // quay về DRAFT để tạo lại bản mới
+//            }
+//
+//            default -> throw new IllegalStateException("Unsupported survey status: " + survey.getStatus());
+//        }
+//
+//        Survey updatedSurvey = surveyRepository.save(survey);
+//        return Optional.of(mapToSurveyResponse(updatedSurvey));
+//    }
 
 
     @Override
     public Optional<?> getAllSurveyByCounselorId() {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null || !(auth.getPrincipal() instanceof UserDetails userDetails)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+            if (userDetails == null) {
+                throw new BadRequestException("Unauthorized");
             }
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
 
+            if(account.getRole().name() != "COUNSELOR"){
+                throw new BadRequestException("Account is not counselor");
+            }
+
             List<Survey> surveys = surveyRepository.findByAccountId(account.getId());
 
-            List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
+            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(this::mapToSurveyGetAllResponse).toList();
             return Optional.of(surveyResponses);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -217,16 +201,16 @@ public class SurveyServiceImpl implements SurveyService {
     @Override
     public Optional<?> getAllSurveyWithPublished() {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null || !(auth.getPrincipal() instanceof UserDetails userDetails)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+            if (userDetails == null) {
+                throw new BadRequestException("Unauthorized");
             }
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
 
             List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(account.getId());
 
-            List<SurveyResponse> surveyResponses = surveys.stream().map(this::mapToSurveyResponse).toList();
+            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(this::mapToSurveyGetAllResponse).toList();
             return Optional.of(surveyResponses);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -243,18 +227,14 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     private Question mapToQuestion(AddNewQuestionDto dto) {
-        SubType subType = subTypeRepository.findById(dto.getSubTypeId()).orElseThrow(() ->
-                new RuntimeException("SubType not found"));
 
         return Question.builder()
                 .answers(dto.getAnswers().stream().map(this::mapToAnswer).toList())
-                .subType(subType)
                 .description(dto.getDescription())
                 .text(dto.getText())
                 .isActive(true)
-                .isRequired(dto.isRequired())
+                .isRequired(dto.getIsRequired())
                 .questionType(dto.getQuestionType())
-                .moduleType(dto.getModuleType())
                 .build();
     }
 
@@ -263,12 +243,20 @@ public class SurveyServiceImpl implements SurveyService {
             throw new RuntimeException("End date must be after than start date");
         }
 
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
         return Survey.builder()
                 .description(dto.getDescription())
                 .endDate(dto.getEndDate())
                 .isRequired(dto.getIsRequired())
                 .isRecurring(dto.getIsRecurring())
-                .name(dto.getName())
+                .surveyType(dto.getSurveyType())
+                .targetScope(dto.getTargetScope())
+                .targetGradeLevel(dto.getTargetGrade())
+                .round(1)
+                .category(category)
+                .title(dto.getTitle())
                 .questions(dto.getQuestions().stream().map(this::mapToQuestion).collect(Collectors.toList()))
                 .recurringCycle(dto.getRecurringCycle())
                 .startDate(dto.getStartDate())
@@ -276,26 +264,50 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
 
-    private SurveyResponse mapToSurveyResponse(Survey survey) {
-        SubType subType = subTypeRepository.findByCodeName(survey.getSurveyCode());
-
-        return SurveyResponse.builder()
+    private SurveyGetAllResponse mapToSurveyGetAllResponse(Survey survey) {
+        return SurveyGetAllResponse.builder()
                 .surveyId(survey.getId())
                 .createdAt(survey.getCreatedDate())
                 .updatedAt(survey.getUpdatedDate())
-                .name(survey.getName())
+                .title(survey.getTitle())
                 .status(survey.getStatus().name())
                 .isRecurring(survey.getIsRecurring())
                 .isRequired(survey.getIsRequired())
-                .surveyCode(survey.getSurveyCode())
                 .endDate(survey.getEndDate())
                 .startDate(survey.getStartDate())
                 .description(survey.getDescription())
-                .recurringCycle(survey.getRecurringCycle())
-                .categories(subType == null ? null : this.mapToResponse(subType.getCategory()))
+                .recurringCycle(survey.getRecurringCycle().name())
+                .targetGrade(survey.getTargetGradeLevel().name())
+                .targetScope(survey.getTargetScope().name())
+                .surveyType(survey.getSurveyType().name())
+                .category(this.mapToCategorySurveyResponse(survey.getCategory()))
+                .round(survey.getRound())
+                .build();
+    }
+
+    private SurveyDetailResponse mapToSurveyDetailResponse(Survey survey) {
+        return SurveyDetailResponse.builder()
+                .surveyId(survey.getId())
+                .createdAt(survey.getCreatedDate())
+                .updatedAt(survey.getUpdatedDate())
+                .title(survey.getTitle())
+                .status(survey.getStatus().name())
+                .isRecurring(survey.getIsRecurring())
+                .isRequired(survey.getIsRequired())
+                .endDate(survey.getEndDate())
+                .startDate(survey.getStartDate())
+                .description(survey.getDescription())
+                .recurringCycle(survey.getRecurringCycle().name())
+                .targetGrade(survey.getTargetGradeLevel().name())
+                .targetScope(survey.getTargetScope().name())
+                .surveyType(survey.getSurveyType().name())
+                .category(this.mapToCategorySurveyResponse(survey.getCategory()))
+                .round(survey.getRound())
                 .questions(survey.getQuestions().stream().map(this::mapToQuestionResponse).toList())
                 .build();
     }
+
+
 
     private QuestionResponse mapToQuestionResponse(Question question) {
         return QuestionResponse.builder()
@@ -303,12 +315,10 @@ public class SurveyServiceImpl implements SurveyService {
                 .updatedAt(question.getUpdatedDate())
                 .createdAt(question.getCreatedDate())
                 .text(question.getText())
-                .moduleType(question.getModuleType().name())
                 .description(question.getDescription())
-                .isActive(question.isActive())
-                .isRequired(question.isRequired())
+                .isActive(question.getIsActive())
+                .isRequired(question.getIsRequired())
                 .questionType(question.getQuestionType().name())
-                .subType(mapToResponse(question.getSubType()))
                 .answers(question.getAnswers().stream().map(this::mapToAnswerResponse).toList())
                 .build();
     }
@@ -320,22 +330,26 @@ public class SurveyServiceImpl implements SurveyService {
                 .text(answer.getText())
                 .build();
     }
-    private SubTypeResponse mapToResponse(SubType subType) {
-        return SubTypeResponse.builder()
-                .id(subType.getId())
-                .codeName(subType.getCodeName())
-                .build();
-    }
 
-    private CategorySurveyResponse mapToResponse(Category category) {
-        return CategorySurveyResponse.builder()
+
+    private CategoryResponse mapToCategorySurveyResponse(Category category) {
+        return CategoryResponse.builder()
                 .id(category.getId())
+                .code(category.getCode())
                 .name(category.getName())
+                .isSum(category.getIsSum())
+                .description(category.getDescription())
+                .maxScore(category.getMaxScore())
+                .minScore(category.getMinScore())
+                .questionLength(category.getQuestionLength())
+                .isActive(category.getIsActive())
+                .severityWeight(category.getSeverityWeight())
+                .isLimited(category.getIsLimited())
                 .build();
     }
 
     private void updateBasicSurveyInfo(Survey survey, AddNewSurveyDto dto) {
-        survey.setName(dto.getName());
+        survey.setTitle(dto.getTitle());
         survey.setDescription(dto.getDescription());
         survey.setIsRecurring(dto.getIsRecurring());
         survey.setIsRequired(dto.getIsRequired());

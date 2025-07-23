@@ -2,7 +2,6 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.common.ApiResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddCategoryDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,7 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createCategory(@RequestBody AddCategoryDto addCategoryDto) {
 
-        Optional<CategoryResponse> categoryResponse = categoryService.createCategory(addCategoryDto);
+        Optional<CategoryDetailResponse> categoryResponse = categoryService.createCategory(addCategoryDto);
 
         if (categoryResponse.isEmpty()) {
             return ResponseEntity
@@ -36,7 +35,7 @@ public class CategoryController {
                     );
         }
         return ResponseEntity
-                .ok(ApiResponse.<CategoryResponse>builder()
+                .ok(ApiResponse.<CategoryDetailResponse>builder()
                         .statusCode(HttpStatus.OK.value())
                         .success(true)
                         .message("Category created successfully")

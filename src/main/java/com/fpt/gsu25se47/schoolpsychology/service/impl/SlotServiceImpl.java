@@ -6,7 +6,6 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.BookedSlot;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotConflictError;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotResponse;
-import com.fpt.gsu25se47.schoolpsychology.mapper.SlotMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;

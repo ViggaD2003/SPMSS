@@ -2,7 +2,6 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.ClassRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassDto;
-import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.Teacher;

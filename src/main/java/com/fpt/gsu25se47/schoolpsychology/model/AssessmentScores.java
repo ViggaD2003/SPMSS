@@ -24,8 +24,8 @@ public class AssessmentScores {
     private Appointment appointment;
 
     @ManyToOne
-    @JoinColumn(name = "level_id")
-    private Level level;
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     private Float severityScore;
 

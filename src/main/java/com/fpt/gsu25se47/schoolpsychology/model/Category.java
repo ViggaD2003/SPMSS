@@ -23,6 +23,7 @@ public class Category{
 
     private String name;
 
+    @Column(name = "code", unique = true, nullable = false)
     private String code;
 
     private String description;
@@ -49,4 +50,7 @@ public class Category{
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Level> levels = new ArrayList<>();
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    private List<AssessmentScores> assessmentScores = new ArrayList<>();
 }

@@ -34,7 +34,7 @@ public class SupportProgramResponse {
 
     private String location;
 
-    private CategoryResponse category;
+    private CategoryDetailResponse category;
 
     private List<Integer> sessions;
 
