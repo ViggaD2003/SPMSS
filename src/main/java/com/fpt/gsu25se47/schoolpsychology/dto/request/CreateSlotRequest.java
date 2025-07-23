@@ -3,7 +3,6 @@ package com.fpt.gsu25se47.schoolpsychology.dto.request;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotUsageType;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -34,8 +33,4 @@ public class CreateSlotRequest {
     private SlotStatus status = SlotStatus.PUBLISHED;
 
     private Integer hostById;
-
-    @NotBlank(message = "Slot type must not be blank")
-    @JsonSetter(nulls = Nulls.SKIP)
-    private SlotUsageType type = SlotUsageType.PROGRAM;
 }

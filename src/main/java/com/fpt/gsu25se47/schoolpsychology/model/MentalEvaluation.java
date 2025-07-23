@@ -46,4 +46,8 @@ public class MentalEvaluation {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Account student;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Cases cases;
 }

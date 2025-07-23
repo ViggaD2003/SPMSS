@@ -37,11 +37,11 @@ public class SurveyController {
         return ResponseEntity.ok(surveyService.getSurveyById(id));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateSurvey(@PathVariable Integer id, @Valid @RequestBody AddNewSurveyDto dto) {
-        return ResponseEntity.status(HttpStatus.OK).body(surveyService.updateSurveyById(id, dto));
-    }
+//    @PreAuthorize("hasRole('MANAGER')")
+//    @PutMapping("/{id}")
+//    public ResponseEntity<?> updateSurvey(@PathVariable Integer id, @Valid @RequestBody AddNewSurveyDto dto) {
+//        return ResponseEntity.status(HttpStatus.OK).body(surveyService.updateSurveyById(id, dto));
+//    }
 
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @GetMapping("/get-by-account")

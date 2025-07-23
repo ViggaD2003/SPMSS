@@ -6,10 +6,10 @@ import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.CaseRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.LevelRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
 @Service
@@ -18,6 +18,8 @@ public class CaseServiceImpl implements CaseService {
     private final CaseRepository caseRepository;
 
     private final AccountRepository accountRepository;
+
+    private final LevelRepository levelRepository;
 
     @Override
     public Optional<?> createCase(AddNewCaseDto dto) {
@@ -30,15 +32,20 @@ public class CaseServiceImpl implements CaseService {
 
         Account createBy = accountRepository.findById(dto.getCreateBy())
                 .orElseThrow(() -> new IllegalArgumentException("Create By not found"));
-
-
-
         Cases cases = Cases.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .priority(dto.getPriority())
                 .status(Status.NEW)
                 .progressTrend(dto.getProgressTrend())
+                .createBy(createBy)
+                .student(student)
+                .initialLevel(levelRepository.findById(dto.getInitialLevelId()).orElseThrow(() -> new IllegalArgumentException("Initial Level not found")))
+                .currentLevel(levelRepository.findById(dto.getCurrentLevelId()).orElseThrow(() -> new IllegalArgumentException("Current Level not found")))
+                .progressTrend(dto.getProgressTrend())
                 .build();
+
+        caseRepository.save(cases);
+        return Optional.of("Case created !");
     }
 }

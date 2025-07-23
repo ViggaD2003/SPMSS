@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface QuestRepository extends JpaRepository<Question, Integer> {
-    @Query("SELECT q FROM Question q WHERE q.programSurvey.id = :surveyId AND q.isRequired = true")
-    List<Question> findByProgramSurveyIdAndIsRequiredTrue(@Param("surveyId") Integer surveyId);
+//    @Query("SELECT q FROM Question q WHERE q.programSurvey.id = :surveyId AND q.isRequired = true")
+//    List<Question> findByProgramSurveyIdAndIsRequiredTrue(@Param("surveyId") Integer surveyId);
 
 }

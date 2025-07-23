@@ -24,5 +24,5 @@ public class MentalEvaluationDto {
 
     private LocalDate date;
 
-    private CategoryDetailResponse categoryResponse;
+//    private CategoryDetailResponse categoryResponse;
 }

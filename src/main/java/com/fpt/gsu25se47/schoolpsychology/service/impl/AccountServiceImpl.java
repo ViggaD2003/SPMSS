@@ -98,7 +98,7 @@ public class AccountServiceImpl implements AccountService {
 
         if (student.getClasses() != null) {
             ClassDto classDto = new ClassDto();
-            classDto.setClassYear(student.getClasses().getClassYear());
+            classDto.setClassYear(student.getClasses().getSchoolYear());
             classDto.setCodeClass(student.getClasses().getCodeClass());
 
             if (student.getClasses().getTeacher() != null && student.getClasses().getTeacher().getAccount() != null) {
@@ -113,28 +113,28 @@ public class AccountServiceImpl implements AccountService {
             studentDto.setClassDto(classDto);
         }
 
-        if (!loginAccountInTheMoment.getRole().name().equals("MANAGER")) {
-            List<MentalEvaluationDto> mentalEvaluationDtos = student.getMentalEvaluations().stream()
-                    .map(this::mapToMentalEvaluationDto).toList();
-            studentDto.setMentalEvaluations(mentalEvaluationDtos);
-        }
+//        if (!loginAccountInTheMoment.getRole().name().equals("MANAGER")) {
+//            List<MentalEvaluationDto> mentalEvaluationDtos = student.getMentalEvaluations().stream()
+//                    .map(this::mapToMentalEvaluationDto).toList();
+//            studentDto.setMentalEvaluations(mentalEvaluationDtos);
+//        }
         return studentDto;
     }
 
-    private MentalEvaluationDto mapToMentalEvaluationDto(MentalEvaluation mentalEvaluation) {
-        return MentalEvaluationDto.builder()
-                .id(mentalEvaluation.getId())
-                .evaluationType(mentalEvaluation.getEvaluationType().name())
-                .evaluationRecordId(mentalEvaluation.getEvaluationRecordId())
-                .date(mentalEvaluation.getDate())
-                .totalScore(mentalEvaluation.getTotalScore())
-                .categoryResponse(CategoryDetailResponse.builder()
-                        .name(mentalEvaluation.getCategory().getName())
-                        .id(mentalEvaluation.getCategory().getId())
-                        .code(mentalEvaluation.getCategory().getCode())
-                        .build())
-                .build();
-    }
+//    private MentalEvaluationDto mapToMentalEvaluationDto(MentalEvaluation mentalEvaluation) {
+//        return MentalEvaluationDto.builder()
+//                .id(mentalEvaluation.getId())
+//                .evaluationType(mentalEvaluation.getEvaluationType().name())
+//                .evaluationRecordId(mentalEvaluation.getEvaluationRecordId())
+//                .date(mentalEvaluation.getDate())
+//                .totalScore(mentalEvaluation.getTotalScore())
+//                .categoryResponse(CategoryDetailResponse.builder()
+//                        .name(mentalEvaluation.getCategory().getName())
+//                        .id(mentalEvaluation.getCategory().getId())
+//                        .code(mentalEvaluation.getCategory().getCode())
+//                        .build())
+//                .build();
+//    }
 
     private ParentDto getParentDto(Account account) {
         Guardian guardian = guardianRepository.findById(account.getId()).orElseThrow(() -> new UsernameNotFoundException("Not found guardian"));
@@ -176,7 +176,7 @@ public class AccountServiceImpl implements AccountService {
 
         if (student.getClasses() != null) {
             ClassDto classDto = new ClassDto();
-            classDto.setClassYear(student.getClasses().getClassYear());
+            classDto.setClassYear(student.getClasses().getSchoolYear());
             classDto.setCodeClass(student.getClasses().getCodeClass());
 
             if (student.getClasses().getTeacher() != null && student.getClasses().getTeacher().getAccount() != null) {

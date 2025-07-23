@@ -33,10 +33,6 @@ public class AddNewCaseDto {
     @Positive(message = "Created by must be a positive number")
     private Integer createBy;
 
-    @NotNull(message = "Counselor ID must not be null")
-    @Positive(message = "Counselor ID must be a positive number")
-    private Integer counselorId;
-
     @NotNull(message = "Current level ID must not be null")
     @Positive(message = "Current level ID must be a positive number")
     private Integer currentLevelId;
