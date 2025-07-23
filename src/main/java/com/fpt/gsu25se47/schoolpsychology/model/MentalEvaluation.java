@@ -1,7 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.assignment.test.model.enums.Source;
-import com.assignment.test.model.enums.SourceType;
+
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SourceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

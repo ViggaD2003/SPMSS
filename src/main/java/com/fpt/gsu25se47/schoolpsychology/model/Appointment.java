@@ -1,10 +1,10 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.assignment.test.common.Auditable;
-import com.assignment.test.model.enums.AppointmentStatus;
-import com.assignment.test.model.enums.HostType;
-import com.assignment.test.model.enums.SessionFlow;
-import com.assignment.test.model.enums.StudentCoopLevel;
+import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SessionFlow;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.StudentCoopLevel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

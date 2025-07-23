@@ -1,9 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.assignment.test.common.Auditable;
-import com.assignment.test.model.enums.Priority;
-import com.assignment.test.model.enums.ProgressTrend;
-import com.assignment.test.model.enums.Status;
+import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Priority;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgressTrend;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

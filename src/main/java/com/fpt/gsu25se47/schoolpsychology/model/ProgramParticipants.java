@@ -1,6 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.assignment.test.model.enums.RegistrationStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
