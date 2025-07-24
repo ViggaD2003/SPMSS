@@ -48,7 +48,7 @@ public class AccountController {
             description = "Chỉ tài khoản có vai trò STUDENT hoặc PARENTS mới được phép gọi API này để xem danh sách tư vấn viên"
     )
     @ApiResponse(responseCode = "200", description = "Lấy danh sách tư vấn viên thành công")
-    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping("/view-counselor")
     public ResponseEntity<?> getViewCounselor() {
         return ResponseEntity.ok(accountService.listAllCounselors());
@@ -73,7 +73,7 @@ public class AccountController {
             @ApiResponse(responseCode = "200", description = "Lấy thông tin tài khoản thành công"),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy tài khoản với ID đã cho")
     })
-    @PreAuthorize("hasRole('COUNSELOR') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER')")
     @GetMapping("/get-account")
     public ResponseEntity<?> getAccount(@RequestParam("accountId") Integer accountId) throws BadRequestException {
         return ResponseEntity.ok(accountService.getAccountById(accountId));
@@ -84,7 +84,7 @@ public class AccountController {
             description = "Chỉ Student và Parent mới được phép cập nhật"
     )
     @ApiResponse(responseCode = "200", description = "Update lại isAbleSurvey thành công ")
-    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('STUDENT') or hasRole('PARENTS')")
     @PatchMapping("/update-able-survey/{accountId}")
     public ResponseEntity<?> updateIsAbleSurvey(@RequestParam("isAbleSurvey") Boolean isAbleSurvey, @PathVariable Integer accountId) throws BadRequestException {
         return ResponseEntity.ok(accountService.updateIsAbleSurvey(accountId, isAbleSurvey));

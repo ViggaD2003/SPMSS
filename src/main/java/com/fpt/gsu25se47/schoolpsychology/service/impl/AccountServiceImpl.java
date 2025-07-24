@@ -146,6 +146,7 @@ public class AccountServiceImpl implements AccountService {
         counselorDto.setFullName(account.getFullName());
         counselorDto.setGender(account.getGender());
         counselorDto.setLinkMeet(counselor.getLinkMeet());
+        counselorDto.setDob(account.getDob());
 
         return counselorDto;
     }
@@ -160,6 +161,7 @@ public class AccountServiceImpl implements AccountService {
         teacherDto.setGender(account.getGender());
         teacherDto.setTeacherCode(teacher.getTeacherCode());
         teacherDto.setLinkMeet(teacher.getLinkMeet());
+        teacherDto.setDob(account.getDob());
 
         return teacherDto;
     }
