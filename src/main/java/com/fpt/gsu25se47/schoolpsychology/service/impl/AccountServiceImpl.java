@@ -13,10 +13,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -24,43 +23,28 @@ import java.util.Optional;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
-
     private final StudentRepository studentRepository;
-
     private final CounselorRepository counselorRepository;
-
     private final TeacherRepository teacherRepository;
-
     private final GuardianRepository guardianRepository;
+    private final ClassRepository classRepository;
 
     @Override
     public Optional<?> profileAccount() {
-        try {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        Account account = getCurrentAccount();
 
-            if (account == null) {
-                throw new UsernameNotFoundException("Not found user");
-            }
-
-            return switch (account.getRole().name().toUpperCase()) {
-                case "STUDENT" -> Optional.of(getStudentDto(account));
-                case "PARENTS" -> Optional.of(getParentDto(account));
-                case "COUNSELOR" -> Optional.of(getCounselorDto(account));
-                default -> Optional.of(getTeacherDto(account));
-            };
-
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException("Something went wrong");
-        }
+        return switch (account.getRole().name().toUpperCase()) {
+            case "STUDENT" -> Optional.of(getStudentDto(account));
+            case "PARENTS" -> Optional.of(getParentDto(account));
+            case "COUNSELOR" -> Optional.of(getCounselorDto(account));
+            default -> Optional.of(getTeacherDto(account));
+        };
     }
 
     @Override
     public List<?> listAllAccounts() {
-        List<Account> accounts = accountRepository.findAll().stream().filter(account -> !account.getRole().name().equals("MANAGER")).toList();
-
-        return accounts.stream()
+        return accountRepository.findAll().stream()
+                .filter(account -> !"MANAGER".equals(account.getRole().name()))
                 .map(account -> switch (account.getRole().name().toUpperCase()) {
                     case "STUDENT" -> getStudentDto(account);
                     case "PARENTS" -> getParentDto(account);
@@ -68,86 +52,72 @@ public class AccountServiceImpl implements AccountService {
                     case "TEACHER" -> getTeacherDto(account);
                     default -> null;
                 })
+                .filter(Objects::nonNull)
                 .toList();
     }
 
     @Override
     public Optional<?> getAccountById(Integer id) throws BadRequestException {
-        Account account = accountRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("Not found account"));
-        if (!account.getRole().name().equals("STUDENT")) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found account"));
+
+        if (!"STUDENT".equals(account.getRole().name())) {
             throw new BadRequestException("Account Id is not Student");
         }
         return Optional.of(getStudentDto(account));
     }
 
-
     private StudentDto getStudentDto(Account account) {
-        Student student = studentRepository.findById(account.getId()).orElseThrow(() -> new UsernameNotFoundException("Not found student"));
+        Student student = studentRepository.findById(account.getId())
+                .orElseThrow(() -> new UsernameNotFoundException("Not found student"));
 
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Account loginAccountInTheMoment = accountRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        StudentDto dto = new StudentDto();
+        dto.setEmail(account.getEmail());
+        dto.setDob(account.getDob());
+        dto.setFullName(account.getFullName());
+        dto.setGender(account.getGender());
+        dto.setPhoneNumber(account.getPhoneNumber());
+        dto.setStudentCode(student.getStudentCode());
+        dto.setIsEnableSurvey(student.getIsEnableSurvey());
 
-        StudentDto studentDto = new StudentDto();
-        studentDto.setEmail(account.getEmail());
-        studentDto.setDob(account.getDob());
-        studentDto.setFullName(account.getFullName());
-        studentDto.setGender(account.getGender());
-        studentDto.setIsEnableSurvey(student.getIsEnableSurvey());
-        studentDto.setPhoneNumber(account.getPhoneNumber());
-        studentDto.setStudentCode(student.getStudentCode());
-
-        if (student.getClasses() != null) {
-            ClassDto classDto = new ClassDto();
-            classDto.setClassYear(student.getClasses().getSchoolYear());
-            classDto.setCodeClass(student.getClasses().getCodeClass());
-
-            if (student.getClasses().getTeacher() != null && student.getClasses().getTeacher().getAccount() != null) {
-                TeacherOfClassDto teacherDto = new TeacherOfClassDto();
-                teacherDto.setEmail(student.getClasses().getTeacher().getAccount().getEmail());
-                teacherDto.setFullName(student.getClasses().getTeacher().getAccount().getFullName());
-                teacherDto.setPhoneNumber(student.getClasses().getTeacher().getAccount().getPhoneNumber());
-                teacherDto.setTeacherCode(student.getClasses().getTeacher().getTeacherCode());
-                classDto.setTeacher(teacherDto);
-            }
-
-            studentDto.setClassDto(classDto);
+        Classes activeClass = classRepository.findActiveClassByStudentId(student.getId());
+        if (activeClass != null) {
+            ClassDto classDto = getClassDto(activeClass);
+            dto.setClassDto(classDto);
         }
-
-//        if (!loginAccountInTheMoment.getRole().name().equals("MANAGER")) {
-//            List<MentalEvaluationDto> mentalEvaluationDtos = student.getMentalEvaluations().stream()
-//                    .map(this::mapToMentalEvaluationDto).toList();
-//            studentDto.setMentalEvaluations(mentalEvaluationDtos);
-//        }
-        return studentDto;
+        return dto;
     }
 
-//    private MentalEvaluationDto mapToMentalEvaluationDto(MentalEvaluation mentalEvaluation) {
-//        return MentalEvaluationDto.builder()
-//                .id(mentalEvaluation.getId())
-//                .evaluationType(mentalEvaluation.getEvaluationType().name())
-//                .evaluationRecordId(mentalEvaluation.getEvaluationRecordId())
-//                .date(mentalEvaluation.getDate())
-//                .totalScore(mentalEvaluation.getTotalScore())
-//                .categoryResponse(CategoryDetailResponse.builder()
-//                        .name(mentalEvaluation.getCategory().getName())
-//                        .id(mentalEvaluation.getCategory().getId())
-//                        .code(mentalEvaluation.getCategory().getCode())
-//                        .build())
-//                .build();
-//    }
+    private static ClassDto getClassDto(Classes activeClass) {
+        ClassDto classDto = new ClassDto();
+        classDto.setClassYear(activeClass.getSchoolYear());
+        classDto.setCodeClass(activeClass.getGrade().name() + activeClass.getCodeClass());
+
+        if (activeClass.getTeacher() != null && activeClass.getTeacher().getAccount() != null) {
+            TeacherOfClassDto teacherDto = new TeacherOfClassDto();
+            Account teacherAcc = activeClass.getTeacher().getAccount();
+            teacherDto.setEmail(teacherAcc.getEmail());
+            teacherDto.setFullName(teacherAcc.getFullName());
+            teacherDto.setPhoneNumber(teacherAcc.getPhoneNumber());
+            teacherDto.setTeacherCode(activeClass.getTeacher().getTeacherCode());
+            classDto.setTeacher(teacherDto);
+        }
+        return classDto;
+    }
 
     private ParentDto getParentDto(Account account) {
-        Guardian guardian = guardianRepository.findById(account.getId()).orElseThrow(() -> new UsernameNotFoundException("Not found guardian"));
+        Guardian guardian = guardianRepository.findById(account.getId())
+                .orElseThrow(() -> new UsernameNotFoundException("Not found guardian"));
 
-        ParentDto parentDto = new ParentDto();
-        parentDto.setEmail(account.getEmail());
-        parentDto.setDob(account.getDob());
-        parentDto.setFullName(account.getFullName());
-        parentDto.setGender(account.getGender());
-        parentDto.setPhoneNumber(account.getPhoneNumber());
-        parentDto.setAddress(guardian.getAddress());
+        ParentDto dto = new ParentDto();
+        dto.setEmail(account.getEmail());
+        dto.setDob(account.getDob());
+        dto.setFullName(account.getFullName());
+        dto.setGender(account.getGender());
+        dto.setPhoneNumber(account.getPhoneNumber());
+        dto.setAddress(guardian.getAddress());
 
-        List<StudentDto> studentDtos = guardian.getRelationships().stream()
+        List<StudentDto> students = guardian.getRelationships().stream()
                 .map(Relationship::getStudent)
                 .filter(Objects::nonNull)
                 .map(this::mapStudentToDto)
@@ -155,43 +125,15 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
 
         RelationshipDto relationshipDto = new RelationshipDto();
-        relationshipDto.setStudent(studentDtos);
-        parentDto.setRelationships(relationshipDto);
+        relationshipDto.setStudent(students);
+        dto.setRelationships(relationshipDto);
 
-        return parentDto;
+        return dto;
     }
 
     private StudentDto mapStudentToDto(Student student) {
         Account studentAcc = accountRepository.findById(student.getId()).orElse(null);
-        if (studentAcc == null) return null;
-
-        StudentDto studentDto = new StudentDto();
-        studentDto.setEmail(studentAcc.getEmail());
-        studentDto.setDob(studentAcc.getDob());
-        studentDto.setFullName(studentAcc.getFullName());
-        studentDto.setGender(studentAcc.getGender());
-        studentDto.setPhoneNumber(studentAcc.getPhoneNumber());
-        studentDto.setStudentCode(student.getStudentCode());
-        studentDto.setIsEnableSurvey(student.getIsEnableSurvey());
-
-        if (student.getClasses() != null) {
-            ClassDto classDto = new ClassDto();
-            classDto.setClassYear(student.getClasses().getSchoolYear());
-            classDto.setCodeClass(student.getClasses().getCodeClass());
-
-            if (student.getClasses().getTeacher() != null && student.getClasses().getTeacher().getAccount() != null) {
-                TeacherOfClassDto teacherDto = new TeacherOfClassDto();
-                teacherDto.setEmail(student.getClasses().getTeacher().getAccount().getEmail());
-                teacherDto.setFullName(student.getClasses().getTeacher().getAccount().getFullName());
-                teacherDto.setPhoneNumber(student.getClasses().getTeacher().getAccount().getPhoneNumber());
-                teacherDto.setTeacherCode(student.getClasses().getTeacher().getTeacherCode());
-                classDto.setTeacher(teacherDto);
-            }
-
-            studentDto.setClassDto(classDto);
-        }
-
-        return studentDto;
+        return studentAcc == null ? null : getStudentDto(studentAcc);
     }
 
     private CounselorDto getCounselorDto(Account account) {
@@ -222,36 +164,22 @@ public class AccountServiceImpl implements AccountService {
         return teacherDto;
     }
 
-
     @Override
-    public Optional<?> updateProfileAccount(UpdateProfileDto updateProfileDto) {
-        try {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElse(null);
+    public Optional<?> updateProfileAccount(UpdateProfileDto dto) {
+        Account account = getCurrentAccount();
+        account.setFullName(dto.getFullName());
+        account.setGender(dto.getGender());
+        account.setPhoneNumber(dto.getPhoneNumber());
+        account.setDob(dto.getDob());
+        accountRepository.save(account);
 
-            if (account == null) {
-                throw new UsernameNotFoundException("Not found account");
-            }
-
-            account.setFullName(updateProfileDto.getFullName());
-            account.setGender(updateProfileDto.getGender());
-            account.setPhoneNumber(updateProfileDto.getPhoneNumber());
-            account.setDob(updateProfileDto.getDob());
-            accountRepository.save(account);
-
-            Optional<?> getAccount = this.profileAccount();
-            return Optional.of(getAccount);
-
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException("Something went wrong");
-        }
+        return profileAccount();
     }
 
     @Override
     public Optional<?> updateIsAbleSurvey(Integer accountId, Boolean isAbleSurvey) throws BadRequestException {
-        Student student = studentRepository.findById(accountId).orElseThrow(() -> new UsernameNotFoundException("Not found student"));
-
+        Student student = studentRepository.findById(accountId)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found student"));
         student.setIsEnableSurvey(isAbleSurvey);
         studentRepository.save(student);
         return Optional.of(student);
@@ -260,14 +188,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getCurrentAccount() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UserDetails)) {
+        if (!(principal instanceof UserDetails userDetails)) {
             throw new BadCredentialsException("Invalid authentication principal");
         }
 
-        String email = ((UserDetails) principal).getUsername();
-
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + email));
+        return accountRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new BadCredentialsException("Account not found for email: " + userDetails.getUsername()));
     }
 
     @Override
@@ -275,7 +201,8 @@ public class AccountServiceImpl implements AccountService {
         try {
             List<Account> accounts = accountRepository.findCounselorsWithSlots();
             List<InfoCounselor> infoCounselors = accounts.stream()
-                    .map(this::mapToDto).toList();
+                    .map(this::mapToInfoCounselor)
+                    .toList();
             return Optional.of(infoCounselors);
         } catch (UsernameNotFoundException e) {
             log.error(e.getMessage());
@@ -283,8 +210,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-
-    private InfoCounselor mapToDto(Account account) {
+    private InfoCounselor mapToInfoCounselor(Account account) {
         Counselor counselor = counselorRepository.findById(account.getId())
                 .orElseThrow(() -> new UsernameNotFoundException("Not found counselor"));
 

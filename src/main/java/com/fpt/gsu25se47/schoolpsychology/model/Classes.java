@@ -36,7 +36,7 @@ public class Classes {
     @Column(unique = true)
     private String codeClass;
 
-    private LocalDate schoolYear;
+    private String schoolYear;
 
     private LocalDateTime startTime;
 

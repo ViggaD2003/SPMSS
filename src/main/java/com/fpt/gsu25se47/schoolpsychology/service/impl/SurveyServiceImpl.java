@@ -135,22 +135,6 @@ public class SurveyServiceImpl implements SurveyService {
 //                            }).toList();
 //
 //                    survey.getQuestions().addAll(newQuestions);
-//
-//                    // Kiểm tra tất cả câu hỏi có cùng subtype không
-//                    boolean isSameSubType = survey.getQuestions().stream()
-//                            .map(Question::getSubType)
-//                            .distinct()
-//                            .count() <= 1;
-//
-//                    if (!isSameSubType) {
-//                        throw new IllegalStateException("All questions must have the same subType.");
-//                    }
-//
-//                    // Cập nhật surveyCode theo subtype
-//                    SubType commonSubType = survey.getQuestions().isEmpty() ? null : survey.getQuestions().get(0).getSubType();
-//                    if (commonSubType != null) {
-//                        survey.setSurveyCode(commonSubType.getCodeName());
-//                    }
 //                } else {
 //                    updateBasicSurveyInfo(survey, updateSurveyRequest);
 //                    survey.setStartDate(updateSurveyRequest.getStartDate());

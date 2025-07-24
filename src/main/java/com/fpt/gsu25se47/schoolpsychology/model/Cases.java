@@ -62,7 +62,4 @@ public class Cases extends Auditable {
 
     @OneToMany(mappedBy = "cases", cascade = CascadeType.ALL)
     private List<SurveyCaseLink> surveyCaseLinks;
-
-    @OneToMany(mappedBy = "cases", cascade = CascadeType.ALL)
-    private List<MentalEvaluation> mentalEvaluations;
 }

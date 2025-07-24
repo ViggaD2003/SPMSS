@@ -1,53 +1,65 @@
-//package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
-//
-//import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
-//import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
-//import com.fpt.gsu25se47.schoolpsychology.model.AppointmentRecord;
-//import com.fpt.gsu25se47.schoolpsychology.model.Slot;
-//import com.fpt.gsu25se47.schoolpsychology.model.Survey;
-//import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
-//import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRecordRepository;
-//import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
-//import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
-//import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
-//import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentRecordService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.scheduling.annotation.Scheduled;
-//import org.springframework.stereotype.Component;
-//
-//import java.time.LocalDate;
-//import java.time.LocalDateTime;
-//import java.util.Collections;
-//import java.util.List;
-//
-//@Component
-//@RequiredArgsConstructor
-//public class MyCronjob {
-//
-//    private final SurveyRepository surveyRepository;
-//
+package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
+
+import com.fpt.gsu25se47.schoolpsychology.model.Survey;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
+
+import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class MyCronjob {
+
+    private final SurveyRepository surveyRepository;
+
 //    private final SlotRepository slotRepository;
 //
 //    private final AppointmentRepository appointmentRepository;
 //
 //    private final AppointmentRecordRepository appointmentRecordRepository;
-//
+
 //    private final AppointmentRecordService appointmentRecordService;
-//
-//    @Scheduled(cron = "0 0 */12 * * *")
-//    public void updateSurveyStatus() {
-//        LocalDate now = LocalDate.now();
-//
-//        List<Survey> toPublish = surveyRepository.findByStartDateAndStatusDraft(now);
-//        toPublish.forEach(survey -> survey.setStatus(SurveyStatus.PUBLISHED));
-//
-//        List<Survey> toFinish = surveyRepository.findByEndDateAndStatusPublished(now);
-//        toFinish.forEach(survey -> survey.setStatus(SurveyStatus.ARCHIVED));
-//
-//        surveyRepository.saveAll(toPublish);
-//        surveyRepository.saveAll(toFinish);
-//    }
-//
+
+    @Scheduled(cron = "0 0 */12 * * *")
+    public void updateSurveyStatus() {
+        LocalDate now = LocalDate.now();
+
+        List<Survey> toPublish = surveyRepository.findByStartDateAndStatusDraft(now);
+        toPublish.forEach(survey -> survey.setStatus(SurveyStatus.PUBLISHED));
+
+        List<Survey> toFinish = surveyRepository.findByEndDateAndStatusPublished(now);
+        toFinish.forEach(survey -> survey.setStatus(SurveyStatus.ARCHIVED));
+
+        surveyRepository.saveAll(toPublish);
+        surveyRepository.saveAll(toFinish);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // chạy mỗi ngày lúc 00:00
+    public void processRecurringSurveys() {
+        List<Survey> recurringSurveys = surveyRepository.findAllRecurringSurveys();
+
+        LocalDate today = LocalDate.now();
+
+        for (Survey survey : recurringSurveys) {
+            if (shouldOpenNewRound(survey, today)) {
+                survey.setRound(survey.getRound() + 1);
+                survey.setStartDate(today);
+                survey.setEndDate(survey.getRecurringCycle().equals(RecurringCycle.WEEKLY) ? today.plusDays(3) : today.plusDays(14)); // hoặc tuỳ theo recurring_cycle
+                survey.setStatus(SurveyStatus.PUBLISHED);
+                surveyRepository.save(survey);
+
+                System.out.printf("✔ Mở survey mới: id=%d, round=%d%n", survey.getId(), survey.getRound());
+            }
+        }
+    }
+
 //    @Scheduled(cron = "0 */1 * * * *")
 //    public void updateSlotStatus() {
 //        LocalDateTime now = LocalDateTime.now();
@@ -85,37 +97,16 @@
 //
 //        appointmentRepository.saveAll(appointments);
 //    }
-//
-//
-//    @Scheduled(cron = "0 0 0 * * ?") // chạy mỗi ngày lúc 00:00
-//    public void processRecurringSurveys() {
-//        List<Survey> recurringSurveys = surveyRepository.findAllRecurringSurveys();
-//
-//        LocalDate today = LocalDate.now();
-//
-//        for (Survey survey : recurringSurveys) {
-//            if (shouldOpenNewRound(survey, today)) {
-//                survey.setRound(survey.getRound() + 1);
-//                survey.setStartDate(today);
-//                survey.setEndDate(today.plusDays(7)); // hoặc tuỳ theo recurring_cycle
-//                survey.setStatus(SurveyStatus.PUBLISHED);
-//                surveyRepository.save(survey);
-//
-//                System.out.printf("✔ Mở survey mới: id=%d, round=%d%n", survey.getId(), survey.getRound());
-//            }
-//        }
-//    }
-//
-//    private boolean shouldOpenNewRound(Survey survey, LocalDate today) {
-//        if (!survey.getIsRecurring()) return false;
-//        if (survey.getStartDate() == null) return true;
-//
-//        return switch (survey.getRecurringCycle()) {
-//            case "DAILY" -> survey.getStartDate().isBefore(today);
-//            case "WEEKLY" -> survey.getStartDate().plusWeeks(1).isBefore(today);
-//            case "MONTHLY" -> survey.getStartDate().plusMonths(1).isBefore(today);
-//            default -> false;
-//        };
-//    }
-//}
-//
+
+    private boolean shouldOpenNewRound(Survey survey, LocalDate today) {
+        if (!survey.getIsRecurring()) return false;
+        if (survey.getStartDate() == null) return true;
+
+        return switch (survey.getRecurringCycle()) {
+            case WEEKLY -> !survey.getStartDate().plusWeeks(1).isAfter(today);
+            case MONTHLY -> !survey.getStartDate().plusMonths(1).isAfter(today);
+            default -> false;
+        };
+    }
+}
+

@@ -37,6 +37,7 @@ public class Survey extends Auditable {
     @Enumerated(EnumType.STRING)
     private SurveyType surveyType;
 
+    @Enumerated(EnumType.STRING)
     private RecurringCycle recurringCycle;
 
     private LocalDate startDate;
@@ -46,6 +47,7 @@ public class Survey extends Auditable {
     @Enumerated(EnumType.STRING)
     private TargetScope targetScope;
 
+    @Enumerated(EnumType.STRING)
     private Grade targetGradeLevel;
 
     @Enumerated(EnumType.STRING)

@@ -1,9 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.common;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordGetAllResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -16,4 +19,5 @@ public class PaginationResponse {
     private long totalElements;
     private boolean hasNext;
     private boolean hasPrevious;
+    private List<SurveyRecordGetAllResponse> content;
 }

@@ -31,10 +31,6 @@ public class Student {
 
     private Boolean isEnableSurvey;
 
-    @ManyToOne
-    @JoinColumn(name = "class_id")
-    private Classes classes;
-
     @OneToMany(mappedBy = "student")
     private List<Relationship> relationships = new ArrayList<>();
 

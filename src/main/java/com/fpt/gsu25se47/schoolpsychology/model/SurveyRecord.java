@@ -1,6 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,15 +17,17 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SurveyRecord extends Auditable {
+public class SurveyRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private BigDecimal totalScore;
+    private Float totalScore;
 
     private LocalDate completedAt;
+
+    private Boolean isSkipped;
 
     private Integer round;
 

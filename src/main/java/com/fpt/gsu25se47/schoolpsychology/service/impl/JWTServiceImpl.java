@@ -1,6 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherOfClassDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
+import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JWTServiceImpl implements JWTService {
 
+    private final ClassRepository classRepository;
     @Value("${jwt.secret-key}")
     private String secretKey;
 
@@ -109,12 +113,14 @@ public class JWTServiceImpl implements JWTService {
         List<Student> students = relationshipRepo.findChildrenByParentAccountId(parent.getId());
 
         List<Map<String, Object>> childrenClaims = students.stream().map(child -> {
+            Classes activeClass = classRepository.findActiveClassByStudentId(child.getId());
+
             Map<String, Object> childMap = new HashMap<>();
             childMap.put("userId", child.getId());
             childMap.put("fullName", child.getAccount().getFullName());
             childMap.put("isEnable", child.getIsEnableSurvey());
-            childMap.put("teacherId", child.getClasses() != null && child.getClasses().getTeacher() != null
-                    ? child.getClasses().getTeacher().getId() : null);
+            childMap.put("teacherId", activeClass != null && activeClass.getTeacher() != null
+                    ? activeClass.getTeacher().getId() : null);
             return childMap;
         }).toList();
 
@@ -125,10 +131,11 @@ public class JWTServiceImpl implements JWTService {
     private void handleStudentClaims(Map<String, Object> claims, Account studentAcc) {
         Student student = studentRepo.findById(studentAcc.getId())
                 .orElseThrow(() -> new RuntimeException("Unauthorized"));
+        Classes activeClass = classRepository.findActiveClassByStudentId(student.getId());
 
         claims.put("isEnableSurvey", student.getIsEnableSurvey());
-        claims.put("teacherId", student.getClasses() != null && student.getClasses().getTeacher() != null
-                ? student.getClasses().getTeacher().getId() : null);
+        claims.put("teacherId", activeClass != null && activeClass.getTeacher() != null
+                ? activeClass.getTeacher().getId() : null);
     }
 
     private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
@@ -150,4 +157,7 @@ public class JWTServiceImpl implements JWTService {
             throw new RuntimeException("Invalid JWT token", e);
         }
     }
+
+
+
 }

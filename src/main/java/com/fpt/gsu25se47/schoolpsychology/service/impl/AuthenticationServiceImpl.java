@@ -49,21 +49,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JWTService jwtService;
     private final AccountRepository accountRepo;
     private final TokenRepository tokenRepo;
-
     private final GoogleTokenStore tokenStore;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-
     private final GoogleCalendarService googleCalendarService;
-
     private final TeacherRepository teacherRepository;
-
     private final StudentRepository studentRepository;
-
     private final CounselorRepository counselorRepository;
-
     private final GuardianRepository guardianRepository;
 
     @Value("${google.client.id}")

@@ -17,5 +17,5 @@ public class ClassDto {
 
     private String codeClass;
 
-    private LocalDate classYear;
+    private String classYear;
 }
