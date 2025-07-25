@@ -5,9 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class AnswerRecordResponse {
-    private Integer id;
+public class AnswerRecordDto {
+    private AnswerResponse answerResponse;
     private QuestionDto questionResponse;
-    private AnswerRecordDto answerResponse;
-    private boolean skipped;
 }

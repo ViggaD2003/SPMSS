@@ -12,4 +12,5 @@ public class AnswerResponse {
     private String text;
 
     private int score;
+
 }

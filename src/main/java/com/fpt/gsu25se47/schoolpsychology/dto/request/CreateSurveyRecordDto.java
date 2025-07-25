@@ -13,8 +13,6 @@ public class CreateSurveyRecordDto {
 
     private Boolean isSkipped;
 
-    private Integer round;
-
     private Integer surveyId;
 
     private Float totalScore;

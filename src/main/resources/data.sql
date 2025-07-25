@@ -60,10 +60,10 @@ VALUES
 #     (NOW(), NULL, 'Student with improved focus.', 'LOW', 'IMPROVED', 'IN_PROGRESS', 'Focus Case', 2, 2, 1, 1, 6);
 
 -- SURVEY
-INSERT INTO survey (created_date, updated_date, description, end_date, is_recurring, is_required, recurring_cycle, round, start_date, status, survey_type, target_grade_level, target_scope, title, category_id, account_id)
+INSERT INTO survey (created_date, updated_date, description, end_date, is_recurring, is_required, recurring_cycle, start_date, status, survey_type, target_grade_level, target_scope, title, category_id, account_id)
 VALUES
-    (NOW(), NULL, 'Quarterly emotional health survey', '2025-03-30', b'1', b'1', 'MONTHLY', 1, '2025-03-01', 'PUBLISHED', 'SCREENING', 'GRADE_10', 'GRADE', 'Emotional Health Q1', 1, 1),
-    (NOW(), NULL, 'Follow-up survey on social skills', '2025-04-15', b'0', b'1', 'WEEKLY', 2, '2025-04-01', 'DRAFT', 'FOLLOWUP', 'GRADE_11', 'GRADE', 'Social Skills Follow-up', 2, 2);
+    (NOW(), NULL, 'Quarterly emotional health survey', '2025-03-30', b'1', b'1', 'MONTHLY' , '2025-03-01', 'PUBLISHED', 'SCREENING', 'GRADE_10', 'GRADE', 'Emotional Health Q1', 1, 1),
+    (NOW(), NULL, 'Follow-up survey on social skills', '2025-04-15', b'0', b'1', 'WEEKLY', '2025-04-01', 'DRAFT', 'FOLLOWUP', 'GRADE_11', 'GRADE', 'Social Skills Follow-up', 2, 2);
 
 INSERT INTO questions (is_active, is_required, survey_id, created_date, description, text, question_type)
 VALUES

@@ -11,10 +11,9 @@ import java.util.List;
 public class SurveyRecordDetailResponse {
     private Integer id;
     private Float totalScore;
-    private Integer round;
     private Boolean isSkipped;
     private LevelResponse level;
     private LocalDate completedAt;
-    private SurveyDetailResponse survey;
+    private SurveyGetAllResponse survey;
     private List<AnswerRecordResponse> answerRecords;
 }

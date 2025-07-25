@@ -35,7 +35,10 @@ public class MyCronjob {
         toPublish.forEach(survey -> survey.setStatus(SurveyStatus.PUBLISHED));
 
         List<Survey> toFinish = surveyRepository.findByEndDateAndStatusPublished(now);
-        toFinish.forEach(survey -> survey.setStatus(SurveyStatus.ARCHIVED));
+        toFinish.forEach(survey -> {
+            survey.setStatus(SurveyStatus.ARCHIVED);
+            survey.setIsUsed(Boolean.TRUE);
+        });
 
         surveyRepository.saveAll(toPublish);
         surveyRepository.saveAll(toFinish);
@@ -48,14 +51,13 @@ public class MyCronjob {
         LocalDate today = LocalDate.now();
 
         for (Survey survey : recurringSurveys) {
-            if (shouldOpenNewRound(survey, today)) {
-                survey.setRound(survey.getRound() + 1);
+            if (shouldOpen(survey, today)) {
                 survey.setStartDate(today);
-                survey.setEndDate(survey.getRecurringCycle().equals(RecurringCycle.WEEKLY) ? today.plusDays(3) : today.plusDays(14)); // hoặc tuỳ theo recurring_cycle
+                int numberDoSurvey = survey.getEndDate().getDayOfMonth() - survey.getStartDate().getDayOfMonth();
+                survey.setEndDate(today.plusDays(numberDoSurvey));
                 survey.setStatus(SurveyStatus.PUBLISHED);
                 surveyRepository.save(survey);
-
-                System.out.printf("✔ Mở survey mới: id=%d, round=%d%n", survey.getId(), survey.getRound());
+                System.out.println("Recurring survey " + survey.getId() + " has been published");
             }
         }
     }
@@ -98,7 +100,7 @@ public class MyCronjob {
 //        appointmentRepository.saveAll(appointments);
 //    }
 
-    private boolean shouldOpenNewRound(Survey survey, LocalDate today) {
+    private boolean shouldOpen(Survey survey, LocalDate today) {
         if (!survey.getIsRecurring()) return false;
         if (survey.getStartDate() == null) return true;
 

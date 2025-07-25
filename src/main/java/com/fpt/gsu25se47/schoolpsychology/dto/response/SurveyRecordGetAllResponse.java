@@ -10,7 +10,6 @@ import java.time.LocalDate;
 public class SurveyRecordGetAllResponse {
     private Integer id;
     private Float totalScore;
-    private Integer round;
     private Boolean isSkipped;
     private LevelResponse level;
     private LocalDate completedAt;

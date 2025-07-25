@@ -3,7 +3,10 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAnswerDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewQuestionDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
+import com.fpt.gsu25se47.schoolpsychology.mapper.QuestionMapper;
+import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
@@ -16,6 +19,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +36,9 @@ public class SurveyServiceImpl implements SurveyService {
 
     private final CategoryRepository categoryRepository;
 
+    private final SurveyMapper surveyMapper;
 
+    private final QuestionMapper questionMapper;
     @Override
     @Transactional
     public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request) {
@@ -44,7 +50,7 @@ public class SurveyServiceImpl implements SurveyService {
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
-            Survey survey = this.mapToSurvey(addNewSurveyDto);
+            Survey survey = surveyMapper.mapToSurvey(addNewSurveyDto, categoryRepository);
 
             if (!survey.getQuestions().isEmpty()) {
                 for (Question question : survey.getQuestions()) {
@@ -65,6 +71,7 @@ public class SurveyServiceImpl implements SurveyService {
             }
 
             survey.setCreateBy(account);
+            survey.setIsUsed(Boolean.FALSE);
             surveyRepository.save(survey);
 
             return Optional.of("Create survey successfull");
@@ -79,10 +86,10 @@ public class SurveyServiceImpl implements SurveyService {
     public Optional<?> getAllSurveys() {
         try {
             List<Survey> surveys = surveyRepository.findAll();
-            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(this::mapToSurveyGetAllResponse).toList();
+            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
 
             surveyResponses.forEach(response -> {
-               surveys.forEach(survey ->  response.setCreatedBy(survey.getCreateBy().getId()));
+                surveys.forEach(survey -> response.setCreatedBy(survey.getCreateBy().getId()));
             });
 
             return Optional.of(surveyResponses);
@@ -101,7 +108,7 @@ public class SurveyServiceImpl implements SurveyService {
                 throw new RuntimeException("Survey not found");
             }
 
-            SurveyDetailResponse response = this.mapToSurveyDetailResponse(survey);
+            SurveyDetailResponse response = surveyMapper.mapToSurveyDetailResponse(survey);
             return Optional.of(response);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -109,53 +116,38 @@ public class SurveyServiceImpl implements SurveyService {
         }
     }
 
-//    @Override
-//    @Transactional
-//    public Optional<?> updateSurveyById(Integer id, AddNewSurveyDto updateSurveyRequest) {
-//        Survey survey = surveyRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Survey not found"));
-//
-//        switch (survey.getStatus()) {
-//            case DRAFT -> {
-//                if (survey.getRound() == 1) {
-//                    updateBasicSurveyInfo(survey, updateSurveyRequest);
-//
-//                    // Xóa hết các câu hỏi cũ
-//                    survey.getQuestions().clear();
-//
-//                    // Thêm câu hỏi mới
-//                    List<Question> newQuestions = updateSurveyRequest.getQuestions().stream()
-//                            .map(dto -> {
-//                                Question question = mapToQuestion(dto);
-//                                question.setSurvey(survey);
-//                                if (question.getAnswers() != null) {
-//                                    question.getAnswers().forEach(answer -> answer.setQuestion(question));
-//                                }
-//                                return question;
-//                            }).toList();
-//
-//                    survey.getQuestions().addAll(newQuestions);
-//                } else {
-//                    updateBasicSurveyInfo(survey, updateSurveyRequest);
-//                    survey.setStartDate(updateSurveyRequest.getStartDate());
-//                    survey.setEndDate(updateSurveyRequest.getEndDate());
-//                }
-//            }
-//
-//            case ARCHIVED -> {
-//                updateBasicSurveyInfo(survey, updateSurveyRequest);
-//                survey.setStartDate(updateSurveyRequest.getStartDate());
-//                survey.setEndDate(updateSurveyRequest.getEndDate());
-//                survey.setRound(survey.getRound() + 1);
-//                survey.setStatus(SurveyStatus.DRAFT); // quay về DRAFT để tạo lại bản mới
-//            }
-//
-//            default -> throw new IllegalStateException("Unsupported survey status: " + survey.getStatus());
-//        }
-//
-//        Survey updatedSurvey = surveyRepository.save(survey);
-//        return Optional.of(mapToSurveyResponse(updatedSurvey));
-//    }
+    @Override
+    @Transactional
+    public Optional<?> updateSurveyById(Integer id, UpdateSurveyRequest dto) {
+        Survey survey = surveyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Survey not found with id: " + id));
+
+        // Validate input dates and recurring rules
+        validateUpdateSurveyRequest(dto);
+
+        boolean isUsed = Boolean.TRUE.equals(survey.getIsUsed());
+
+        switch (survey.getStatus()) {
+            case DRAFT -> {
+                updateBasicSurveyInfo(survey, dto);
+                if (!isUsed) {
+                    updateAllSurveyInfo(survey, dto);
+                }
+            }
+
+            case ARCHIVED -> {
+                updateBasicSurveyInfo(survey, dto);
+                updateAllSurveyInfo(survey, dto);
+                survey.setStatus(SurveyStatus.DRAFT); // revive from archive
+            }
+
+            default -> throw new IllegalStateException("Cannot update survey with status: " + survey.getStatus());
+        }
+
+        Survey updatedSurvey = surveyRepository.save(survey);
+        return Optional.of(surveyMapper.mapToSurveyDetailResponse(updatedSurvey));
+    }
+
 
 
     @Override
@@ -168,13 +160,13 @@ public class SurveyServiceImpl implements SurveyService {
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
 
-            if(account.getRole().name() != "COUNSELOR"){
+            if (account.getRole().name() != "COUNSELOR") {
                 throw new BadRequestException("Account is not counselor");
             }
 
             List<Survey> surveys = surveyRepository.findByAccountId(account.getId());
 
-            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(this::mapToSurveyGetAllResponse).toList();
+            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
             return Optional.of(surveyResponses);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -194,7 +186,7 @@ public class SurveyServiceImpl implements SurveyService {
 
             List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(account.getId());
 
-            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(this::mapToSurveyGetAllResponse).toList();
+            List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
             return Optional.of(surveyResponses);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -202,142 +194,56 @@ public class SurveyServiceImpl implements SurveyService {
         }
     }
 
-
-    private Answer mapToAnswer(AddNewAnswerDto dto) {
-        return Answer.builder()
-                .score(dto.getScore())
-                .text(dto.getText())
-                .build();
-    }
-
-    private Question mapToQuestion(AddNewQuestionDto dto) {
-
-        return Question.builder()
-                .answers(dto.getAnswers().stream().map(this::mapToAnswer).toList())
-                .description(dto.getDescription())
-                .text(dto.getText())
-                .isActive(true)
-                .isRequired(dto.getIsRequired())
-                .questionType(dto.getQuestionType())
-                .build();
-    }
-
-    private Survey mapToSurvey(AddNewSurveyDto dto) {
-        if (!dto.getEndDate().isAfter(dto.getStartDate())) {
-            throw new RuntimeException("End date must be after than start date");
+    private void validateUpdateSurveyRequest(UpdateSurveyRequest dto) {
+        if (dto.getStartDate() == null || dto.getEndDate() == null) {
+            throw new IllegalArgumentException("Start and end date cannot be null");
         }
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        if (dto.getStartDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
+        }
 
-        return Survey.builder()
-                .description(dto.getDescription())
-                .endDate(dto.getEndDate())
-                .isRequired(dto.getIsRequired())
-                .isRecurring(dto.getIsRecurring())
-                .surveyType(dto.getSurveyType())
-                .targetScope(dto.getTargetScope())
-                .targetGradeLevel(dto.getTargetGrade())
-                .round(1)
-                .category(category)
-                .title(dto.getTitle())
-                .questions(dto.getQuestions().stream().map(this::mapToQuestion).collect(Collectors.toList()))
-                .recurringCycle(dto.getRecurringCycle())
-                .startDate(dto.getStartDate())
-                .build();
+        if (dto.getEndDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày kết thúc phải trong tương lai");
+        }
+
+        if (!dto.getEndDate().isAfter(dto.getStartDate())) {
+            throw new RuntimeException("End date must be after start date");
+        }
+
+        if (dto.getIsRequired() && dto.getRecurringCycle() == null) {
+            throw new RuntimeException("Recurring cycle is required when survey is required");
+        }
     }
 
 
-    private SurveyGetAllResponse mapToSurveyGetAllResponse(Survey survey) {
-        return SurveyGetAllResponse.builder()
-                .surveyId(survey.getId())
-                .createdAt(survey.getCreatedDate())
-                .updatedAt(survey.getUpdatedDate())
-                .title(survey.getTitle())
-                .status(survey.getStatus().name())
-                .isRecurring(survey.getIsRecurring())
-                .isRequired(survey.getIsRequired())
-                .endDate(survey.getEndDate())
-                .startDate(survey.getStartDate())
-                .description(survey.getDescription())
-                .recurringCycle(survey.getRecurringCycle().name())
-                .targetGrade(survey.getTargetGradeLevel().name())
-                .targetScope(survey.getTargetScope().name())
-                .surveyType(survey.getSurveyType().name())
-                .category(this.mapToCategorySurveyResponse(survey.getCategory()))
-                .round(survey.getRound())
-                .build();
-    }
-
-    private SurveyDetailResponse mapToSurveyDetailResponse(Survey survey) {
-        return SurveyDetailResponse.builder()
-                .surveyId(survey.getId())
-                .createdAt(survey.getCreatedDate())
-                .updatedAt(survey.getUpdatedDate())
-                .title(survey.getTitle())
-                .status(survey.getStatus().name())
-                .isRecurring(survey.getIsRecurring())
-                .isRequired(survey.getIsRequired())
-                .endDate(survey.getEndDate())
-                .startDate(survey.getStartDate())
-                .description(survey.getDescription())
-                .recurringCycle(survey.getRecurringCycle().name())
-                .targetGrade(survey.getTargetGradeLevel().name())
-                .targetScope(survey.getTargetScope().name())
-                .surveyType(survey.getSurveyType().name())
-                .category(this.mapToCategorySurveyResponse(survey.getCategory()))
-                .round(survey.getRound())
-                .questions(survey.getQuestions().stream().map(this::mapToQuestionResponse).toList())
-                .build();
-    }
-
-
-
-    private QuestionResponse mapToQuestionResponse(Question question) {
-        return QuestionResponse.builder()
-                .questionId(question.getId())
-                .updatedAt(question.getUpdatedDate())
-                .createdAt(question.getCreatedDate())
-                .text(question.getText())
-                .description(question.getDescription())
-                .isActive(question.getIsActive())
-                .isRequired(question.getIsRequired())
-                .questionType(question.getQuestionType().name())
-                .answers(question.getAnswers().stream().map(this::mapToAnswerResponse).toList())
-                .build();
-    }
-
-    private AnswerResponse mapToAnswerResponse(Answer answer) {
-        return AnswerResponse.builder()
-                .id(answer.getId())
-                .score(answer.getScore())
-                .text(answer.getText())
-                .build();
-    }
-
-
-    private CategoryResponse mapToCategorySurveyResponse(Category category) {
-        return CategoryResponse.builder()
-                .id(category.getId())
-                .code(category.getCode())
-                .name(category.getName())
-                .isSum(category.getIsSum())
-                .description(category.getDescription())
-                .maxScore(category.getMaxScore())
-                .minScore(category.getMinScore())
-                .questionLength(category.getQuestionLength())
-                .isActive(category.getIsActive())
-                .severityWeight(category.getSeverityWeight())
-                .isLimited(category.getIsLimited())
-                .build();
-    }
-
-    private void updateBasicSurveyInfo(Survey survey, AddNewSurveyDto dto) {
-        survey.setTitle(dto.getTitle());
-        survey.setDescription(dto.getDescription());
-        survey.setIsRecurring(dto.getIsRecurring());
+    private void updateBasicSurveyInfo(Survey survey, UpdateSurveyRequest dto) {
+        survey.setStartDate(dto.getStartDate());
+        survey.setEndDate(dto.getEndDate());
         survey.setIsRequired(dto.getIsRequired());
+        survey.setIsRecurring(dto.getIsRecurring());
         survey.setRecurringCycle(dto.getRecurringCycle());
     }
 
+    private void updateAllSurveyInfo(Survey survey, UpdateSurveyRequest dto) {
+        survey.setTitle(dto.getTitle());
+        survey.setDescription(dto.getDescription());
+        survey.setSurveyType(dto.getSurveyType());
+        survey.setTargetScope(dto.getTargetScope());
+        survey.setTargetGradeLevel(dto.getTargetGrade());
+
+        updateBasicSurveyInfo(survey, dto);
+
+        survey.getQuestions().clear();
+        List<Question> newQuestions = dto.getNewQuestions().stream()
+                .map(questionMapper::mapToQuestion)
+                .peek(q -> {
+                    q.setSurvey(survey);
+                    if (q.getAnswers() != null) {
+                        q.getAnswers().forEach(a -> a.setQuestion(q));
+                    }
+                }).toList();
+
+        survey.getQuestions().addAll(newQuestions);
+    }
 }

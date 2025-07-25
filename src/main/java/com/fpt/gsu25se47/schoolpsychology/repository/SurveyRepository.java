@@ -20,7 +20,7 @@
 
         @Query("""
         SELECT s FROM Survey s
-        LEFT JOIN SurveyRecord sr ON sr.survey.id = s.id AND sr.student.id = :accountId AND sr.round = s.round
+        LEFT JOIN SurveyRecord sr ON sr.survey.id = s.id AND sr.student.id = :accountId
         JOIN Student st ON st.account.id = :accountId
         WHERE sr.id IS NULL
           AND s.status = 'PUBLISHED'

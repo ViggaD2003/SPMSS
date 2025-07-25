@@ -22,8 +22,6 @@ public class SurveyGetAllResponse {
 
     private String recurringCycle;
 
-    private Integer round;
-
     private String surveyType;
 
     private String status;

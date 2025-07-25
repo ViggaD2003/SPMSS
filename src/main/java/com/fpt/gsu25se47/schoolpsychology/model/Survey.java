@@ -32,7 +32,7 @@ public class Survey extends Auditable {
 
     private Boolean isRecurring;
 
-    private Integer round;
+    private Boolean isUsed;
 
     @Enumerated(EnumType.STRING)
     private SurveyType surveyType;

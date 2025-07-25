@@ -14,7 +14,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class AddNewSurveyDto {
+public class UpdateSurveyRequest {
 
     @NotBlank(message = "Tiêu đề khảo sát không được để trống")
     private String title;
@@ -46,9 +46,6 @@ public class AddNewSurveyDto {
     @Future(message = "Ngày kết thúc phải sau ngày hiện tại")
     private LocalDate endDate;
 
-    @NotNull(message = "Danh mục không được để trống")
-    private Integer categoryId;
-
     @NotNull(message = "Phạm vi khảo sát không được để trống")
     private TargetScope targetScope;
 
@@ -57,5 +54,9 @@ public class AddNewSurveyDto {
 
     @NotEmpty(message = "Danh sách câu hỏi không được để trống")
     @Valid
-    private List<AddNewQuestionDto> questions;
+    private List<UpdateQuestion> updateQuestions;
+
+    @NotEmpty(message = "Danh sách câu hỏi không được để trống")
+    @Valid
+    private List<AddNewQuestionDto> newQuestions;
 }

@@ -47,6 +47,10 @@ public class CaseServiceImpl implements CaseService {
             throw new IllegalArgumentException("Account is not STUDENT");
         }
 
+        if(!caseRepository.isStudentFreeFromOpenCases(dto.getStudentId())){
+            throw new IllegalArgumentException("Student is not available to open cases");
+        }
+
         Account createBy = accountRepository.findById(dto.getCreateBy())
                 .orElseThrow(() -> new IllegalArgumentException("Create By not found"));
         Cases cases = Cases.builder()
