@@ -1,10 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -28,7 +30,7 @@ public class SurveyGetAllResponse {
 
     private String targetScope;
 
-    private String targetGrade;
+    private List<GradeDto> targetGrade;
 
     private LocalDate startDate;
 

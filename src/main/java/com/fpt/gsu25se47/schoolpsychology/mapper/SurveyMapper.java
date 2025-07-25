@@ -15,6 +15,7 @@ public class SurveyMapper {
 
     private final QuestionMapper questionMapper;
     private final CategoryMapper categoryMapper;
+    private final GradeMapper gradeMapper;
 
     /**
      * Ánh xạ AddNewSurveyDto thành Survey entity.
@@ -57,7 +58,7 @@ public class SurveyMapper {
                 .isRecurring(survey.getIsRecurring())
                 .isRequired(survey.getIsRequired())
                 .recurringCycle(survey.getRecurringCycle().name())
-                .targetGrade(survey.getTargetGradeLevel().name())
+                .targetGrade(survey.getTargetGradeLevel().stream().map(gradeMapper::from).toList())
                 .targetScope(survey.getTargetScope().name())
                 .surveyType(survey.getSurveyType().name())
                 .createdAt(survey.getCreatedDate())
@@ -80,7 +81,7 @@ public class SurveyMapper {
                 .isRecurring(survey.getIsRecurring())
                 .isRequired(survey.getIsRequired())
                 .recurringCycle(survey.getRecurringCycle().name())
-                .targetGrade(survey.getTargetGradeLevel().name())
+                .targetGrade(survey.getTargetGradeLevel().stream().map(gradeMapper::from).toList())
                 .targetScope(survey.getTargetScope().name())
                 .surveyType(survey.getSurveyType().name())
                 .createdAt(survey.getCreatedDate())

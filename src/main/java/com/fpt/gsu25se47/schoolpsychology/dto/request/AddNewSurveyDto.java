@@ -35,7 +35,7 @@ public class AddNewSurveyDto {
      * Nếu isRecurring = true thì recurringCycle không được null.
      * Validate ở tầng service hoặc sử dụng custom validator.
      */
-    @Size(max = 50, message = "Chu kỳ lặp không được vượt quá 50 ký tự")
+    @NotNull(message = "Recurring cycle is required")
     private RecurringCycle recurringCycle;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
@@ -52,8 +52,7 @@ public class AddNewSurveyDto {
     @NotNull(message = "Phạm vi khảo sát không được để trống")
     private TargetScope targetScope;
 
-    @NotNull(message = "Khối lớp mục tiêu không được để trống")
-    private Grade targetGrade;
+    private List<Grade> targetGrade;
 
     @NotEmpty(message = "Danh sách câu hỏi không được để trống")
     @Valid

@@ -14,19 +14,19 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping
     public ResponseEntity<?> createCategory(@RequestBody AddCategoryDto addCategoryDto) {
         return ResponseEntity.ok(categoryService.createCategory(addCategoryDto));
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('TEACHER')")
     @GetMapping
     public ResponseEntity<?> getAllCategories() {
        return ResponseEntity.ok(categoryService.findAllCategories());
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('TEACHER')")
     @GetMapping("/level")
     public ResponseEntity<?> getLevelByCategoryId(@RequestParam(name = "categoryId") Integer categoryId) {
         return ResponseEntity.ok(categoryService.findAllLevelByCategoryId(categoryId));

@@ -44,7 +44,7 @@ public class MyCronjob {
         surveyRepository.saveAll(toFinish);
     }
 
-    @Scheduled(cron = "0 0 0 * * ?") // chạy mỗi ngày lúc 00:00
+    @Scheduled(cron = "0 0 */12 * * *") // chạy mỗi ngày lúc 00:00
     public void processRecurringSurveys() {
         List<Survey> recurringSurveys = surveyRepository.findAllRecurringSurveys();
 

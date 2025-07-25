@@ -28,7 +28,7 @@ public class SurveyDetailResponse {
 
     private String targetScope;
 
-    private String targetGrade;
+    private List<GradeDto> targetGrade;
 
     private LocalDate startDate;
 

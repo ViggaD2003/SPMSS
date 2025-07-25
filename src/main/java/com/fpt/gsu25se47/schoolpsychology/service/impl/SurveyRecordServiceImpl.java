@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
@@ -44,7 +45,11 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
             Account account = accountService.getCurrentAccount();
 
-            if(dto.getIsSkipped()){
+            if(dto.getIsSkipped() && survey.getIsRequired()){
+                throw new RuntimeException("Survey is required");
+            }
+
+            if(dto.getIsSkipped() && !survey.getIsRequired()) {
                 SurveyRecord surveyRecord = SurveyRecord.builder()
                         .totalScore(0f)
                         .completedAt(LocalDate.now())
@@ -54,7 +59,8 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                         .survey(survey)
                         .student(account)
                         .build();
-                surveyRecordRepository.save(surveyRecord);
+                SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
+                return surveyRecordMapper.mapToSurveyRecordResponse(saved);
             }
 
             duplicateValidator.validateAnswerIds(dto.getAnswerRecordRequests());
@@ -73,7 +79,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
 
                 SurveyRecord surveyRecord = SurveyRecord.builder()
-                        .totalScore(0f)
+                        .totalScore(dto.getTotalScore())
                         .completedAt(LocalDate.now())
                         .isSkipped(dto.getIsSkipped())
                         .answerRecords(answerRecords)
@@ -96,11 +102,11 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     }
 
     @Override
-    public Page<SurveyRecordGetAllResponse> getAllSurveyRecordById(int accountId, Pageable pageable) {
+    public Page<SurveyRecordGetAllResponse> getAllSurveyRecordById(SurveyType surveyType, Integer accountId, Pageable pageable) {
         Account account = accountRepository.findById(accountId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found for ID: " + accountId));
 
-        return surveyRecordRepository.findAllByStudentId(account.getId(), pageable)
+        return surveyRecordRepository.findAllSurveyRecordsByStudentIdAndSurveyType(account.getId(), surveyType, pageable)
                 .map(surveyRecordMapper::mapToSurveyRecordGetAllResponse);
     }
 

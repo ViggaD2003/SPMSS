@@ -21,15 +21,15 @@ public class AnswerRecord {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "answer_id", referencedColumnName = "id")
+    @JoinColumn(name = "answer_id")
     private Answer answer;
 
     @ManyToOne
-    @JoinColumn(name = "survey_record_id", referencedColumnName = "id")
+    @JoinColumn(name = "survey_record_id")
     private SurveyRecord surveyRecord;
 
     @ManyToOne
-    @JoinColumn(name = "question_id", referencedColumnName = "id")
+    @JoinColumn(name = "question_id")
     private Question question;
 
     private boolean isSkipped;

@@ -50,7 +50,7 @@ public class UpdateSurveyRequest {
     private TargetScope targetScope;
 
     @NotNull(message = "Khối lớp mục tiêu không được để trống")
-    private Grade targetGrade;
+    private List<Grade> targetGrade;
 
     @NotEmpty(message = "Danh sách câu hỏi không được để trống")
     @Valid
