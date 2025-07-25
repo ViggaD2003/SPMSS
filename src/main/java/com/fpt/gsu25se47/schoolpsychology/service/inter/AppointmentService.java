@@ -1,19 +1,18 @@
-//package com.fpt.gsu25se47.schoolpsychology.service.inter;
-//
-//import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
-//
-//import java.util.Optional;
-//
-//public interface AppointmentService {
-//    Optional<?> createAppointment(AddNewAppointment request);
-//
-//    Optional<?> showHistoryAppointment();
-//
-//    Optional<?> showAllAppointmentsOfSlots();
-//
-//    Optional<?> updateAppointmentStatus(Integer appointmentId);
-//
-//    Optional<?> cancelAppointment(Integer AppointmentId, String reasonCancel);
-//
-//
-//}
+package com.fpt.gsu25se47.schoolpsychology.service.inter;
+
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
+
+import java.util.List;
+
+public interface AppointmentService {
+
+    AppointmentResponse createAppointment(CreateAppointmentRequest request);
+    List<AppointmentResponse> getAppointmentsHistory();
+    List<AppointmentResponse> getAllAppointmentsOfSlots();
+    AppointmentResponse cancelAppointment(Integer appointmentId, String reasonCancel);
+    AppointmentResponse updateAppointment(Integer appointmentId, UpdateAppointmentRequest request);
+    AppointmentResponse updateStatus(Integer appointmentId, AppointmentStatus status);
+}

@@ -40,7 +40,7 @@ public class Appointment extends Auditable {
     private Account bookedBy;
 
     @ManyToOne
-    @JoinColumn(name = "case_id", nullable = false)
+    @JoinColumn(name = "case_id")
     private Cases cases;
 
     private Boolean isOnline;

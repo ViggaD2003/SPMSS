@@ -10,15 +10,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
 @Data
 public class CreateSlotRequest {
-
-    @NotBlank(message = "Slot name must not be blank")
-    @JsonSetter(nulls = Nulls.SKIP)
-    private String slotName = "Slot " + LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT));
 
     @NotNull(message = "Start date and time must not be null")
     @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc sau đó")
