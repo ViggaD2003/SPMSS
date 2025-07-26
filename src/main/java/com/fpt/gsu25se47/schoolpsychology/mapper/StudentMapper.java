@@ -18,6 +18,14 @@ public interface StudentMapper {
     @Mapping(target = "classDto", ignore = true) // Tạm ignore để tự xử lý sau
     StudentDto mapStudentDto(Student student, @Context Classes classes);
 
+    @BeanMapping(builder = @Builder(disableBuilder = true))
+    @Mapping(target = "gender", source = "account.gender")
+    @Mapping(target = "fullName", source = "account.fullName")
+    @Mapping(target = "dob", source = "account.dob")
+    @Mapping(target = "mentalEvaluations", ignore = true)
+    @Mapping(target = "classDto", ignore = true)
+    StudentDto mapStudentDtoWithoutClass(Student student);
+
     // Hàm xử lý default để map classDto thủ công
     default StudentDto mapStudentDtoWithClass(Student student, Classes classes, ClassMapper classDtoMapper) {
         StudentDto dto = mapStudentDto(student, classes);

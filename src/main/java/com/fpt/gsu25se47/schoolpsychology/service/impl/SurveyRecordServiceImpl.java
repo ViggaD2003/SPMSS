@@ -98,7 +98,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
             SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
-            MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(null, null, saved);
+            MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved);
 
             saved.setMentalEvaluation(mentalEvaluationSaved);
 

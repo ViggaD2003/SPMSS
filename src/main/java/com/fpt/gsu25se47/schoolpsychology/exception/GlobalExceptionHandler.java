@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.exception;
 
 
 import com.fpt.gsu25se47.schoolpsychology.common.ApiResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotConflictError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -78,6 +79,14 @@ public class GlobalExceptionHandler {
                     createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
             default -> throw new IllegalStateException("Unexpected value: " + exception.getStatusCode());
         };
+    }
+
+    @ExceptionHandler(SlotConflictException.class)
+    public ResponseEntity<?> handleSlotConflict(SlotConflictException ex) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "message", "Một số slot bị trùng",
+                "errors", ex.getConflictErrors()
+        ));
     }
 
     private ResponseEntity<ApiResponse<?>> createResponseEntity(int statusCode, String message) {

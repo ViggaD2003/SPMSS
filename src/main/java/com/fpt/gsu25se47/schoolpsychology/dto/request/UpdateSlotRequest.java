@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class UpdateSlotRequest {
-    @NotBlank(message = "Slot name must not be blank")
-    private String slotName;
 
     @NotNull(message = "Start date and time must not be null")
     @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc sau đó")

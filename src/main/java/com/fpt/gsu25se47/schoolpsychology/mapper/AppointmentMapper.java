@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.BookedSlot;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,4 +20,6 @@ public interface AppointmentMapper {
     @Mapping(target = "assessmentScores", ignore = true)
     Appointment updateAppointmentFromRequest(UpdateAppointmentRequest request,
                                              @MappingTarget Appointment appointment);
+
+    BookedSlot toBookedSlot(Appointment appointment);
 }
