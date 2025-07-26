@@ -8,6 +8,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
 import com.fpt.gsu25se47.schoolpsychology.validations.DuplicateValidator;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,6 +35,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     private final QuestRepository questRepository;
     private final AnswerRecordMapper answerRecordMapper;
     private final SurveyRecordMapper surveyRecordMapper;
+    private final MentalEvaluationService mentalEvaluationService;
 
 
     @Override
@@ -45,11 +48,11 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
             Account account = accountService.getCurrentAccount();
 
-            if(dto.getIsSkipped() && survey.getIsRequired()){
+            if (dto.getIsSkipped() && survey.getIsRequired()) {
                 throw new RuntimeException("Survey is required");
             }
 
-            if(dto.getIsSkipped() && !survey.getIsRequired()) {
+            if (dto.getIsSkipped() && !survey.getIsRequired()) {
                 SurveyRecord surveyRecord = SurveyRecord.builder()
                         .totalScore(0f)
                         .completedAt(LocalDate.now())
@@ -78,23 +81,28 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .orElseThrow(() -> new IllegalArgumentException("Total Score do not match any levels"));
 
 
-                SurveyRecord surveyRecord = SurveyRecord.builder()
-                        .totalScore(dto.getTotalScore())
-                        .completedAt(LocalDate.now())
-                        .isSkipped(dto.getIsSkipped())
-                        .answerRecords(answerRecords)
-                        .survey(survey)
-                        .student(account)
-                        .level(matchLevel)
-                        .build();
+            SurveyRecord surveyRecord = SurveyRecord.builder()
+                    .totalScore(dto.getTotalScore())
+                    .completedAt(LocalDate.now())
+                    .isSkipped(dto.getIsSkipped())
+                    .answerRecords(answerRecords)
+                    .survey(survey)
+                    .student(account)
+                    .level(matchLevel)
+                    .build();
 
-                if(!surveyRecord.getAnswerRecords().isEmpty()){
-                    surveyRecord.getAnswerRecords()
-                            .forEach(item -> item.setSurveyRecord(surveyRecord));
-                }
+            if (!surveyRecord.getAnswerRecords().isEmpty()) {
+                surveyRecord.getAnswerRecords()
+                        .forEach(item -> item.setSurveyRecord(surveyRecord));
+            }
 
-                SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
-                return surveyRecordMapper.mapToSurveyRecordResponse(saved);
+            SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
+
+            MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(null, null, saved);
+
+            saved.setMentalEvaluation(mentalEvaluationSaved);
+
+            return surveyRecordMapper.mapToSurveyRecordResponse(saved);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -134,11 +142,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 //                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 //                        "Student not found with Id: " + id));
 //    }
-
-
-
-
-
 
 
 }

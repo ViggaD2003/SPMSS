@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequ
 import com.fpt.gsu25se47.schoolpsychology.dto.response.MentalEvaluationResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
+import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -15,11 +16,19 @@ public interface MentalEvaluationMapper {
     MentalEvaluationResponse toMentalEvaluationResponse(MentalEvaluation mentalEvaluation);
 
     @Mapping(target = "source", constant = "APPOINTMENT")
-    @Mapping(target = "firstEvaluatedAt", expression = "java(appointment.getStartDateTime().toLocalDate())")
-    @Mapping(target = "lastEvaluatedAt", expression = "java(appointment.getEndDateTime().toLocalDate())")
+    @Mapping(target = "latestEvaluatedAt", expression = "java(appointment.getEndDateTime().toLocalDate())")
     @Mapping(target = "studentId",
             expression = "java(appointment.getBookedFor().getStudent() != null ? appointment.getBookedFor().getStudent().getId() : appointment.getBookedBy().getStudent().getId())")
     @Mapping(target = "appointmentId", source = "appointment.id")
     @Mapping(target = "sourceType", constant = "EXIT")
     CreateMentalEvaluationRequest fromAppointment(Appointment appointment);
+
+
+    @Mapping(target = "source", constant = "SURVEY")
+    @Mapping(target = "latestEvaluatedAt", expression = "java(surveyRecord.getCompletedAt())")
+    @Mapping(target = "studentId",
+            expression = "java(surveyRecord.getStudent().getId())")
+    @Mapping(target = "surveyRecordId", source = "surveyRecord.id")
+    @Mapping(target = "sourceType", constant = "NONE")
+    CreateMentalEvaluationRequest fromSurveyRecord(SurveyRecord surveyRecord);
 }

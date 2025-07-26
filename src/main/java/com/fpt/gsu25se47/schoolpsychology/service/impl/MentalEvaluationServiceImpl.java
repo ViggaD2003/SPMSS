@@ -21,7 +21,6 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     public MentalEvaluation createMentalEvaluationWithContext(CreateMentalEvaluationRequest request, Appointment appointment, SurveyRecord surveyRecord) {
 
         if (appointment != null) {
-
             CreateMentalEvaluationRequest mentalEvaluationRequest = mentalEvaluationMapper.fromAppointment(appointment);
             mentalEvaluationRequest.setWeightedScore(getWeightedScoreForAppointment(appointment));
 
@@ -34,15 +33,30 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
             mappedMentalEvaluation.setAppointment(appointment);
             return mentalEvaluationRepository.save(mappedMentalEvaluation);
+        } else if (surveyRecord != null) {
+            CreateMentalEvaluationRequest mentalEvaluationRequest = mentalEvaluationMapper.fromSurveyRecord(surveyRecord);
+            mentalEvaluationRequest.setWeightedScore(getWeightedScoreForSurveyRecord(surveyRecord));
+
+            MentalEvaluation mappedMentalEvaluation = mentalEvaluationMapper.toMentalEvaluation(mentalEvaluationRequest);
+            Account student = surveyRecord.getStudent();
+            mappedMentalEvaluation.setStudent(student);
+            mappedMentalEvaluation.setSurveyRecord(surveyRecord);
+            return mentalEvaluationRepository.save(mappedMentalEvaluation);
         }
 
         return null;
     }
 
-    private static Float getWeightedScoreForAppointment(Appointment appointment) {
+    private Float getWeightedScoreForAppointment(Appointment appointment) {
         return appointment.getAssessmentScores().stream()
                 .map(AssessmentScores::getCompositeScore)
                 .map(s -> (s / 5f) * 4f)
                 .reduce(0f, Float::sum);
+    }
+
+    private Float getWeightedScoreForSurveyRecord(SurveyRecord surveyRecord) {
+        Category category = surveyRecord.getSurvey().getCategory();
+        Float weightedScore = surveyRecord.getTotalScore() * category.getSeverityWeight();
+        return (weightedScore / category.getMaxScore()) * 4;
     }
 }
