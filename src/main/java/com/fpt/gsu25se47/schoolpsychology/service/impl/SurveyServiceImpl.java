@@ -88,9 +88,7 @@ public class SurveyServiceImpl implements SurveyService {
             List<Survey> surveys = surveyRepository.findAll();
             List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
 
-            surveyResponses.forEach(response -> {
-                surveys.forEach(survey -> response.setCreatedBy(survey.getCreateBy().getId()));
-            });
+
 
             return Optional.of(surveyResponses);
         } catch (Exception e) {

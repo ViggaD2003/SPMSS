@@ -1,8 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.InfoAccount;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentCaseDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,6 +10,8 @@ import org.springframework.stereotype.Component;
 public class CaseMapper {
 
     private final LevelMapper levelMapper;
+    private final AccountMapper accountMapper;
+
 
     public CaseGetAllResponse mapToCaseGetAllResponse(Cases cases) {
         return CaseGetAllResponse.builder()
@@ -22,25 +22,11 @@ public class CaseMapper {
                 .status(cases.getStatus())
                 .progressTrend(cases.getProgressTrend())
 
-                .createBy(cases.getCreateBy() != null ? InfoAccount.builder()
-                        .id(cases.getCreateBy().getId())
-                        .fullName(cases.getCreateBy().getFullName())
-                        .codeStaff(cases.getCreateBy().getTeacher().getTeacherCode())
-                        .build() : null)
+                .createBy(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCreateBy()))
 
-                .counselor(cases.getCounselor() != null ? InfoAccount.builder()
-                        .id(cases.getCounselor().getId())
-                        .fullName(cases.getCounselor().getFullName())
-                        .codeStaff(cases.getCounselor().getCounselor().getCounselorCode())
-                        .build() : null)
+                .counselor(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCounselor()))
 
-                .student(cases.getStudent() != null ? StudentCaseDto.builder()
-                        .id(cases.getStudent().getId())
-                        .studentCode(cases.getStudent().getStudent().getStudentCode())
-                        .fullName(cases.getStudent().getFullName())
-                        .dob(cases.getStudent().getDob())
-                        .gender(cases.getStudent().getGender())
-                        .build() : null)
+                .student(cases.getStudent() == null ? null : accountMapper.toDto(cases.getStudent()))
 
                 .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
                 .currentLevel(levelMapper.mapToLevelResponse(cases.getCurrentLevel()))

@@ -1,9 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.InfoAccount;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentCaseDto;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;

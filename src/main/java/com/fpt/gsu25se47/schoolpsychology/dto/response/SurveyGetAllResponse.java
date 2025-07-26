@@ -42,5 +42,5 @@ public class SurveyGetAllResponse {
 
     private LocalDateTime updatedAt;
 
-    private Integer createdBy;
+    private AccountDto createdBy;
 }

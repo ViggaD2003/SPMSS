@@ -16,6 +16,7 @@ public class SurveyMapper {
     private final QuestionMapper questionMapper;
     private final CategoryMapper categoryMapper;
     private final GradeMapper gradeMapper;
+    private final AccountMapper accountMapper;
 
     /**
      * Ánh xạ AddNewSurveyDto thành Survey entity.
@@ -64,6 +65,7 @@ public class SurveyMapper {
                 .createdAt(survey.getCreatedDate())
                 .updatedAt(survey.getUpdatedDate())
                 .category(categoryMapper.mapToCategorySurveyResponse(survey.getCategory()))
+                .createdBy(accountMapper.toDto(survey.getCreateBy()))
                 .build();
     }
 

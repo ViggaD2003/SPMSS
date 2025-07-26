@@ -1,14 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherOfClassDto;
+
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -18,8 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
@@ -157,7 +153,5 @@ public class JWTServiceImpl implements JWTService {
             throw new RuntimeException("Invalid JWT token", e);
         }
     }
-
-
 
 }
