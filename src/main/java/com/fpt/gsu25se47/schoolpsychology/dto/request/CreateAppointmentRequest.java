@@ -11,8 +11,6 @@ public class CreateAppointmentRequest {
 
     private Integer slotId;
 
-    private CreateSlotRequest createSlotRequest;
-
     private Integer bookedForId;
 
     private Boolean isOnline;

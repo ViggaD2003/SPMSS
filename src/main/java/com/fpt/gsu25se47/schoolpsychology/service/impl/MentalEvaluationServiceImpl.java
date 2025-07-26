@@ -3,12 +3,12 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SourceType;
 import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.OptionalDouble;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +18,7 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     private final MentalEvaluationRepository mentalEvaluationRepository;
 
     @Override
-    public MentalEvaluation createMentalEvaluationWithContext(CreateMentalEvaluationRequest request, Appointment appointment, SurveyRecord surveyRecord) {
+    public MentalEvaluation createMentalEvaluationWithContext(Appointment appointment, SurveyRecord surveyRecord) {
 
         if (appointment != null) {
 
@@ -40,9 +40,12 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     }
 
     private static Float getWeightedScoreForAppointment(Appointment appointment) {
-        return appointment.getAssessmentScores().stream()
-                .map(AssessmentScores::getCompositeScore)
-                .map(s -> (s / 5f) * 4f)
-                .reduce(0f, Float::sum);
+        OptionalDouble averageOpt = appointment.getAssessmentScores().stream()
+                .mapToDouble(AssessmentScores::getCompositeScore)
+                .average();
+
+        return averageOpt.isPresent()
+                ? (float) ((averageOpt.getAsDouble() / 5f) * 4f)
+                : 0f;
     }
 }

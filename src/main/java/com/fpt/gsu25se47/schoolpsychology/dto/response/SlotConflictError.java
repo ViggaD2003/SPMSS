@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class SlotConflictError {
-    private String slotName;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private String reason;

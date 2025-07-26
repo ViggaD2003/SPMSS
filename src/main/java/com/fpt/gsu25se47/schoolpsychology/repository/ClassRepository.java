@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ClassRepository extends JpaRepository<Classes,Integer> {
@@ -15,5 +16,7 @@ public interface ClassRepository extends JpaRepository<Classes,Integer> {
             "JOIN e.student s " +
             "WHERE e.classes.isActive = true AND s.id = :studentId")
     Classes findActiveClassByStudentId(@Param("studentId") Integer studentId);
+
+    List<Classes> findByCodeClass(String codeClass);
 
 }

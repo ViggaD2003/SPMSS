@@ -11,6 +11,8 @@ import java.util.List;
 @Data
 public class UpdateAppointmentRequest {
 
+    private Integer caseId;
+
     private String sessionNotes;
 
     private String noteSummary;

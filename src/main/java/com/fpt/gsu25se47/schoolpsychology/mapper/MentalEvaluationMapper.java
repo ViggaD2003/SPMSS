@@ -20,6 +20,6 @@ public interface MentalEvaluationMapper {
     @Mapping(target = "studentId",
             expression = "java(appointment.getBookedFor().getStudent() != null ? appointment.getBookedFor().getStudent().getId() : appointment.getBookedBy().getStudent().getId())")
     @Mapping(target = "appointmentId", source = "appointment.id")
-    @Mapping(target = "sourceType", constant = "EXIT")
+    @Mapping(target = "sourceType", constant = "NONE")
     CreateMentalEvaluationRequest fromAppointment(Appointment appointment);
 }

@@ -1,11 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AppointmentMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
@@ -30,9 +28,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final TeacherRepository teacherRepository;
     private final CounselorRepository counselorRepository;
     private final SlotRepository slotRepository;
+    private final CaseRepository caseRepository;
 
     private final AccountService accountService;
-    private final SlotService slotService;
     private final AssessmentScoresService assessmentScoresService;
     private final MentalEvaluationService mentalEvaluationService;
 
@@ -49,7 +47,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Account bookedFor = getBookedFor(request);
 
-        Slot slot = getSlotByRole(request, bookedBy.getRole());
+        Slot slot = getSlot(request);
 
         validateTimeWithinSlot(request, slot);
 
@@ -127,10 +125,16 @@ public class AppointmentServiceImpl implements AppointmentService {
                         "Appointment not found for ID: " + appointmentId
                 ));
 
+        Cases cases = null;
+        if (request.getCaseId() != null) {
+            cases = caseRepository.findById(request.getCaseId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Case not found for ID: " + request.getCaseId()));
+        }
+
         request.getAssessmentScores().forEach(t -> assessmentScoresService.createAssessmentScoresWithContext(t, appointment));
 
         MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(
-                request.getMentalEvaluationRequest(),
                 appointment,
                 null
         );
@@ -138,6 +142,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointmentUpdated = appointmentMapper.updateAppointmentFromRequest(request, appointment);
 
         appointmentUpdated.setMentalEvaluations(mentalEvaluationSaved);
+        appointmentUpdated.setCases(cases);
 
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointmentUpdated));
     }
@@ -152,6 +157,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 ));
 
         if (status == AppointmentStatus.CANCELED || status == AppointmentStatus.ABSENT || status == AppointmentStatus.COMPLETED) {
+            appointment.getSlot().setStatus(SlotStatus.PUBLISHED);
+        } else {
             appointment.getSlot().setStatus(SlotStatus.CLOSED);
         }
 
@@ -183,41 +190,26 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private void validateTimeWithinSlot(CreateAppointmentRequest request, Slot slot) {
+        if(request.getStartDateTime().isEqual(request.getEndDateTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Start and end time must not be equal");
+        }
+
         // check if the time from appointment is in the slot time range
-        if (request.getStartDateTime().isBefore(slot.getStartDateTime())
-                || request.getEndDateTime().isAfter(slot.getEndDateTime())) {
-            throw new RuntimeException("Start date and end date must be before end date time");
+        if (request.getStartDateTime().isBefore(slot.getStartDateTime()) ||
+                request.getEndDateTime().isAfter(slot.getEndDateTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Start and end time must be within the slot time range");
         }
     }
 
-    private Slot getSlotByRole(CreateAppointmentRequest request, Role role) {
-        Slot slot;
+    private Slot getSlot(CreateAppointmentRequest request) {
 
-        if (role == Role.STUDENT || role == Role.PARENTS) {
-            // Students or Parents must provide a valid slotId
-            if (request.getSlotId() == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "slotId is required for student or parent");
-            }
+        Slot slot = slotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
 
-            slot = slotRepository.findById(request.getSlotId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
-
-            if (slot.getStatus() == SlotStatus.CLOSED) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
-            }
-
-            if (request.getStartDateTime().isBefore(slot.getStartDateTime()) ||
-                    request.getEndDateTime().isAfter(slot.getEndDateTime())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Start and end time must be within the slot time range");
-            }
-
-        } else {
-            // Other roles (e.g., counselor, manager, teacher) must provide createSlotRequest
-            if (request.getCreateSlotRequest() == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "createSlotRequest is required for this role");
-            }
-            slot = slotService.createSlot(request.getCreateSlotRequest());
+        if (slot.getStatus() == SlotStatus.CLOSED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
         }
 
         return slot;
