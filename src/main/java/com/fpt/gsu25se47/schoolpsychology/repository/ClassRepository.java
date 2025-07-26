@@ -17,6 +17,8 @@ public interface ClassRepository extends JpaRepository<Classes,Integer> {
             "WHERE e.classes.isActive = true AND s.id = :studentId")
     Classes findActiveClassByStudentId(@Param("studentId") Integer studentId);
 
-    List<Classes> findByCodeClass(String codeClass);
+    Optional<Classes> findByCodeClass(String codeClass);
+
+    List<Classes> findByCodeClassIn(List<String> codeClass);
 
 }

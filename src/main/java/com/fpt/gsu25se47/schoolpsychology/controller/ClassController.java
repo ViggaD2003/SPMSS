@@ -8,10 +8,8 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,15 +21,35 @@ public class ClassController {
     private final ClassService classService;
     private final EnrollmentService enrollmentService;
 
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping
-    ResponseEntity<ClassResponse> createClass(@RequestBody CreateClassRequest request) {
+    ResponseEntity<List<ClassResponse>> createClass(@RequestBody List<CreateClassRequest> requests) {
 
-        return ResponseEntity.ok(classService.createClass(request));
+        return ResponseEntity.ok(classService.createClass(requests));
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/enrollments")
     ResponseEntity<List<EnrollmentResponse>> createEnrollmentsForClass(@RequestBody CreateEnrollmentRequest request) {
 
         return ResponseEntity.ok(enrollmentService.createBulkEnrollment(request));
+    }
+
+    @GetMapping
+    ResponseEntity<List<ClassResponse>> findAll() {
+
+        return ResponseEntity.ok(classService.getAllClasses());
+    }
+
+    @GetMapping("/{classId}")
+    ResponseEntity<ClassResponse> findById(@PathVariable Integer classId) {
+
+        return ResponseEntity.ok(classService.getClassById(classId));
+    }
+
+    @GetMapping("/code/{code}")
+    ResponseEntity<ClassResponse> findByCode(@PathVariable String code) {
+
+        return ResponseEntity.ok(classService.getClassByCode(code));
     }
 }

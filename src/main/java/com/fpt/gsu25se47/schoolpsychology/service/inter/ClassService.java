@@ -8,9 +8,10 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponse;
 import java.util.List;
 
 public interface ClassService {
-    ClassResponse createClass(CreateClassRequest request);
+    List<ClassResponse> createClass(List<CreateClassRequest> request);
 //    ClassResponse updateClass(String code, ClassRequest request);
-//    ClassResponse getClassByCode(String code);
-//    List<ClassResponse> getAllClasses();
+    ClassResponse getClassByCode(String code);
+    ClassResponse getClassById(Integer classId);
+    List<ClassResponse> getAllClasses();
 //    void deleteClassByCode(String code);
 }

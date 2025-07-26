@@ -31,20 +31,20 @@ public class SlotController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping("/{slotId}")
-    public ResponseEntity<?> update(@PathVariable Integer slotId, @Valid @RequestBody UpdateSlotRequest request) {
+    ResponseEntity<SlotResponse> update(@PathVariable Integer slotId, @Valid @RequestBody UpdateSlotRequest request) {
         return ResponseEntity.ok(slotService.updateSlot(slotId, request));
     }
 
     @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping("/{slotId}/status")
-    public ResponseEntity<?> updateSlotStatus(@PathVariable Integer slotId,
-                                              @RequestParam SlotStatus status) {
+    ResponseEntity<SlotResponse> updateSlotStatus(@PathVariable Integer slotId,
+                                                  @RequestParam SlotStatus status) {
         return ResponseEntity.ok(slotService.updateStatusSlot(slotId, status));
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam(required = false) Integer hostById) {
+    ResponseEntity<List<SlotResponse>> findAll(@RequestParam(required = false) Integer hostById) {
         return ResponseEntity.ok(slotService.getAllSlotsByHostBy(hostById));
     }
 }
