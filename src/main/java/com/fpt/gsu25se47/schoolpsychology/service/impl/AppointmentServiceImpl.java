@@ -1,201 +1,249 @@
-//package com.fpt.gsu25se47.schoolpsychology.service.impl;
-//
-//import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAppointment;
-//import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRecordRequest;
-//import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
-//import com.fpt.gsu25se47.schoolpsychology.model.*;
-//import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
-//import com.fpt.gsu25se47.schoolpsychology.repository.*;
-//import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.security.core.context.SecurityContextHolder;
-//import org.springframework.security.core.userdetails.UserDetails;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//
-//import java.util.List;
-//import java.util.Optional;
-//
-//@Service
-//@RequiredArgsConstructor
-//@Slf4j
-//public class AppointmentServiceImpl implements AppointmentService {
-//
-//    private final AppointmentRepository appointmentRepository;
-//
-//    private final AccountRepository accountRepository;
-//
-//    private final SlotRepository slotRepository;
-//
-//    private final TeacherRepository teacherRepository;
-//
-//    private final CounselorRepository counselorRepository;
-//
-//    @Transactional
-//    @Override
-//    public Optional<?> createAppointment(AddNewAppointment request) {
-//        try {
-//            Appointment appointment = this.mapToEntity(request);
-//            AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
-//            return Optional.of(response);
-//        } catch (Exception e) {
-//            log.error("Failed to create survey: {}", e.getMessage(), e);
-//            throw new RuntimeException("Could not create appointment. Please check your data.");
-//        }
-//    }
-//
-//    @Override
-//    public Optional<?> showHistoryAppointment() {
-//        try {
-//            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//            Account account = accountRepository.findByEmail(userDetails.getUsername())
-//                    .orElseThrow(() -> new RuntimeException("Account not found"));
-//
-//            List<Appointment> appointments = appointmentRepository.findByBookedBy(account.getId()).stream().filter(data ->
-//                data.getStatus().name().equals("PENDING") || data.getStatus().name().equals("CONFIRMED")
-//            ).toList();
-//
-//            List<AppointmentResponse> responses = appointments.stream().map(this::mapToResponse).toList();
-//
-//            return Optional.of(responses);
-//        } catch (Exception e) {
-//            log.error("Failed to create survey: {}", e.getMessage(), e);
-//            throw new RuntimeException("Could not create appointment. Please check your data.");
-//        }
-//    }
-//
-//    @Override
-//    public Optional<?> showAllAppointmentsOfSlots() {
-//        try{
-//            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//            Account account = accountRepository.findByEmail(userDetails.getUsername())
-//                    .orElseThrow(() -> new RuntimeException("Account not found"));
-//
-//
-//            List<Appointment> appointments = appointmentRepository.findAllBySlotHostedBy(account.getId());
-//
-//            List<AppointmentResponse> responses = appointments.stream().map(this::mapToResponse).toList();
-//            return Optional.of(responses);
-//        } catch (Exception e) {
-//            log.error("Failed to create survey: {}", e.getMessage(), e);
-//            throw new RuntimeException("Could not create appointment. Please check your data.");
-//        }
-//    }
-//
-//    @Transactional
-//    @Override
-//    public Optional<?> updateAppointmentStatus(Integer appointmentId) {
-//        Appointment appointment = appointmentRepository.findById(appointmentId)
-//                .orElseThrow(() -> new RuntimeException("Appointment not found"));
-//
-//        appointment.setStatus(AppointmentStatus.COMPLETED);
-//        appointmentRepository.save(appointment);
-//
-//        if (appointment.getAppointmentRecords().isEmpty()) {
-//            throw new RuntimeException("Appointment records is empty. Please submit record");
-//        }
-//
-//        List<AppointmentRecord> appointmentRecords = appointmentRecordRepository
-//                .findAllByAppointmentId(appointment.getId());
-//
-//        appointmentRecords.forEach(appointmentRecord -> {
-//            appointmentRecord.setStatus(RecordStatus.FINALIZED);
-//            appointmentRecordRepository.save(appointmentRecord);
-//        });
-//
-//
-//        return Optional.of("Updated status appointment successfully");
-//    }
-//
-//    @Transactional
-//    @Override
-//    public Optional<?> cancelAppointment(Integer appointmentId, String reasonCancel) {
-//        Appointment appointment = appointmentRepository.findById(appointmentId)
-//                .orElseThrow(() -> new RuntimeException("Appointment not found"));
-//
-//        appointment.setStatus(AppointmentStatus.CANCELED);
-//        appointmentRepository.save(appointment);
-//
-//        CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
-//        request.setAppointmentId(appointmentId);
-//        request.setReason(reasonCancel);
-//        request.setStatus(RecordStatus.CANCELED);
-//        request.setTotalScore(0);
-//        appointmentRecordService.createAppointmentRecord(request);
-//
-//
-//        return Optional.of("Canceled appointment successfully");
-//    }
-//
-//    private Appointment mapToEntity(AddNewAppointment request) {
-//        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Account bookedBy = accountRepository.findByEmail(userDetails.getUsername())
-//                .orElseThrow(() -> new RuntimeException("Account not found"));
-//
-//        Account bookedFor = null;
-//        if (request.getBookedForId() != null) {
-//            bookedFor = accountRepository.findById(request.getBookedForId())
-//                    .orElseThrow(() -> new RuntimeException("BookedFor not found"));
-//        }
-//
-//        Slot slot = slotRepository.findById(request.getSlotId())
-//                .orElseThrow(() -> new RuntimeException("Slot not found"));
-//
-//        Role role = slot.getHostedBy().getRole();
-//        HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
-//
-//        String location;
-//        if(request.getIsOnline()){
-//            if (hostType == HostType.TEACHER) {
-//                Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
-//                        .orElseThrow(() -> new RuntimeException("Teacher not found"));
-//                location = teacher.getLinkMeet();
-//            } else {
-//                Counselor counselor = counselorRepository.findById(slot.getHostedBy().getId())
-//                        .orElseThrow(() -> new RuntimeException("Counselor not found"));
-//                location = counselor.getLinkMeet();
-//            }
-//        } else {
-//            location = "Phòng chăm sóc tinh thần";
-//        }
-//
-//        if(request.getStartDateTime().isBefore(slot.getStartDateTime())
-//                || request.getEndDateTime().isAfter(slot.getEndDateTime())){
-//            throw new RuntimeException("Start date and end date must be before end date time");
-//        }
-//
-//        if(slot.getStatus() == SlotStatus.CLOSED){
-//            throw new RuntimeException("Slot is CLOSED");
-//        }
-//
-//        return Appointment.builder()
-//                .slot(slot)
-//                .bookedBy(bookedBy)
-//                .bookedFor(bookedFor)
-//                .isOnline(request.getIsOnline())
-//                .reason(request.getReason())
-//                .status(AppointmentStatus.CONFIRMED)
-//                .hostType(hostType)
-//                .startDateTime(request.getStartDateTime())
-//                .endDateTime(request.getEndDateTime())
-//                .location(location)
-//                .build();
-//    }
-//
-//    private AppointmentResponse mapToResponse(Appointment appointment) {
-//        return AppointmentResponse.builder()
-//                .id(appointment.getId())
-//                .location(appointment.getLocation())
-//                .bookByName(appointment.getBookedBy().getFullName())
-//                .bookForName(appointment.getBookedFor() == null ? null : appointment.getBookedFor().getFullName())
-//                .isOnline(appointment.getIsOnline())
-//                .hostName(appointment.getSlot().getHostedBy().getFullName())
-//                .endDateTime(appointment.getEndDateTime())
-//                .startDateTime(appointment.getStartDateTime())
-//                .reason(appointment.getReason())
-//                .status(appointment.getStatus())
-//                .hostType(appointment.getHostType())
-//                .build();
-//    }
-//}
+package com.fpt.gsu25se47.schoolpsychology.service.impl;
+
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
+import com.fpt.gsu25se47.schoolpsychology.mapper.AppointmentMapper;
+import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AppointmentServiceImpl implements AppointmentService {
+
+    private final AppointmentRepository appointmentRepository;
+    private final AccountRepository accountRepository;
+    private final TeacherRepository teacherRepository;
+    private final CounselorRepository counselorRepository;
+    private final SlotRepository slotRepository;
+
+    private final AccountService accountService;
+    private final SlotService slotService;
+    private final AssessmentScoresService assessmentScoresService;
+    private final MentalEvaluationService mentalEvaluationService;
+
+    private final AppointmentMapper appointmentMapper;
+
+    @Transactional
+    @Override
+    public AppointmentResponse createAppointment(CreateAppointmentRequest request) {
+
+        // bookedBy ( person who book appointment )
+        Account bookedBy = accountService.getCurrentAccount();
+
+        ensureNoAppointmentConflicts(request);
+
+        Account bookedFor = getBookedFor(request);
+
+        Slot slot = getSlotByRole(request, bookedBy.getRole());
+
+        validateTimeWithinSlot(request, slot);
+
+        String location = determineLocation(request, slot);
+
+        Appointment appointment = appointmentMapper.toAppointment(request);
+
+        appointment.setBookedBy(bookedBy);
+        appointment.setBookedFor(bookedFor);
+        appointment.setSlot(slot);
+        appointment.setLocation(location);
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+
+        return appointmentMapper.toAppointmentResponse(
+                appointmentRepository.save(appointment)
+        );
+    }
+
+    @Override
+    public List<AppointmentResponse> getAppointmentsHistory() {
+
+        Account curAccount = accountService.getCurrentAccount();
+
+        List<AppointmentStatus> historyStatuses = List.of(
+                AppointmentStatus.COMPLETED,
+                AppointmentStatus.CANCELED,
+                AppointmentStatus.ABSENT,
+                AppointmentStatus.CONFIRMED
+        );
+
+        List<Appointment> appointments = appointmentRepository.findByBookedByAndStatus(
+                curAccount.getId(),
+                historyStatuses
+        );
+
+        return appointments.stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
+
+    @Override
+    public List<AppointmentResponse> getAllAppointmentsOfSlots() {
+
+        Account account = accountService.getCurrentAccount();
+
+        List<Appointment> appointments = appointmentRepository.findAllBySlotHostedBy(account.getId());
+
+        return appointments.stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
+
+    @Override
+    public AppointmentResponse cancelAppointment(Integer appointmentId, String reasonCancel) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Appointment not found for ID: " + appointmentId
+                ));
+
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointment.getSlot().setStatus(SlotStatus.CLOSED);
+        appointment.setCancelReason(reasonCancel);
+
+        return appointmentMapper.toAppointmentResponse(
+                appointmentRepository.save(appointment));
+    }
+
+    @Transactional
+    @Override
+    public AppointmentResponse updateAppointment(Integer appointmentId, UpdateAppointmentRequest request) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Appointment not found for ID: " + appointmentId
+                ));
+
+        request.getAssessmentScores().forEach(t -> assessmentScoresService.createAssessmentScoresWithContext(t, appointment));
+
+        MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(
+                request.getMentalEvaluationRequest(),
+                appointment,
+                null
+        );
+
+        Appointment appointmentUpdated = appointmentMapper.updateAppointmentFromRequest(request, appointment);
+
+        appointmentUpdated.setMentalEvaluations(mentalEvaluationSaved);
+
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointmentUpdated));
+    }
+
+    @Transactional
+    @Override
+    public AppointmentResponse updateStatus(Integer appointmentId, AppointmentStatus status) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Appointment not found for ID: " + appointmentId
+                ));
+
+        if (status == AppointmentStatus.CANCELED || status == AppointmentStatus.ABSENT || status == AppointmentStatus.COMPLETED) {
+            appointment.getSlot().setStatus(SlotStatus.CLOSED);
+        }
+
+        appointment.setStatus(status);
+
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+    private String determineLocation(CreateAppointmentRequest request, Slot slot) {
+        // location for online and offline appointments
+        Role role = slot.getHostedBy().getRole();
+        HostType hostType = role == Role.TEACHER ? HostType.TEACHER : HostType.COUNSELOR;
+
+        String location;
+        if (request.getIsOnline()) {
+            if (hostType == HostType.TEACHER) {
+                Teacher teacher = teacherRepository.findById(slot.getHostedBy().getId())
+                        .orElseThrow(() -> new RuntimeException("Teacher not found"));
+                location = teacher.getLinkMeet();
+            } else {
+                Counselor counselor = counselorRepository.findById(slot.getHostedBy().getId())
+                        .orElseThrow(() -> new RuntimeException("Counselor not found"));
+                location = counselor.getLinkMeet();
+            }
+        } else {
+            location = "Phòng chăm sóc tinh thần";
+        }
+        return location;
+    }
+
+    private void validateTimeWithinSlot(CreateAppointmentRequest request, Slot slot) {
+        // check if the time from appointment is in the slot time range
+        if (request.getStartDateTime().isBefore(slot.getStartDateTime())
+                || request.getEndDateTime().isAfter(slot.getEndDateTime())) {
+            throw new RuntimeException("Start date and end date must be before end date time");
+        }
+    }
+
+    private Slot getSlotByRole(CreateAppointmentRequest request, Role role) {
+        Slot slot;
+
+        if (role == Role.STUDENT || role == Role.PARENTS) {
+            // Students or Parents must provide a valid slotId
+            if (request.getSlotId() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "slotId is required for student or parent");
+            }
+
+            slot = slotRepository.findById(request.getSlotId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
+
+            if (slot.getStatus() == SlotStatus.CLOSED) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
+            }
+
+            if (request.getStartDateTime().isBefore(slot.getStartDateTime()) ||
+                    request.getEndDateTime().isAfter(slot.getEndDateTime())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Start and end time must be within the slot time range");
+            }
+
+        } else {
+            // Other roles (e.g., counselor, manager, teacher) must provide createSlotRequest
+            if (request.getCreateSlotRequest() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "createSlotRequest is required for this role");
+            }
+            slot = slotService.createSlot(request.getCreateSlotRequest());
+        }
+
+        return slot;
+    }
+
+    private Account getBookedFor(CreateAppointmentRequest request) {
+        // bookdedFor -> person to host this appointment
+        Account bookedFor = null;
+        if (request.getBookedForId() != null) {
+            bookedFor = accountRepository.findById(request.getBookedForId())
+                    .orElseThrow(() -> new RuntimeException("BookedFor not found"));
+        }
+        return bookedFor;
+    }
+
+    private void ensureNoAppointmentConflicts(CreateAppointmentRequest request) {
+
+        List<Appointment> conflictingAppointments = appointmentRepository.findConflictingAppointments(
+                request.getStartDateTime(),
+                request.getEndDateTime()
+        );
+
+        if (!conflictingAppointments.isEmpty()) {
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "There's already appointment booking this time");
+        }
+    }
+}
