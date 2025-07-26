@@ -66,7 +66,7 @@ public class AnswerRecordMapper {
     public AnswerRecordDto mapToAnswerRecordDto(AnswerRecord answerRecord) {
         return AnswerRecordDto.builder()
                 .answerResponse(answerMapper.mapToAnswerResponse(answerRecord.getAnswer()))
-                .questionResponse(questionMapper.mapToQuestionDto(answerRecord.getQuestion()))
+                .questionResponse(questionMapper.mapToQuestionDto(answerRecord.getAnswer().getQuestion()))
                 .build();
     }
 }

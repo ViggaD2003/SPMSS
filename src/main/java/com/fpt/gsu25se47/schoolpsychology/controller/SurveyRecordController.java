@@ -1,20 +1,17 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
-import com.fpt.gsu25se47.schoolpsychology.common.ApiResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
 import com.fpt.gsu25se47.schoolpsychology.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,7 +30,8 @@ public class SurveyRecordController {
 
     @GetMapping("/accounts/{accountId}")
     public ResponseEntity<?> getAllSurveyRecordsByAccountId(
-            @PathVariable int accountId,
+            @PathVariable Integer accountId,
+            @RequestParam(name = "surveyType") SurveyType surveyType,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false, defaultValue = "completedAt") String field,
@@ -41,7 +39,7 @@ public class SurveyRecordController {
     ) {
         PageRequest pageRequest = paginationUtil.getPageRequest(page, size, direction, field);
 
-        Page<SurveyRecordGetAllResponse> surveyRecordResponses = surveyRecordService.getAllSurveyRecordById(accountId,
+        Page<SurveyRecordGetAllResponse> surveyRecordResponses = surveyRecordService.getAllSurveyRecordById(surveyType, accountId,
                 pageRequest);
 
         return ResponseEntity.ok(paginationUtil.getPaginationResponse(pageRequest, surveyRecordResponses, surveyRecordResponses.getContent()));

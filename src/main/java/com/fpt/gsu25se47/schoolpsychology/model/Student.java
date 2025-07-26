@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,14 +23,17 @@ public class Student {
     private Integer id;
 
     @OneToOne
-    @MapsId // dùng id của account luôn
-    @JoinColumn(name = "id") // dùng chung cột "id"
+    @MapsId
+    @JoinColumn(name = "id")
     private Account account;
 
     @Column(nullable = false, unique = true)
     private String studentCode;
 
     private Boolean isEnableSurvey;
+
+    @Enumerated(EnumType.STRING)
+    private Grade targetLevel;
 
     @OneToMany(mappedBy = "student")
     private List<Relationship> relationships = new ArrayList<>();

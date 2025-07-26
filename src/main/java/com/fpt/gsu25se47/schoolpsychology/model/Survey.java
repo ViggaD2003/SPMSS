@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.model;
 
 import com.fpt.gsu25se47.schoolpsychology.common.Auditable;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
+import com.fpt.gsu25se47.schoolpsychology.utils.GradeConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,8 +48,9 @@ public class Survey extends Auditable {
     @Enumerated(EnumType.STRING)
     private TargetScope targetScope;
 
-    @Enumerated(EnumType.STRING)
-    private Grade targetGradeLevel;
+    @Convert(converter = GradeConverter.class)
+    @Column(columnDefinition = "TEXT") // hoặc VARCHAR nếu chỉ 1-2 giá trị
+    private List<Grade> targetGradeLevel;
 
     @Enumerated(EnumType.STRING)
     private SurveyStatus status;
