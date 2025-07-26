@@ -27,6 +27,7 @@ public class Slot {
 
     private LocalDateTime endDateTime;
 
+    @Enumerated(value = EnumType.STRING)
     private SlotStatus status;
 
     @ManyToOne

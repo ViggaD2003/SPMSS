@@ -11,8 +11,6 @@ public class SlotResponse {
 
     private Integer id;
 
-    private String slotName;
-
     private String status;
 
     private LocalDateTime startDateTime;
@@ -22,13 +20,5 @@ public class SlotResponse {
     private String fullName;
 
     private String roleName;
-
-    private String slotType;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    private Object booked;
 
 }

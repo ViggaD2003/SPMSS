@@ -1,32 +1,28 @@
-//package com.fpt.gsu25se47.schoolpsychology.dto.request;
-//
-//import com.fpt.gsu25se47.schoolpsychology.model.enums.EvaluationType;
-//import jakarta.validation.constraints.NotNull;
-//import lombok.Builder;
-//import lombok.Data;
-//
-//import java.math.BigDecimal;
-//import java.time.LocalDate;
-//
-//@Data
-//@Builder
-//public class CreateMentalEvaluationRequest {
-//
-//    @NotNull
-//    private EvaluationType evaluationType;
-//
-//    @NotNull
-//    private Integer evaluationRecordId;
-//
-//    @NotNull
-//    private BigDecimal totalScore;
-//
-//    @NotNull
-//    private LocalDate date;
-//
-//    @NotNull
-//    private Integer categoryId;
-//
-//    @NotNull
-//    private Integer studentId;
-//}
+package com.fpt.gsu25se47.schoolpsychology.dto.request;
+
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SourceType;
+import lombok.Data;
+
+import java.time.LocalDate;
+
+@Data
+public class CreateMentalEvaluationRequest {
+
+    private Source source;
+
+    private SourceType sourceType;
+
+    private Float weightedScore;
+
+    private LocalDate firstEvaluatedAt;
+
+    private LocalDate lastEvaluatedAt;
+
+    private Integer studentId;
+
+    private Integer appointmentId;
+
+    private Integer surveyRecordId;
+
+}

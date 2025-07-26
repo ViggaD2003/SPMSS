@@ -1,14 +1,14 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
-import jakarta.persistence.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SessionFlow;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.StudentCoopLevel;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -16,23 +16,38 @@ public class AppointmentResponse {
 
     private Integer id;
 
-    private String hostName;
+    private SlotResponse slot;
 
-    private String bookForName;
+    private AccountDto bookedFor;
 
-    private String bookByName;
-
-    private HostType hostType;
-
-    private String location;
-
-    private String reason;
-
-    private AppointmentStatus status;
+    private AccountDto bookedBy;
 
     private Boolean isOnline;
+
+    private String location;
 
     private LocalDateTime startDateTime;
 
     private LocalDateTime endDateTime;
+
+    private HostType hostType;
+
+    private AppointmentStatus status;
+
+    private String sessionNotes;
+
+    private String reasonBooking;
+
+    private String noteSummary;
+
+    private String noteSuggestion;
+
+    private String cancelReason;
+
+    private SessionFlow sessionFlow;
+
+    private StudentCoopLevel studentCoopLevel;
+
+    private List<AssessmentScoreResponse> assessmentScores;
+
 }
