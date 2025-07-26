@@ -194,6 +194,24 @@ public class SurveyServiceImpl implements SurveyService {
         }
     }
 
+//    @Override
+//    public Optional<?> getAllSurveyStudentInCase() {
+//        try {
+//            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+//            if (userDetails == null) {
+//                throw new BadRequestException("Unauthorized");
+//            }
+//
+//            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
+//
+//
+//            return Optional.of();
+//        } catch (Exception e) {
+//            log.error("Failed to create survey: {}", e.getMessage(), e);
+//            throw new RuntimeException("Something went wrong");
+//        }
+//    }
+
     private void validateUpdateSurveyRequest(UpdateSurveyRequest dto) {
         if (dto.getStartDate() == null || dto.getEndDate() == null) {
             throw new IllegalArgumentException("Start and end date cannot be null");

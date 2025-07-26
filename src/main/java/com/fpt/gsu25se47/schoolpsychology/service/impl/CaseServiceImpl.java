@@ -79,6 +79,7 @@ public class CaseServiceImpl implements CaseService {
                .orElseThrow(() -> new IllegalArgumentException("Cases is not found"));
 
        cases.setCounselor(account);
+       cases.setStatus(Status.IN_PROGRESS);
 
        caseRepository.save(cases);
 

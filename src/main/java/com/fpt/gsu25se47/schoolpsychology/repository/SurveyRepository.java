@@ -30,6 +30,15 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
             """, nativeQuery = true)
     List<Survey> findUnansweredExpiredSurveysByAccountId(@Param("accountId") Integer accountId);
 
+    @Query(value = """
+                SELECT DISTINCT s.* 
+                FROM survey s
+                JOIN survey_case_link scl ON s.id = scl.survey_id
+                JOIN cases c ON scl.case_id = c.id
+                WHERE c.student_id = :accountId
+            """, nativeQuery = true)
+    List<Survey> findAllSurveyStudentInCase(Integer accountId);
+
     @Query("SELECT s FROM Survey s WHERE s.isRecurring = true AND s.status != 'ARCHIVED'")
     List<Survey> findAllRecurringSurveys();
 

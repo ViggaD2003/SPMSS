@@ -8,9 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface SurveyRecordService {
-
     SurveyRecordDetailResponse createSurveyRecord(CreateSurveyRecordDto createSurveyRecordDto);
     Page<SurveyRecordGetAllResponse> getAllSurveyRecordById(SurveyType surveyType, Integer accountId, Pageable pageable);
     SurveyRecordDetailResponse getSurveyRecordById(int surveyRecordId);
-//    Page<SurveyRecordDetailResponse> getAllSurveyRecords(Pageable pageable);
 }
