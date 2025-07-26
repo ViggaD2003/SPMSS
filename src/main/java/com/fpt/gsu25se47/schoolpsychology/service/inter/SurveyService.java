@@ -21,5 +21,5 @@ public interface SurveyService {
 
     Optional<?> getAllSurveyWithPublished();
 
-//    Optional<?> getAllSurveyStudentInCase();
+    Optional<?> getAllSurveyStudentInCase();
 }

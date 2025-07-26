@@ -58,7 +58,7 @@ public class SurveyMapper {
                 .isRecurring(survey.getIsRecurring())
                 .isRequired(survey.getIsRequired())
                 .recurringCycle(survey.getRecurringCycle().name())
-                .targetGrade(survey.getTargetGradeLevel().stream().map(gradeMapper::from).toList())
+                .targetGrade(survey.getTargetGradeLevel() == null ? null : survey.getTargetGradeLevel().stream().map(gradeMapper::from).toList())
                 .targetScope(survey.getTargetScope().name())
                 .surveyType(survey.getSurveyType().name())
                 .createdAt(survey.getCreatedDate())

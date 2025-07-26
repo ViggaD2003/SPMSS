@@ -194,23 +194,24 @@ public class SurveyServiceImpl implements SurveyService {
         }
     }
 
-//    @Override
-//    public Optional<?> getAllSurveyStudentInCase() {
-//        try {
-//            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
-//            if (userDetails == null) {
-//                throw new BadRequestException("Unauthorized");
-//            }
-//
-//            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
-//
-//
-//            return Optional.of();
-//        } catch (Exception e) {
-//            log.error("Failed to create survey: {}", e.getMessage(), e);
-//            throw new RuntimeException("Something went wrong");
-//        }
-//    }
+    @Override
+    public Optional<?> getAllSurveyStudentInCase() {
+        try {
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+            if (userDetails == null) {
+                throw new BadRequestException("Unauthorized");
+            }
+
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
+            List<Survey> surveys = surveyRepository.findAllSurveyStudentInCase(account.getId());
+            List<SurveyGetAllResponse> surveyGetAllResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
+
+            return Optional.of(surveyGetAllResponses);
+        } catch (Exception e) {
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Something went wrong");
+        }
+    }
 
     private void validateUpdateSurveyRequest(UpdateSurveyRequest dto) {
         if (dto.getStartDate() == null || dto.getEndDate() == null) {

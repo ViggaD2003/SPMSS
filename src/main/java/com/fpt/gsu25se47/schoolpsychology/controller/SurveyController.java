@@ -55,4 +55,10 @@ public class SurveyController {
     public ResponseEntity<?> getAllSurveyWithPublished(){
         return ResponseEntity.ok(surveyService.getAllSurveyWithPublished());
     }
+
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
+    @GetMapping("/in-case")
+    public ResponseEntity<?> getAllSurveyStudentInCase(){
+        return ResponseEntity.ok(surveyService.getAllSurveyStudentInCase());
+    }
 }

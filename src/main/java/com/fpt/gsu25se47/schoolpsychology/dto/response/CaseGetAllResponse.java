@@ -28,8 +28,8 @@ public class CaseGetAllResponse {
 
     private InfoAccount counselor;
 
-    private Level currentLevel;
+    private LevelResponse currentLevel;
 
-    private Level initialLevel;
+    private LevelResponse initialLevel;
 }
 
