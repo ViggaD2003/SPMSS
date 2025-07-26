@@ -1,5 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
@@ -22,7 +24,8 @@ public class CreateSlotRequest {
     @Future(message = "End date and time must be in the future")
     private LocalDateTime endDateTime;
 
-    @NotBlank(message = "Slot type must not be blank")
+    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @JsonSetter(nulls = Nulls.SKIP)
     private SlotStatus status = SlotStatus.PUBLISHED;
 
