@@ -20,6 +20,7 @@ public class SurveyRecordMapper {
                 .isSkipped(surveyRecord.getIsSkipped())
                 .completedAt(surveyRecord.getCompletedAt())
                 .level(surveyRecord.getLevel() == null ? null : levelMapper.mapToLevelResponse(surveyRecord.getLevel()))
+                .survey(surveyMapper.mapToSurveyGetAllResponse(surveyRecord.getSurvey()))
                 .build();
     }
 

@@ -1,7 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherOfClassDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

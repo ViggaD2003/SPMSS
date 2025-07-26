@@ -1,6 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
-import com.fpt.gsu25se47.schoolpsychology.model.Level;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Priority;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgressTrend;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
@@ -22,14 +21,14 @@ public class CaseGetAllResponse {
 
     private ProgressTrend progressTrend;
 
-    private StudentCaseDto student;
+    private AccountDto student;
 
-    private InfoAccount createBy;
+    private AccountDto createBy;
 
-    private InfoAccount counselor;
+    private AccountDto counselor;
 
-    private Level currentLevel;
+    private LevelResponse currentLevel;
 
-    private Level initialLevel;
+    private LevelResponse initialLevel;
 }
 

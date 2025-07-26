@@ -12,7 +12,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     @Query("SELECT s FROM Survey s WHERE s.createBy.id = :accountId")
     List<Survey> findByAccountId(int accountId);
 
-    @Query("SELECT s FROM Survey s WHERE s.startDate = :date AND s.status = 'DRAFT'")
+    @Query("SELECT s FROM Survey s WHERE s.startDate >= :date AND s.status = 'DRAFT'")
     List<Survey> findByStartDateAndStatusDraft(LocalDate date);
 
     @Query("SELECT s FROM Survey s WHERE s.endDate <= :date AND s.status = 'PUBLISHED'")
@@ -29,6 +29,15 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                   )
             """, nativeQuery = true)
     List<Survey> findUnansweredExpiredSurveysByAccountId(@Param("accountId") Integer accountId);
+
+    @Query(value = """
+                SELECT DISTINCT s.*
+                FROM survey s
+                         JOIN survey_case_link scl ON s.id = scl.survey_id
+                         JOIN cases c ON scl.case_id = c.id
+                WHERE c.student_id = :accountId AND c.status = 'IN_PROGRESS'
+            """, nativeQuery = true)
+    List<Survey> findAllSurveyStudentInCase(Integer accountId);
 
     @Query("SELECT s FROM Survey s WHERE s.isRecurring = true AND s.status != 'ARCHIVED'")
     List<Survey> findAllRecurringSurveys();

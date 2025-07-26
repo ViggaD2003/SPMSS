@@ -34,6 +34,15 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
             mappedMentalEvaluation.setAppointment(appointment);
             return mentalEvaluationRepository.save(mappedMentalEvaluation);
+        } else if (surveyRecord != null) {
+            CreateMentalEvaluationRequest mentalEvaluationRequest = mentalEvaluationMapper.fromSurveyRecord(surveyRecord);
+            mentalEvaluationRequest.setWeightedScore(getWeightedScoreForSurveyRecord(surveyRecord));
+
+            MentalEvaluation mappedMentalEvaluation = mentalEvaluationMapper.toMentalEvaluation(mentalEvaluationRequest);
+            Account student = surveyRecord.getStudent();
+            mappedMentalEvaluation.setStudent(student);
+            mappedMentalEvaluation.setSurveyRecord(surveyRecord);
+            return mentalEvaluationRepository.save(mappedMentalEvaluation);
         }
 
         return null;
@@ -47,5 +56,11 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
         return averageOpt.isPresent()
                 ? (float) ((averageOpt.getAsDouble() / 5f) * 4f)
                 : 0f;
+    }
+
+    private Float getWeightedScoreForSurveyRecord(SurveyRecord surveyRecord) {
+        Category category = surveyRecord.getSurvey().getCategory();
+        Float weightedScore = surveyRecord.getTotalScore() * category.getSeverityWeight();
+        return (weightedScore / category.getMaxScore()) * 4;
     }
 }

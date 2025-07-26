@@ -15,9 +15,7 @@ public class CreateMentalEvaluationRequest {
 
     private Float weightedScore;
 
-    private LocalDate firstEvaluatedAt;
-
-    private LocalDate lastEvaluatedAt;
+    private LocalDate latestEvaluatedAt;
 
     private Integer studentId;
 

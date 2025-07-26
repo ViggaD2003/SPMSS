@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,11 +38,11 @@ public class SurveyController {
         return ResponseEntity.ok(surveyService.getSurveyById(id));
     }
 
-//    @PreAuthorize("hasRole('MANAGER')")
-//    @PutMapping("/{id}")
-//    public ResponseEntity<?> updateSurvey(@PathVariable Integer id, @Valid @RequestBody AddNewSurveyDto dto) {
-//        return ResponseEntity.status(HttpStatus.OK).body(surveyService.updateSurveyById(id, dto));
-//    }
+    @PreAuthorize("hasRole('MANAGER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateSurvey(@PathVariable Integer id, @Valid @RequestBody UpdateSurveyRequest dto) {
+        return ResponseEntity.status(HttpStatus.OK).body(surveyService.updateSurveyById(id, dto));
+    }
 
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @GetMapping("/get-by-account")
@@ -53,5 +54,11 @@ public class SurveyController {
     @GetMapping("/published")
     public ResponseEntity<?> getAllSurveyWithPublished(){
         return ResponseEntity.ok(surveyService.getAllSurveyWithPublished());
+    }
+
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
+    @GetMapping("/in-case")
+    public ResponseEntity<?> getAllSurveyStudentInCase(){
+        return ResponseEntity.ok(surveyService.getAllSurveyStudentInCase());
     }
 }

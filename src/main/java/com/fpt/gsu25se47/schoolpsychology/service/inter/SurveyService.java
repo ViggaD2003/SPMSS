@@ -20,4 +20,6 @@ public interface SurveyService {
     Optional<?> getAllSurveyByCounselorId();
 
     Optional<?> getAllSurveyWithPublished();
+
+    Optional<?> getAllSurveyStudentInCase();
 }

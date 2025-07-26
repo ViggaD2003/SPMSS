@@ -31,9 +31,7 @@ public class MentalEvaluation {
 
     private Float weightedScore;
 
-    private LocalDate firstEvaluatedAt;
-
-    private LocalDate lastEvaluatedAt;
+    private LocalDate latestEvaluatedAt;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "appointment_id", referencedColumnName = "id")

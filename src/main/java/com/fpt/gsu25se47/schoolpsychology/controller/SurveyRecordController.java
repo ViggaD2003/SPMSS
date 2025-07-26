@@ -50,26 +50,4 @@ public class SurveyRecordController {
         SurveyRecordDetailResponse surveyRecordResponse = surveyRecordService.getSurveyRecordById(surveyRecordId);
         return ResponseEntity.ok(surveyRecordResponse);
     }
-
-//    @GetMapping
-//    public ResponseEntity<ApiResponse<List<SurveyRecordDetailResponse>>> getAllSurveyRecords(
-//            @RequestParam(required = false) Integer page,
-//            @RequestParam(required = false) Integer size,
-//            @RequestParam(required = false, defaultValue = "completedAt") String field,
-//            @RequestParam(required = false, defaultValue = "desc") String direction
-//    ) {
-//
-//        PageRequest pageRequest = paginationUtil.getPageRequest(page, size, direction, field);
-//
-//        Page<SurveyRecordDetailResponse> recordResponses = surveyRecordService
-//                .getAllSurveyRecords(pageRequest);
-//
-//        return ResponseEntity.ok(ApiResponse.<List<SurveyRecordDetailResponse>>builder()
-//                .statusCode(HttpStatus.OK.value())
-//                .success(true)
-//                .message("Retrieve survey records successfully")
-//                .data(recordResponses.getContent())
-//                .pagination(paginationUtil.getPaginationResponse(pageRequest, recordResponses))
-//                .build());
-//    }
 }

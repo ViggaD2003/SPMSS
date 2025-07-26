@@ -13,9 +13,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ClassDto {
 
-    private TeacherOfClassDto teacher;
+    private TeacherDto teacher;
 
     private String codeClass;
 
-    private String classYear;
+    private String schoolYear;
 }

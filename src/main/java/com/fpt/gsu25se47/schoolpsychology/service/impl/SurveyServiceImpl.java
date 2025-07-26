@@ -88,9 +88,7 @@ public class SurveyServiceImpl implements SurveyService {
             List<Survey> surveys = surveyRepository.findAll();
             List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
 
-            surveyResponses.forEach(response -> {
-                surveys.forEach(survey -> response.setCreatedBy(survey.getCreateBy().getId()));
-            });
+
 
             return Optional.of(surveyResponses);
         } catch (Exception e) {
@@ -188,6 +186,25 @@ public class SurveyServiceImpl implements SurveyService {
 
             List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
             return Optional.of(surveyResponses);
+        } catch (Exception e) {
+            log.error("Failed to create survey: {}", e.getMessage(), e);
+            throw new RuntimeException("Something went wrong");
+        }
+    }
+
+    @Override
+    public Optional<?> getAllSurveyStudentInCase() {
+        try {
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+            if (userDetails == null) {
+                throw new BadRequestException("Unauthorized");
+            }
+
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
+            List<Survey> surveys = surveyRepository.findAllSurveyStudentInCase(account.getId());
+            List<SurveyGetAllResponse> surveyGetAllResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
+
+            return Optional.of(surveyGetAllResponses);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");

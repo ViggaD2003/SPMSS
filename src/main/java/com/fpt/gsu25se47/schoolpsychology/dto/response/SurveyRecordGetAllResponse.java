@@ -13,4 +13,5 @@ public class SurveyRecordGetAllResponse {
     private Boolean isSkipped;
     private LevelResponse level;
     private LocalDate completedAt;
+    private SurveyGetAllResponse survey;
 }
