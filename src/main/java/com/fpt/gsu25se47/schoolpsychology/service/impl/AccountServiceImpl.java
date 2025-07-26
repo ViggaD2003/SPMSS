@@ -6,6 +6,7 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.AccountMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -36,11 +37,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<?> listAllAccounts() {
-        return accountRepository.findAll().stream()
+    public List<?> listAllAccounts(Role role, Integer classId) {
+        return accountRepository.findAccountsByRoleNative(role == null ? null :  role.name(), classId).stream()
                 .filter(account -> !"MANAGER".equals(account.getRole().name()))
                 .map(account -> Optional.of(accountMapper.toDto(account)))
-                .filter(Objects::nonNull)
                 .toList();
     }
 
