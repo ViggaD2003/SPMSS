@@ -11,6 +11,8 @@ import java.time.LocalDate;
 @Setter
 public abstract class AccountDto {
 
+    private Integer id;
+
     private String email;
 
     private String phoneNumber;

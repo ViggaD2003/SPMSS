@@ -1,38 +1,34 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class SupportProgramRequest {
 
     private String name;
 
-    @Length(min = 0, max = 5000)
+    @Length(min = 1, max = 5000)
     private String description;
 
     @Range(min = 1, max = 200)
     private Integer maxParticipants;
 
-    @FutureOrPresent
-    private LocalDate startDate;
+    @Future
+    private LocalDateTime startDate;
 
     @Future
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
-    private Boolean isOnline;
+    private String linkMeet;
 
-    private ProgramStatus status;
+    private String thumbnail;
 
-    private String location;
+    private Integer hostedBy;
 
-    private Integer categoryId;
+    private AddNewSurveyDto addNewSurveyDto;
 
-//    private List<Integer> sessionIds;
 }

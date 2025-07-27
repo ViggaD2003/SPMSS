@@ -1,24 +1,14 @@
-//package com.fpt.gsu25se47.schoolpsychology.service.impl;
-//
-//import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
-//import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
-//import com.fpt.gsu25se47.schoolpsychology.model.Category;
-//import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
-//import com.fpt.gsu25se47.schoolpsychology.repository.*;
-//import com.fpt.gsu25se47.schoolpsychology.service.inter.SupportProgramService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//import org.springframework.web.server.ResponseStatusException;
-//
-//import java.util.List;
-//import java.util.Objects;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class SupportProgramServiceImpl implements SupportProgramService {
-//
+package com.fpt.gsu25se47.schoolpsychology.service.impl;
+
+
+import com.fpt.gsu25se47.schoolpsychology.service.inter.SupportProgramService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class SupportProgramServiceImpl {
+
 //    private final SupportProgramMapper supportProgramMapper;
 //    private final ProgramSessionRepository programSessionRepository;
 //    private final ProgramRegistrationRepository programRegistrationRepository;
@@ -34,25 +24,25 @@
 //                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 //                        "Category not found with ID: " + request.getCategoryId()));
 //
-////        if (request.getSessionIds().isEmpty()) {
-////            supportProgram = supportProgramMapper.toSupportProgram(
-////                    request,
-////                    category,
-////                    Collections.emptyList());
-////        } else {
-////            var sessions = programSessionRepository.findAllById(request.getSessionIds());
-////            if (sessions.size() != request.getSessionIds().size()) {
-////                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more session IDs are invalid.");
-////            }
-////
-////            sessions.forEach(t -> {
-////                if(t.getProgram() != null) {
-////                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One of sessions existed in another support program");
-////                }
-////                if(t.getDate().isBefore(request.getStartDate()) || t.getDate().isAfter(request.getEndDate())) {
-////                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This session date is invalid by support program start date and end date");
-////                }
-////            });
+//        if (request.getSessionIds().isEmpty()) {
+//            supportProgram = supportProgramMapper.toSupportProgram(
+//                    request,
+//                    category,
+//                    Collections.emptyList());
+//        } else {
+//            var sessions = programSessionRepository.findAllById(request.getSessionIds());
+//            if (sessions.size() != request.getSessionIds().size()) {
+//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more session IDs are invalid.");
+//            }
+//
+//            sessions.forEach(t -> {
+//                if(t.getProgram() != null) {
+//                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One of sessions existed in another support program");
+//                }
+//                if(t.getDate().isBefore(request.getStartDate()) || t.getDate().isAfter(request.getEndDate())) {
+//                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This session date is invalid by support program start date and end date");
+//                }
+//            });
 //
 //        SupportProgram supportProgram = supportProgramMapper.toSupportProgram(request,
 //                category);
@@ -127,4 +117,4 @@
 //                        "Support program not found with ID: " + id
 //                ));
 //    }
-//}
+}

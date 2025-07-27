@@ -16,5 +16,6 @@ public interface CounselorMapper {
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")
     @Mapping(target = "fullName", source = "account.fullName")
     @Mapping(target = "email", source = "account.email")
+    @Mapping(target = "id", source = "account.id")
     CounselorDto toCounselorDto(Counselor counselor);
 }

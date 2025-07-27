@@ -53,7 +53,6 @@ public class SupportProgram extends Auditable {
     @JoinColumn(name = "survey_id", nullable = false)
     private Survey survey;
 
-
     @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProgramParticipants> programRegistrations = new ArrayList<>();
 
