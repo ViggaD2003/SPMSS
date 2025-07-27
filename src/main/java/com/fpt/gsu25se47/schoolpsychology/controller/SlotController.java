@@ -3,7 +3,6 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotResponse;
-import com.fpt.gsu25se47.schoolpsychology.mapper.SlotMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
 import jakarta.validation.Valid;

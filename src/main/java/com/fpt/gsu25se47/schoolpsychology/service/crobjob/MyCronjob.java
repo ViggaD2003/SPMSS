@@ -1,10 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
+import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +25,7 @@ public class MyCronjob {
 
     private final SurveyRepository surveyRepository;
 
-    //    private final SlotRepository slotRepository;
+    private final SlotRepository slotRepository;
 
     private final AppointmentRepository appointmentRepository;
 
@@ -65,14 +67,6 @@ public class MyCronjob {
         }
     }
 
-    //    @Scheduled(cron = "0 */1 * * * *")
-//    public void updateSlotStatus() {
-//        LocalDateTime now = LocalDateTime.now();
-//        List<Slot> toCompleted = slotRepository.findAllSlotsExpired(now, SlotStatus.PUBLISHED, SlotStatus.DRAFT);
-//        toCompleted.forEach(slot -> slot.setStatus(SlotStatus.CLOSED));
-//        slotRepository.saveAll(toCompleted);
-//    }
-
     @Scheduled(cron = "0 0 0 * * *")
     public void updateAppointmentStatus() {
         LocalDateTime cutoff = LocalDateTime.now();
@@ -82,6 +76,18 @@ public class MyCronjob {
         appointments.stream()
                 .filter(a -> a.getAssessmentScores().isEmpty())
                 .forEach(a -> appointmentService.updateStatus(a.getId(), AppointmentStatus.ABSENT));
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void updateSlotStatus() {
+        LocalDateTime cutoff = LocalDateTime.now();
+
+        List<Slot> slots = slotRepository.findAllSlotsExpired(cutoff, SlotStatus.PUBLISHED, SlotStatus.DRAFT);
+
+        slots.forEach(s -> {
+            s.setStatus(SlotStatus.CLOSED);
+            slotRepository.save(s);
+        });
     }
 
     private boolean shouldOpen(Survey survey, LocalDate today) {
