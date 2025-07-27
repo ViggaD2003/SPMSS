@@ -23,7 +23,7 @@ public class SlotController {
 
     private final SlotService slotService;
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER')")
     @PostMapping
     ResponseEntity<List<SlotResponse>> createSlot(@RequestBody @Valid List<CreateSlotRequest> requests) {
         return ResponseEntity.ok(slotService.createSlots(requests));

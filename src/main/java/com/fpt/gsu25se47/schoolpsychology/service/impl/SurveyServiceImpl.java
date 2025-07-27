@@ -1,7 +1,5 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewAnswerDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewQuestionDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
@@ -19,11 +17,9 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +35,7 @@ public class SurveyServiceImpl implements SurveyService {
     private final SurveyMapper surveyMapper;
 
     private final QuestionMapper questionMapper;
+
     @Override
     @Transactional
     public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request) {
@@ -71,7 +68,7 @@ public class SurveyServiceImpl implements SurveyService {
             }
 
             survey.setCreateBy(account);
-            survey.setIsUsed(Boolean.FALSE);
+            survey.setRound(1);
             surveyRepository.save(survey);
 
             return Optional.of("Create survey successfull");
@@ -87,7 +84,6 @@ public class SurveyServiceImpl implements SurveyService {
         try {
             List<Survey> surveys = surveyRepository.findAll();
             List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
-
 
 
             return Optional.of(surveyResponses);
@@ -123,29 +119,27 @@ public class SurveyServiceImpl implements SurveyService {
         // Validate input dates and recurring rules
         validateUpdateSurveyRequest(dto);
 
-        boolean isUsed = Boolean.TRUE.equals(survey.getIsUsed());
-
         switch (survey.getStatus()) {
             case DRAFT -> {
-                updateBasicSurveyInfo(survey, dto);
-                if (!isUsed) {
-                    updateAllSurveyInfo(survey, dto);
+                if (survey.getRound() == 1) {
+                    updateAllSurveyInfo(survey, dto, true); // deleteQuestions = true
+                } else {
+                    // Draft Round > 1: Update fields, round không tăng, questions unlink và thêm mới
+                    updateAllSurveyInfo(survey, dto, false); // deleteQuestions = false
                 }
             }
-
             case ARCHIVED -> {
-                updateBasicSurveyInfo(survey, dto);
-                updateAllSurveyInfo(survey, dto);
+                // Archived: Round +1, update fields, questions unlink và thêm mới
+                survey.setRound(survey.getRound() + 1);
                 survey.setStatus(SurveyStatus.DRAFT); // revive from archive
+                updateAllSurveyInfo(survey, dto, false); // deleteQuestions = false
             }
-
             default -> throw new IllegalStateException("Cannot update survey with status: " + survey.getStatus());
         }
 
         Survey updatedSurvey = surveyRepository.save(survey);
         return Optional.of(surveyMapper.mapToSurveyDetailResponse(updatedSurvey));
     }
-
 
 
     @Override
@@ -158,7 +152,7 @@ public class SurveyServiceImpl implements SurveyService {
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
 
-            if (account.getRole().name() != "COUNSELOR") {
+            if (!account.getRole().name().equals("COUNSELOR")) {
                 throw new BadRequestException("Account is not counselor");
             }
 
@@ -240,18 +234,29 @@ public class SurveyServiceImpl implements SurveyService {
         survey.setIsRequired(dto.getIsRequired());
         survey.setIsRecurring(dto.getIsRecurring());
         survey.setRecurringCycle(dto.getRecurringCycle());
+
     }
 
-    private void updateAllSurveyInfo(Survey survey, UpdateSurveyRequest dto) {
+    private void updateAllSurveyInfo(Survey survey, UpdateSurveyRequest dto, boolean deleteQuestions) {
+        // Update basic survey info
         survey.setTitle(dto.getTitle());
         survey.setDescription(dto.getDescription());
         survey.setSurveyType(dto.getSurveyType());
         survey.setTargetScope(dto.getTargetScope());
         survey.setTargetGradeLevel(dto.getTargetGrade());
-
         updateBasicSurveyInfo(survey, dto);
 
-        survey.getQuestions().clear();
+        // Handle questions based on deleteQuestions flag
+        if (deleteQuestions) {
+            // Draft Round 1: Delete questions (cascade delete)
+            survey.getQuestions().clear();
+        } else {
+            // Draft Round > 1 or Archived: Unlink questions (không xóa khỏi DB)
+            survey.getQuestions().forEach(question -> question.setSurvey(null));
+            survey.getQuestions().clear();
+        }
+
+        // Add new questions
         List<Question> newQuestions = dto.getNewQuestions().stream()
                 .map(questionMapper::mapToQuestion)
                 .peek(q -> {

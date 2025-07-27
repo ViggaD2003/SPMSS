@@ -29,6 +29,8 @@ public class SurveyRecord {
 
     private Boolean isSkipped;
 
+    private Integer round;
+
     @ManyToOne
     @JoinColumn(name = "survey_id")
     private Survey survey;

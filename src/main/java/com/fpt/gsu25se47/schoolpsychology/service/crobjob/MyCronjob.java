@@ -24,11 +24,10 @@ public class MyCronjob {
     private final SurveyRepository surveyRepository;
 
     //    private final SlotRepository slotRepository;
-//
+
     private final AppointmentRepository appointmentRepository;
 
     private final AppointmentService appointmentService;
-//
 //    private final AppointmentRecordRepository appointmentRecordRepository;
 
 //    private final AppointmentRecordService appointmentRecordService;
@@ -41,10 +40,7 @@ public class MyCronjob {
         toPublish.forEach(survey -> survey.setStatus(SurveyStatus.PUBLISHED));
 
         List<Survey> toFinish = surveyRepository.findByEndDateAndStatusPublished(now);
-        toFinish.forEach(survey -> {
-            survey.setStatus(SurveyStatus.ARCHIVED);
-            survey.setIsUsed(Boolean.TRUE);
-        });
+        toFinish.forEach(survey -> survey.setStatus(SurveyStatus.ARCHIVED));
 
         surveyRepository.saveAll(toPublish);
         surveyRepository.saveAll(toFinish);
@@ -62,6 +58,7 @@ public class MyCronjob {
                 int numberDoSurvey = survey.getEndDate().getDayOfMonth() - survey.getStartDate().getDayOfMonth();
                 survey.setEndDate(today.plusDays(numberDoSurvey));
                 survey.setStatus(SurveyStatus.PUBLISHED);
+                survey.setRound(survey.getRound() + 1);
                 surveyRepository.save(survey);
                 System.out.println("Recurring survey " + survey.getId() + " has been published");
             }
@@ -75,7 +72,7 @@ public class MyCronjob {
 //        toCompleted.forEach(slot -> slot.setStatus(SlotStatus.CLOSED));
 //        slotRepository.saveAll(toCompleted);
 //    }
-//
+
     @Scheduled(cron = "0 0 0 * * *")
     public void updateAppointmentStatus() {
         LocalDateTime cutoff = LocalDateTime.now();
