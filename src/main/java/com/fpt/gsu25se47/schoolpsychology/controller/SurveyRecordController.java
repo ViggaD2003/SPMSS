@@ -31,7 +31,7 @@ public class SurveyRecordController {
     @GetMapping("/accounts/{accountId}")
     public ResponseEntity<?> getAllSurveyRecordsByAccountId(
             @PathVariable Integer accountId,
-            @RequestParam(name = "surveyType") SurveyType surveyType,
+            @RequestParam(name = "surveyType", required = false) SurveyType surveyType,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false, defaultValue = "completedAt") String field,

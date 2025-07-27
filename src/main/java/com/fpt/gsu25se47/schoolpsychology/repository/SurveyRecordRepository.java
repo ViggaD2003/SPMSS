@@ -12,7 +12,7 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
 
     @Query("SELECT sr FROM SurveyRecord sr " +
             "WHERE sr.student.id = :studentId " +
-            "AND sr.survey.surveyType = :surveyType")
+            "AND (:surveyType IS NULL OR sr.survey.surveyType = :surveyType)")
     Page<SurveyRecord> findAllSurveyRecordsByStudentIdAndSurveyType(@Param("studentId") int studentId,
                                                                     @Param("surveyType") SurveyType surveyType,
                                                                     Pageable pageable);
