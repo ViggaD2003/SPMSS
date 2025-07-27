@@ -111,14 +111,14 @@ public class SlotServiceImpl implements SlotService {
     }
 
     private static void validateOfficeHours(CreateSlotRequest request) {
-        LocalTime officeStart = LocalTime.of(18, 0);
-        LocalTime officeEnd = LocalTime.of(21, 30);
+        LocalTime officeStart = LocalTime.of(8, 0);   // 8:00 AM
+        LocalTime officeEnd = LocalTime.of(15, 0);    // 3:00 PM
 
         LocalTime slotStart = request.getStartDateTime().toLocalTime();
         LocalTime slotEnd = request.getEndDateTime().toLocalTime();
 
         if (slotStart.isBefore(officeStart) || slotEnd.isAfter(officeEnd)) {
-            throw new RuntimeException("Slot must be within office hours (18:00 - 21:30)");
+            throw new RuntimeException("Slot must be within office hours (08:00 - 15:00)");
         }
     }
 

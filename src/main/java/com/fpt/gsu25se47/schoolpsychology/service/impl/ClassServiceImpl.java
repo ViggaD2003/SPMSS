@@ -5,12 +5,12 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
-import com.fpt.gsu25se47.schoolpsychology.model.Classes;
-import com.fpt.gsu25se47.schoolpsychology.model.Student;
-import com.fpt.gsu25se47.schoolpsychology.model.Teacher;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.EnrollmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.TeacherRepository;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +27,8 @@ public class ClassServiceImpl implements ClassService {
     private final ClassRepository classRepository;
     private final TeacherRepository teacherRepository;
     private final EnrollmentRepository enrollmentRepository;
+
+    private final AccountService accountService;
 
     private final StudentMapper studentMapper;
     private final ClassMapper classMapper;
@@ -92,9 +94,31 @@ public class ClassServiceImpl implements ClassService {
     @Override
     public List<ClassResponse> getAllClasses() {
 
+        Account account = accountService.getCurrentAccount();
+
+        if (account.getRole() == Role.TEACHER) {
+            return getClassResponsesForTeacher(account);
+        }
+
         return classRepository.findAll()
                 .stream()
                 .map(classMapper::toClassResponse)
+                .toList();
+    }
+
+    private List<ClassResponse> getClassResponsesForTeacher(Account account) {
+
+        List<Classes> classes = classRepository.findAllByTeacherId(account.getId());
+
+        List<StudentDto> studentDtos = classes.stream()
+                .flatMap(c -> c.getEnrollments()
+                        .stream()
+                        .map(Enrollment::getStudent)
+                        .map(studentMapper::mapStudentDtoWithoutClass))
+                .toList();
+
+        return classes.stream()
+                .map(s -> classMapper.toClassDetailResponse(s, studentDtos))
                 .toList();
     }
 
