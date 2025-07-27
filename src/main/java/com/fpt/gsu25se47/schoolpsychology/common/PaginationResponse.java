@@ -16,6 +16,7 @@ public class PaginationResponse {
     private int page;
     private int size;
     private int totalPages;
+    private int numberOfSkipped;
     private long totalElements;
     private boolean hasNext;
     private boolean hasPrevious;

@@ -41,8 +41,9 @@ public class SurveyRecordController {
 
         Page<SurveyRecordGetAllResponse> surveyRecordResponses = surveyRecordService.getAllSurveyRecordById(surveyType, accountId,
                 pageRequest);
+        int count = surveyRecordService.countSurveyRecordSkippedByAccountId(accountId);
 
-        return ResponseEntity.ok(paginationUtil.getPaginationResponse(pageRequest, surveyRecordResponses, surveyRecordResponses.getContent()));
+        return ResponseEntity.ok(paginationUtil.getPaginationResponse(count, pageRequest, surveyRecordResponses, surveyRecordResponses.getContent()));
     }
 
     @GetMapping("/{surveyRecordId}")

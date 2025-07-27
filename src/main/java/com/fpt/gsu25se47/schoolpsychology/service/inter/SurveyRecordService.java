@@ -11,4 +11,5 @@ public interface SurveyRecordService {
     SurveyRecordDetailResponse createSurveyRecord(CreateSurveyRecordDto createSurveyRecordDto);
     Page<SurveyRecordGetAllResponse> getAllSurveyRecordById(SurveyType surveyType, Integer accountId, Pageable pageable);
     SurveyRecordDetailResponse getSurveyRecordById(int surveyRecordId);
+    int countSurveyRecordSkippedByAccountId(int accountId);
 }

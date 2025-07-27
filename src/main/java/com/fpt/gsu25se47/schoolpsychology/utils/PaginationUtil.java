@@ -25,10 +25,11 @@ public class PaginationUtil {
         return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.fromString(direction), field));
     }
 
-    public PaginationResponse getPaginationResponse(PageRequest pageRequest, Page<?> response, List<SurveyRecordGetAllResponse> content) {
+    public PaginationResponse getPaginationResponse(int countSkipped, PageRequest pageRequest, Page<?> response, List<SurveyRecordGetAllResponse> content) {
         return PaginationResponse.builder()
                 .page(pageRequest.getPageNumber())
                 .size(pageRequest.getPageSize())
+                .numberOfSkipped(countSkipped)
                 .totalElements(response.getTotalElements())
                 .totalPages(response.getTotalPages())
                 .hasPrevious(response.hasPrevious())

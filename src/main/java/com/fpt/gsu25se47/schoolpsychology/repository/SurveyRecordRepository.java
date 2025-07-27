@@ -17,4 +17,7 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
                                                                     @Param("surveyType") SurveyType surveyType,
                                                                     Pageable pageable);
 
+    @Query("SELECT COUNT(sr) FROM SurveyRecord sr " +
+            "WHERE sr.student.id = :studentId AND sr.isSkipped = true")
+    int countSkippedSurveyRecordsByStudentId(@Param("studentId") int studentId);
 }

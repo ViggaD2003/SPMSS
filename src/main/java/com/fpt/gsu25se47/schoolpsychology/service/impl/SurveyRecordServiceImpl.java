@@ -13,6 +13,7 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
 import com.fpt.gsu25se47.schoolpsychology.validations.DuplicateValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -127,6 +128,11 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Survey Record not found with Id: " + surveyRecordId));
         return surveyRecordMapper.mapToSurveyRecordResponse(surveyRecord);
+    }
+
+    @Override
+    public int countSurveyRecordSkippedByAccountId(int accountId) {
+        return surveyRecordRepository.countSkippedSurveyRecordsByStudentId(accountId);
     }
 
 //    @Override
