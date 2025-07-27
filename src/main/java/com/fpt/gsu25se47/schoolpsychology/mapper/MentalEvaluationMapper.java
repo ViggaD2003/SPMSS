@@ -16,11 +16,11 @@ public interface MentalEvaluationMapper {
     MentalEvaluationResponse toMentalEvaluationResponse(MentalEvaluation mentalEvaluation);
 
     @Mapping(target = "source", constant = "APPOINTMENT")
-    @Mapping(target = "latestEvaluatedAt", expression = "java(appointment.getEndDateTime().toLocalDate())")
+    @Mapping(target = "latestEvaluatedAt", expression = "java(appointment.getUpdatedDate().toLocalDate())")
     @Mapping(target = "studentId",
             expression = "java(appointment.getBookedFor().getStudent() != null ? appointment.getBookedFor().getStudent().getId() : appointment.getBookedBy().getStudent().getId())")
     @Mapping(target = "appointmentId", source = "appointment.id")
-    @Mapping(target = "sourceType", constant = "EXIT")
+    @Mapping(target = "sourceType", constant = "NONE")
     CreateMentalEvaluationRequest fromAppointment(Appointment appointment);
 
 

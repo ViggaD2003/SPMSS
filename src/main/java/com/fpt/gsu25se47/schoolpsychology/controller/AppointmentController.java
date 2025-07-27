@@ -29,7 +29,7 @@ public class AppointmentController {
     @GetMapping("/show-history")
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Lịch sử hẹn của sinh viên", description = "Trả về tất cả các cuộc hẹn mà sinh viên đã từng tham gia hoặc đặt.")
-    public ResponseEntity<List<AppointmentResponse>> showAppointmentHistory() {
+    ResponseEntity<List<AppointmentResponse>> showAppointmentHistory() {
 
         return ResponseEntity.ok(appointmentService.getAppointmentsHistory());
     }
@@ -37,7 +37,7 @@ public class AppointmentController {
     @GetMapping("/show-appointment")
     @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
     @Operation(summary = "Xem các cuộc hẹn của slot", description = "Dành cho giáo viên hoặc cố vấn - hiển thị các appointment thuộc slot mà họ tổ chức.")
-    public ResponseEntity<List<AppointmentResponse>> showAppointments() {
+    ResponseEntity<List<AppointmentResponse>> showAppointments() {
 
         return ResponseEntity.ok(appointmentService.getAllAppointmentsOfSlots());
     }
@@ -45,14 +45,14 @@ public class AppointmentController {
     @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @PatchMapping("/cancel/{appointmentId}")
     @Operation(summary = "Huỷ cuộc hẹn", description = "Huỷ một appointment vì một lý do nào đó, lý do bắt buộc phải có")
-    public ResponseEntity<AppointmentResponse> cancelAppointment(@PathVariable("appointmentId") Integer id, @RequestParam(value = "reasonCancel") String reasonCancel) {
+    ResponseEntity<AppointmentResponse> cancelAppointment(@PathVariable("appointmentId") Integer id, @RequestParam(value = "reasonCancel") String reasonCancel) {
 
         return ResponseEntity.ok(appointmentService.cancelAppointment(id, reasonCancel));
     }
 
     @PatchMapping("/{appointmentId}")
     @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
-    public ResponseEntity<AppointmentResponse> updateAppointment(@PathVariable Integer appointmentId, @RequestBody UpdateAppointmentRequest request) {
+    ResponseEntity<AppointmentResponse> updateAppointment(@PathVariable Integer appointmentId, @RequestBody UpdateAppointmentRequest request) {
 
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentId, request));
     }

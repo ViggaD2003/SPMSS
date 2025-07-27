@@ -1,15 +1,19 @@
 package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
 
+import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 
+import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,9 +23,11 @@ public class MyCronjob {
 
     private final SurveyRepository surveyRepository;
 
-//    private final SlotRepository slotRepository;
+    //    private final SlotRepository slotRepository;
 //
-//    private final AppointmentRepository appointmentRepository;
+    private final AppointmentRepository appointmentRepository;
+
+    private final AppointmentService appointmentService;
 //
 //    private final AppointmentRecordRepository appointmentRecordRepository;
 
@@ -62,7 +68,7 @@ public class MyCronjob {
         }
     }
 
-//    @Scheduled(cron = "0 */1 * * * *")
+    //    @Scheduled(cron = "0 */1 * * * *")
 //    public void updateSlotStatus() {
 //        LocalDateTime now = LocalDateTime.now();
 //        List<Slot> toCompleted = slotRepository.findAllSlotsExpired(now, SlotStatus.PUBLISHED, SlotStatus.DRAFT);
@@ -70,35 +76,16 @@ public class MyCronjob {
 //        slotRepository.saveAll(toCompleted);
 //    }
 //
-//    @Scheduled(cron = "0 */1 * * * *")
-//    public void updateAppointmentStatus() {
-//        LocalDateTime now = LocalDateTime.now();
-//
-//        List<Appointment> appointments = appointmentRepository.findAllAppointmentExpired(AppointmentStatus.CONFIRMED, now);
-//        appointments.forEach(appointment -> {
-//
-//            if (!appointmentRecordRepository.existsByAppointmentId(appointment.getId())) {
-//                appointment.setStatus(AppointmentStatus.EXPIRED);
-//
-//                CreateAppointmentRecordRequest request = new CreateAppointmentRecordRequest();
-//                request.setAppointmentId(appointment.getId());
-//                request.setStatus(RecordStatus.CANCELED);
-//                request.setReason("Cuộc hẹn đã hết hiệu lực");
-//                request.setReportCategoryRequests(Collections.emptyList());
-//                appointmentRecordService.createAppointmentRecord(request);
-//            } else {
-//                appointment.setStatus(AppointmentStatus.COMPLETED);
-//                List<AppointmentRecord> appointmentRecords = appointmentRecordRepository
-//                        .findAllByAppointmentId(appointment.getId());
-//                appointmentRecords.forEach(appointmentRecord -> {
-//                    appointmentRecord.setStatus(RecordStatus.FINALIZED);
-//                    appointmentRecordRepository.save(appointmentRecord);
-//                });
-//            }
-//        });
-//
-//        appointmentRepository.saveAll(appointments);
-//    }
+    @Scheduled(cron = "0 0 0 * * *")
+    public void updateAppointmentStatus() {
+        LocalDateTime cutoff = LocalDateTime.now();
+
+        List<Appointment> appointments = appointmentRepository.findAllAppointmentExpired(AppointmentStatus.CONFIRMED, cutoff);
+
+        appointments.stream()
+                .filter(a -> a.getAssessmentScores().isEmpty())
+                .forEach(a -> appointmentService.updateStatus(a.getId(), AppointmentStatus.ABSENT));
+    }
 
     private boolean shouldOpen(Survey survey, LocalDate today) {
         if (!survey.getIsRecurring()) return false;
