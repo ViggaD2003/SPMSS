@@ -76,9 +76,10 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             List<Level> levels = category.getLevels();
 
             Level matchLevel = levels.stream()
-                    .filter(level -> level.getMinScore() <= dto.getTotalScore() && level.getMaxScore() <= dto.getTotalScore())
+                    .filter(level -> dto.getTotalScore() >= level.getMinScore() && dto.getTotalScore() <= level.getMaxScore())
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Total Score do not match any levels"));
+
 
 
             SurveyRecord surveyRecord = SurveyRecord.builder()
