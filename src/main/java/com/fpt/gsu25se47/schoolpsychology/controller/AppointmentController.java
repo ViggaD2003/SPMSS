@@ -6,6 +6,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,7 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
 
     @PostMapping
-    ResponseEntity<AppointmentResponse> createAppointment(@RequestBody CreateAppointmentRequest request) {
+    ResponseEntity<AppointmentResponse> createAppointment(@RequestBody @Valid CreateAppointmentRequest request) {
 
         return ResponseEntity.ok(appointmentService.createAppointment(request));
     }
