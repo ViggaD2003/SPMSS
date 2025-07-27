@@ -18,6 +18,9 @@ public interface AppointmentMapper {
     AppointmentResponse toAppointmentResponse(Appointment appointment);
 
     @Mapping(target = "assessmentScores", ignore = true)
+    AppointmentResponse toAppointmentResponseWithoutAS(Appointment appointment);
+
+    @Mapping(target = "assessmentScores", ignore = true)
     Appointment updateAppointmentFromRequest(UpdateAppointmentRequest request,
                                              @MappingTarget Appointment appointment);
 
