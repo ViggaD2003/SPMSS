@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import org.mapstruct.*;
@@ -25,6 +26,13 @@ public interface StudentMapper {
     @Mapping(target = "mentalEvaluations", ignore = true)
     @Mapping(target = "classDto", ignore = true)
     StudentDto mapStudentDtoWithoutClass(Student student);
+
+    @Mapping(target = "latestSurveyRecord", ignore = true)
+    @BeanMapping(builder = @Builder(disableBuilder = true))
+    @Mapping(target = "gender", source = "account.gender")
+    @Mapping(target = "fullName", source = "account.fullName")
+    @Mapping(target = "dob", source = "account.dob")
+    StudentSRCResponse toStudentSrcResponse(Student student);
 
     // Hàm xử lý default để map classDto thủ công
     default StudentDto mapStudentDtoWithClass(Student student, Classes classes, ClassMapper classDtoMapper) {

@@ -40,4 +40,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             """)
     List<Appointment> findByBookedByAndStatus(Integer studentId,
                                               List<AppointmentStatus> statuses);
+
+    List<Appointment> findAllByStatus(AppointmentStatus status);
 }

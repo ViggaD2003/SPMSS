@@ -64,4 +64,16 @@ public class AppointmentController {
 
         return ResponseEntity.ok(appointmentService.updateStatus(appointmentId, status));
     }
+
+    @GetMapping("/status")
+    ResponseEntity<List<AppointmentResponse>> getAllByStatus(@RequestParam AppointmentStatus status) {
+
+        return ResponseEntity.ok(appointmentService.getAppointmentsByStatus(status));
+    }
+
+    @GetMapping("/{appointmentId}")
+    ResponseEntity<AppointmentResponse> getById(@PathVariable Integer appointmentId) {
+
+        return ResponseEntity.ok(appointmentService.getAppointmentById(appointmentId));
+    }
 }

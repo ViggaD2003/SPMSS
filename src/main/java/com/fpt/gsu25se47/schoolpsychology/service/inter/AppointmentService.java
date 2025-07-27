@@ -15,4 +15,6 @@ public interface AppointmentService {
     AppointmentResponse cancelAppointment(Integer appointmentId, String reasonCancel);
     AppointmentResponse updateAppointment(Integer appointmentId, UpdateAppointmentRequest request);
     AppointmentResponse updateStatus(Integer appointmentId, AppointmentStatus status);
+    AppointmentResponse getAppointmentById(Integer appointmentId);
+    List<AppointmentResponse> getAppointmentsByStatus(AppointmentStatus appointmentStatus);
 }

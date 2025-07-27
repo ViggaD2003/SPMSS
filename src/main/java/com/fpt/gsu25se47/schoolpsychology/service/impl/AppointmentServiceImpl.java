@@ -167,6 +167,25 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
+    @Override
+    public AppointmentResponse getAppointmentById(Integer appointmentId) {
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Appointment not found for ID: " + appointmentId));
+
+        return appointmentMapper.toAppointmentResponse(appointment);
+    }
+
+    @Override
+    public List<AppointmentResponse> getAppointmentsByStatus(AppointmentStatus appointmentStatus) {
+
+        List<Appointment> appointments = appointmentRepository.findAllByStatus(appointmentStatus);
+        return appointments.stream()
+                .map(appointmentMapper::toAppointmentResponseWithoutAS)
+                .toList();
+    }
+
     private String determineLocation(CreateAppointmentRequest request, Slot slot) {
         // location for online and offline appointments
         Role role = slot.getHostedBy().getRole();

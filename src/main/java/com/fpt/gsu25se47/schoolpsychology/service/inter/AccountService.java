@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import org.apache.coyote.BadRequestException;
@@ -23,4 +24,6 @@ public interface AccountService {
     Account getCurrentAccount();
 
     Optional<?> listAllCounselors();
+
+    List<StudentSRCResponse> getStudentsByClassWithLSR(Integer classId);
 }
