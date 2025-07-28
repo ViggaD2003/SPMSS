@@ -76,4 +76,25 @@ public class AppointmentController {
 
         return ResponseEntity.ok(appointmentService.getAppointmentById(appointmentId));
     }
+
+    @Operation(summary = "Get all appointments with status : CONFIRMED,IN_PROGRESS")
+    @GetMapping("/active")
+    ResponseEntity<List<AppointmentResponse>> findAllActiveAppointments() {
+
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsByStatuses(List.of(
+                AppointmentStatus.IN_PROGRESS,
+                AppointmentStatus.CONFIRMED
+        )));
+    }
+
+    @Operation(summary = "Get all appointments with status : CANCELED, COMPLETED, ABSENT")
+    @GetMapping("/past")
+    ResponseEntity<List<AppointmentResponse>> findAllPastAppointments() {
+
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsByStatuses(List.of(
+                AppointmentStatus.ABSENT,
+                AppointmentStatus.CANCELED,
+                AppointmentStatus.COMPLETED
+        )));
+    }
 }

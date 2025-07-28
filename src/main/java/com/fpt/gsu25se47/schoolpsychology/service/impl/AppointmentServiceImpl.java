@@ -186,6 +186,16 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .toList();
     }
 
+    @Override
+    public List<AppointmentResponse> getAllAppointmentsByStatuses(List<AppointmentStatus> statuses) {
+
+        List<Appointment> appointments = appointmentRepository.findAllByStatusIn(statuses);
+
+        return appointments.stream()
+                .map(appointmentMapper::toAppointmentResponseWithoutAS)
+                .toList();
+    }
+
     private String determineLocation(CreateAppointmentRequest request, Slot slot) {
         // location for online and offline appointments
         Role role = slot.getHostedBy().getRole();
