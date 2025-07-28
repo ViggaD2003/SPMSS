@@ -27,23 +27,6 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.createAppointment(request));
     }
 
-    @GetMapping("/show-history")
-    @PreAuthorize("hasRole('STUDENT')")
-    @Operation(summary = "Lịch sử hẹn của sinh viên", description = "Trả về tất cả các cuộc hẹn mà sinh viên đã từng tham gia hoặc đặt.")
-    ResponseEntity<List<AppointmentResponse>> showAppointmentHistory() {
-
-        return ResponseEntity.ok(appointmentService.getAppointmentsHistory());
-    }
-
-    @GetMapping("/show-appointment")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
-    @Operation(summary = "Xem các cuộc hẹn của slot", description = "Dành cho giáo viên hoặc cố vấn - hiển thị các appointment thuộc slot mà họ tổ chức.")
-    ResponseEntity<List<AppointmentResponse>> showAppointments() {
-
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfSlots());
-    }
-
-    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @PatchMapping("/cancel/{appointmentId}")
     @Operation(summary = "Huỷ cuộc hẹn", description = "Huỷ một appointment vì một lý do nào đó, lý do bắt buộc phải có")
     ResponseEntity<AppointmentResponse> cancelAppointment(@PathVariable("appointmentId") Integer id, @RequestParam(value = "reasonCancel") String reasonCancel) {
@@ -51,47 +34,63 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.cancelAppointment(id, reasonCancel));
     }
 
+    @Operation(
+            summary = "Update appointment",
+            description = """
+                    Role: TEACHER, COUNSELOR, MANAGER
+                    For TEACHER:
+                        Ignore assessmentScores, can be null or not null, the system will ignore it
+                    For COUNSELOR:
+                        Must have assessmentScores
+                    """)
     @PatchMapping("/{appointmentId}")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('MANAGER')")
     ResponseEntity<AppointmentResponse> updateAppointment(@PathVariable Integer appointmentId, @RequestBody UpdateAppointmentRequest request) {
 
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentId, request));
     }
 
+    @Operation(summary = "Update status of appointment",
+            description = "Role: TEACHER, COUNSELOR, MANAGER")
     @PatchMapping("/{appointmentId}/status")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('MANAGER')")
     ResponseEntity<AppointmentResponse> updateStatus(@PathVariable Integer appointmentId, @RequestParam AppointmentStatus status) {
 
         return ResponseEntity.ok(appointmentService.updateStatus(appointmentId, status));
     }
 
+    @Operation(summary = "Get all appointments by status",
+            description = "Role: MANAGER")
     @GetMapping("/status")
+    @PreAuthorize("hasRole('MANAGER')")
     ResponseEntity<List<AppointmentResponse>> getAllByStatus(@RequestParam AppointmentStatus status) {
 
         return ResponseEntity.ok(appointmentService.getAppointmentsByStatus(status));
     }
 
+    @Operation(summary = "Get appointment details by ID",
+            description = "Role: ALL")
     @GetMapping("/{appointmentId}")
     ResponseEntity<AppointmentResponse> getById(@PathVariable Integer appointmentId) {
 
         return ResponseEntity.ok(appointmentService.getAppointmentById(appointmentId));
     }
 
-    @Operation(summary = "Get all appointments with status : CONFIRMED,IN_PROGRESS")
-    @GetMapping("/active")
-    ResponseEntity<List<AppointmentResponse>> findAllActiveAppointments() {
+    @Operation(summary = "Get all appointments by accountId with status : CONFIRMED,IN_PROGRESS")
+    @GetMapping("/account/{accountId}/active")
+    ResponseEntity<List<AppointmentResponse>> findAllActiveAppointments(@PathVariable Integer accountId) {
 
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsByStatuses(List.of(
+        return ResponseEntity.ok(appointmentService.getAllAccAppointmentsByStatuses(accountId, List.of(
                 AppointmentStatus.IN_PROGRESS,
                 AppointmentStatus.CONFIRMED
         )));
     }
 
-    @Operation(summary = "Get all appointments with status : CANCELED, COMPLETED, ABSENT")
-    @GetMapping("/past")
-    ResponseEntity<List<AppointmentResponse>> findAllPastAppointments() {
+    @Operation(summary = "Get all appointments by accountId with status : CANCELED, COMPLETED, ABSENT")
+    @GetMapping("/account/{accountId}/past")
+    ResponseEntity<List<AppointmentResponse>> findAllPastAppointments(@PathVariable Integer accountId) {
 
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsByStatuses(List.of(
+        return ResponseEntity.ok(appointmentService.getAllAccAppointmentsByStatuses(accountId, List.of(
                 AppointmentStatus.ABSENT,
                 AppointmentStatus.CANCELED,
                 AppointmentStatus.COMPLETED

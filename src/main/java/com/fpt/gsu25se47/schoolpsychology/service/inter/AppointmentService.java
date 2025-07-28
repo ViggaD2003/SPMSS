@@ -10,12 +10,10 @@ import java.util.List;
 public interface AppointmentService {
 
     AppointmentResponse createAppointment(CreateAppointmentRequest request);
-    List<AppointmentResponse> getAppointmentsHistory();
-    List<AppointmentResponse> getAllAppointmentsOfSlots();
     AppointmentResponse cancelAppointment(Integer appointmentId, String reasonCancel);
     AppointmentResponse updateAppointment(Integer appointmentId, UpdateAppointmentRequest request);
     AppointmentResponse updateStatus(Integer appointmentId, AppointmentStatus status);
     AppointmentResponse getAppointmentById(Integer appointmentId);
     List<AppointmentResponse> getAppointmentsByStatus(AppointmentStatus appointmentStatus);
-    List<AppointmentResponse> getAllAppointmentsByStatuses(List<AppointmentStatus> statuses);
+    List<AppointmentResponse> getAllAccAppointmentsByStatuses(Integer accountId, List<AppointmentStatus> statuses);
 }
