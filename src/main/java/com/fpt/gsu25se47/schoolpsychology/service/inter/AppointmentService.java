@@ -17,4 +17,5 @@ public interface AppointmentService {
     AppointmentResponse updateStatus(Integer appointmentId, AppointmentStatus status);
     AppointmentResponse getAppointmentById(Integer appointmentId);
     List<AppointmentResponse> getAppointmentsByStatus(AppointmentStatus appointmentStatus);
+    List<AppointmentResponse> getAllAppointmentsByStatuses(List<AppointmentStatus> statuses);
 }
