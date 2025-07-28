@@ -51,9 +51,8 @@ public class AppointmentController {
     }
 
     @Operation(summary = "Update status of appointment",
-            description = "Role: TEACHER, COUNSELOR, MANAGER")
+            description = "Role: ALL")
     @PatchMapping("/{appointmentId}/status")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('MANAGER')")
     ResponseEntity<AppointmentResponse> updateStatus(@PathVariable Integer appointmentId, @RequestParam AppointmentStatus status) {
 
         return ResponseEntity.ok(appointmentService.updateStatus(appointmentId, status));
