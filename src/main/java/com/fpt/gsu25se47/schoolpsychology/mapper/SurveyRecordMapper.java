@@ -30,6 +30,7 @@ public class SurveyRecordMapper {
                 .totalScore(surveyRecord.getTotalScore())
                 .isSkipped(surveyRecord.getIsSkipped())
                 .completedAt(surveyRecord.getCompletedAt())
+                .surveyRecordType(surveyRecord.getSurveyRecordType())
                 .level(surveyRecord.getLevel() == null ? null : levelMapper.mapToLevelResponse(surveyRecord.getLevel()))
                 .survey(surveyMapper.mapToSurveyGetAllResponse(surveyRecord.getSurvey()))
                 .answerRecords(surveyRecord.getAnswerRecords() == null ?

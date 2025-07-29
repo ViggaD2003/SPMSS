@@ -1,13 +1,11 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AccountDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
 
 @Mapper(componentModel = "spring")
@@ -22,6 +20,9 @@ public abstract class SupportProgramMapper {
     @Autowired
     protected SurveyMapper surveyMapper;
 
+    @Autowired
+    protected ParticipantMapper participantMapper;
+
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "category", ignore = true)
@@ -35,11 +36,10 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "programSurvey", expression = "java(mapSurvey(supportProgram.getSurvey()))"),
-            @Mapping(target = "programRegistrations", ignore = true)
+            @Mapping(target = "participants", expression = "java(mapToDto(supportProgram.getProgramRegistrations()))")
     })
     public abstract SupportProgramResponse mapSupportProgramResponse(SupportProgram supportProgram);
 
-    // Helper methods để map các nested objects
     protected CategoryResponse mapCategory(Category category) {
         if (category == null) return null;
         return categoryMapper.mapToCategorySurveyResponse(category);
@@ -53,5 +53,10 @@ public abstract class SupportProgramMapper {
     protected SurveyGetAllResponse mapSurvey(Survey survey) {
         if (survey == null) return null;
         return surveyMapper.mapToSurveyGetAllResponse(survey);
+    }
+
+    protected List<ProgramParticipantsResponse> mapToDto(List<ProgramParticipants> participants) {
+        if (participants == null) return null;
+        return participants.stream().map(participantMapper::mapToDto).toList();
     }
 }

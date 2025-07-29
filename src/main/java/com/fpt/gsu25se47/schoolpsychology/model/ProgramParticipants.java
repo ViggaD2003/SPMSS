@@ -48,5 +48,4 @@ public class ProgramParticipants {
 
     private Float finalScore;
 
-
 }

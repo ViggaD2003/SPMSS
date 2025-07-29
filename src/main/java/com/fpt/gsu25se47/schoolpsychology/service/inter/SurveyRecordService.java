@@ -7,9 +7,12 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface SurveyRecordService {
     SurveyRecordDetailResponse createSurveyRecord(CreateSurveyRecordDto createSurveyRecordDto);
     Page<SurveyRecordGetAllResponse> getAllSurveyRecordById(SurveyType surveyType, Integer accountId, Pageable pageable);
     SurveyRecordDetailResponse getSurveyRecordById(int surveyRecordId);
     int countSurveyRecordSkippedByAccountId(int accountId);
+    List<SurveyRecordGetAllResponse> findAllSurveyRecordBySurveyId(Integer surveyId);
 }

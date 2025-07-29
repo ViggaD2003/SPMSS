@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Integer> {
 
     @Query("SELECT sr FROM SurveyRecord sr " +
@@ -20,4 +22,7 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
     @Query("SELECT COUNT(sr) FROM SurveyRecord sr " +
             "WHERE sr.student.id = :studentId AND sr.isSkipped = true")
     int countSkippedSurveyRecordsByStudentId(@Param("studentId") int studentId);
+
+    @Query("SELECT sr FROM SurveyRecord sr WHERE sr.survey.id =:surveyId")
+    List<SurveyRecord> findAllBySurveyId(Integer surveyId);
 }

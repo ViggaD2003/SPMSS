@@ -51,4 +51,9 @@ public class SurveyRecordController {
         SurveyRecordDetailResponse surveyRecordResponse = surveyRecordService.getSurveyRecordById(surveyRecordId);
         return ResponseEntity.ok(surveyRecordResponse);
     }
+
+    @GetMapping("/view-all-by-survey")
+    public ResponseEntity<?> getAllSurveyRecordsBySurveyType(@RequestParam("surveyId") Integer surveyId) {
+        return ResponseEntity.ok(surveyRecordService.findAllSurveyRecordBySurveyId(surveyId));
+    }
 }

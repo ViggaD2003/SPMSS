@@ -33,4 +33,7 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
 //            @Param("minParticipants") Integer minParticipants,
 //            @Param("maxParticipants") Integer maxParticipants
 //    );
+
+    @Query("SELECT sp FROM SupportProgram sp WHERE sp.hostedBy.id = :hostedById")
+    List<SupportProgram> findAllByHostedBy(Integer hostedById);
 }
