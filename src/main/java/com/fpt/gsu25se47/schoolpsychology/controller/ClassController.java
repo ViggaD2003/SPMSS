@@ -31,7 +31,6 @@ public class ClassController {
         return ResponseEntity.ok(classService.createClass(requests));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/enrollments")
     ResponseEntity<List<EnrollmentResponse>> createEnrollmentsForClass(@RequestBody CreateEnrollmentRequest request) {
 

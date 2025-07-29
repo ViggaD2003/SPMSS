@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -60,44 +61,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setSlot(slot);
         appointment.setLocation(location);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.getSlot().setStatus(SlotStatus.CLOSED);
 
         return appointmentMapper.toAppointmentResponse(
                 appointmentRepository.save(appointment)
         );
-    }
-
-    @Override
-    public List<AppointmentResponse> getAppointmentsHistory() {
-
-        Account curAccount = accountService.getCurrentAccount();
-
-        List<AppointmentStatus> historyStatuses = List.of(
-                AppointmentStatus.COMPLETED,
-                AppointmentStatus.CANCELED,
-                AppointmentStatus.ABSENT,
-                AppointmentStatus.CONFIRMED
-        );
-
-        List<Appointment> appointments = appointmentRepository.findByBookedByAndStatus(
-                curAccount.getId(),
-                historyStatuses
-        );
-
-        return appointments.stream()
-                .map(appointmentMapper::toAppointmentResponse)
-                .toList();
-    }
-
-    @Override
-    public List<AppointmentResponse> getAllAppointmentsOfSlots() {
-
-        Account account = accountService.getCurrentAccount();
-
-        List<Appointment> appointments = appointmentRepository.findAllBySlotHostedBy(account.getId());
-
-        return appointments.stream()
-                .map(appointmentMapper::toAppointmentResponse)
-                .toList();
     }
 
     @Override
@@ -119,6 +87,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     @Override
     public AppointmentResponse updateAppointment(Integer appointmentId, UpdateAppointmentRequest request) {
+
+        Account account = accountService.getCurrentAccount();
+
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -131,18 +102,22 @@ public class AppointmentServiceImpl implements AppointmentService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "Case not found for ID: " + request.getCaseId()));
         }
+        MentalEvaluation mentalEvaluationSaved = null;
+        if (account.getRole() == Role.COUNSELOR) {
 
-        request.getAssessmentScores().forEach(t -> assessmentScoresService.createAssessmentScoresWithContext(t, appointment));
+            request.getAssessmentScores().forEach(t -> assessmentScoresService.createAssessmentScoresWithContext(t, appointment));
+            mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(
+                    appointment,
+                    null
+            );
+        }
 
-        MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(
-                appointment,
-                null
-        );
 
         Appointment appointmentUpdated = appointmentMapper.updateAppointmentFromRequest(request, appointment);
 
         appointmentUpdated.setMentalEvaluations(mentalEvaluationSaved);
         appointmentUpdated.setCases(cases);
+        appointmentUpdated.setStatus(AppointmentStatus.COMPLETED);
 
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointmentUpdated));
     }
@@ -165,6 +140,55 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(status);
 
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+    @Override
+    public AppointmentResponse getAppointmentById(Integer appointmentId) {
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Appointment not found for ID: " + appointmentId));
+
+        return appointmentMapper.toAppointmentResponse(appointment);
+    }
+
+    @Override
+    public List<AppointmentResponse> getAppointmentsByStatus(AppointmentStatus appointmentStatus) {
+
+        List<Appointment> appointments = appointmentRepository.findAllByStatus(appointmentStatus);
+        return appointments.stream()
+                .map(appointmentMapper::toAppointmentResponseWithoutAS)
+                .toList();
+    }
+
+    @Override
+    public List<AppointmentResponse> getAllAccAppointmentsByStatuses(Integer accountId, List<AppointmentStatus> statuses) {
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Account not found for ID: " + accountId));
+
+        List<Appointment> appointments = getAppointmentsByRoleAndStatus(statuses, account);
+
+        return appointments.stream()
+                .map(appointmentMapper::toAppointmentResponseWithoutAS)
+                .toList();
+    }
+
+    private List<Appointment> getAppointmentsByRoleAndStatus(List<AppointmentStatus> statuses, Account account) {
+
+        List<Appointment> appointments = new ArrayList<>();
+        if (account.getRole() == Role.PARENTS) {
+
+            appointments = appointmentRepository.findByBookedByAndStatus(account.getId(), statuses);
+        } else if (account.getRole() == Role.STUDENT) {
+
+            appointments = appointmentRepository.findByBookedForAndStatus(account.getId(), statuses);
+        } else if (account.getRole() == Role.COUNSELOR) {
+
+            appointments = appointmentRepository.findAllByHostByWithStatus(account.getId(), statuses);
+        }
+        return appointments;
     }
 
     private String determineLocation(CreateAppointmentRequest request, Slot slot) {
@@ -190,7 +214,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private void validateTimeWithinSlot(CreateAppointmentRequest request, Slot slot) {
-        if(request.getStartDateTime().isEqual(request.getEndDateTime())) {
+        if (request.getStartDateTime().isEqual(request.getEndDateTime())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Start and end time must not be equal");
         }

@@ -41,6 +41,18 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     "One or more students not found");
         }
 
+        validateConflictStudentIds(request);
+
+        List<Enrollment> enrollmentsToSave = getEnrollmentsToSave(request, students, clazz);
+
+        List<Enrollment> saved = enrollmentRepository.saveAll(enrollmentsToSave);
+
+        return saved.stream()
+                .map(enrollmentMapper::toEnrollmentResponse)
+                .toList();
+    }
+
+    private List<Enrollment> getEnrollmentsToSave(CreateEnrollmentRequest request, List<Student> students, Classes clazz) {
         // Filter out already enrolled students
         List<Integer> existingStudentIds = enrollmentRepository
                 .findAllByClassesIdAndStudentIdIn(request.getClassId(), request.getStudentIds())
@@ -48,15 +60,25 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .map(e -> e.getStudent().getId())
                 .toList();
 
-        List<Enrollment> enrollmentsToSave = students.stream()
+        return students.stream()
                 .filter(student -> !existingStudentIds.contains(student.getId()))
                 .map(student -> enrollmentMapper.toEnrollment(request, student, clazz))
                 .toList();
+    }
 
-        List<Enrollment> saved = enrollmentRepository.saveAll(enrollmentsToSave);
+    private void validateConflictStudentIds(CreateEnrollmentRequest request) {
+        List<Enrollment> existingEnrollments = enrollmentRepository.findAllByStudentIdIn(request.getStudentIds());
 
-        return saved.stream()
-                .map(enrollmentMapper::toEnrollmentResponse)
+        List<Integer> conflictStudentIds = existingEnrollments.stream()
+                .filter(e -> e.getClasses().getIsActive())
+                .filter(e -> !e.getClasses().getId().equals(request.getClassId()))
+                .map(e -> e.getStudent().getId())
+                .distinct()
                 .toList();
+
+        if (!conflictStudentIds.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Some students are already enrolled in a different class: " + conflictStudentIds);
+        }
     }
 }

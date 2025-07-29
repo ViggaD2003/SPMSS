@@ -69,7 +69,7 @@ public class ClassServiceImpl implements ClassService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Class not found for ID: " + code));
 
-        List<Student> studentsInClass = enrollmentRepository.findStudentsByClassId(classes.getId());
+        List<Student> studentsInClass = enrollmentRepository.findStudentsByClassesId(classes.getId());
         List<StudentDto> studentDtos = studentsInClass.stream()
                 .map(studentMapper::mapStudentDtoWithoutClass)
                 .toList();
@@ -83,7 +83,7 @@ public class ClassServiceImpl implements ClassService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Class not found for ID: " + classId));
 
-        List<Student> studentsInClass = enrollmentRepository.findStudentsByClassId(classId);
+        List<Student> studentsInClass = enrollmentRepository.findStudentsByClassesId(classId);
         List<StudentDto> studentDtos = studentsInClass.stream()
                 .map(studentMapper::mapStudentDtoWithoutClass)
                 .toList();

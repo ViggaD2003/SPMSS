@@ -11,17 +11,8 @@ import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
 
-    @Query("SELECT a FROM Appointment a WHERE a.bookedBy.id = :bookedById")
-    List<Appointment> findByBookedBy(Integer bookedById);
-
-    @Query("SELECT a FROM Appointment a WHERE a.slot.hostedBy.id = :hostId")
-    List<Appointment> findAllBySlotHostedBy(@Param("hostId") Integer hostId);
-
     @Query("SELECT a FROM Appointment a WHERE a.status = :status and a.endDateTime < :now")
     List<Appointment> findAllAppointmentExpired(AppointmentStatus status, LocalDateTime now);
-
-    @Query("SELECT a FROM Appointment a WHERE a.slot.id = :slotId AND a.status <> 'CANCELED'")
-    List<Appointment> findAllBySlotId(Integer slotId);
 
     @Query("""
                 SELECT a FROM Appointment a
@@ -34,10 +25,27 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
     @Query("""
                 SELECT a FROM Appointment a
-                WHERE a.bookedBy.id = :studentId
+                WHERE a.bookedBy.id = :bookedById
                 AND a.status IN (:statuses)
                 ORDER BY a.startDateTime DESC
             """)
-    List<Appointment> findByBookedByAndStatus(Integer studentId,
+    List<Appointment> findByBookedByAndStatus(Integer bookedById,
                                               List<AppointmentStatus> statuses);
+
+    List<Appointment> findAllByStatus(AppointmentStatus status);
+
+    @Query("""
+                SELECT a FROM Appointment a
+                WHERE a.bookedFor.id = :bookedForId
+                AND a.status IN (:statuses)
+                ORDER BY a.startDateTime DESC
+            """)
+    List<Appointment> findByBookedForAndStatus(Integer bookedForId, List<AppointmentStatus> statuses);
+
+    @Query("""
+                SELECT a FROM Appointment a
+                JOIN Slot s on s.id = a.slot.id
+                WHERE s.hostedBy.id = :hostById AND a.status IN (:statuses)
+            """)
+    List<Appointment> findAllByHostByWithStatus(Integer hostById, List<AppointmentStatus> statuses);
 }

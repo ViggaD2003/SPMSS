@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,8 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -89,5 +92,11 @@ public class AccountController {
     @PatchMapping("/update-able-survey/{accountId}")
     public ResponseEntity<?> updateIsAbleSurvey(@RequestParam("isAbleSurvey") Boolean isAbleSurvey, @PathVariable Integer accountId) throws BadRequestException {
         return ResponseEntity.ok(accountService.updateIsAbleSurvey(accountId, isAbleSurvey));
+    }
+
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER')")
+    @GetMapping("/students/classes/{classId}")
+    public ResponseEntity<List<StudentSRCResponse>> getAllStudentsByClassIdWithSR(@PathVariable Integer classId) {
+        return ResponseEntity.ok(accountService.getStudentsByClassWithLSR(classId));
     }
 }

@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SessionFlow;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Data
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AppointmentResponse {
 
     private Integer id;
