@@ -13,6 +13,8 @@ public interface CaseService {
 
     Optional<?> getAllCases();
 
+    Optional<?> getAllCaseByCategory(Integer categoryId);
+
     Optional<?> getDetailById(Integer caseId);
 
     Optional<?> addSurveyCaseLink(List<Integer> caseIds, Integer surveyId);

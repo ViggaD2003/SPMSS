@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
@@ -95,6 +96,12 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .level(matchLevel)
                     .build();
 
+            if(survey.getSurveyType() == SurveyType.PROGRAM && !dto.getSurveyRecordType().isEmpty()){
+                surveyRecord.setSurveyRecordType(SurveyRecordType.valueOf(dto.getSurveyRecordType()));
+            } else {
+                surveyRecord.setSurveyRecordType(SurveyRecordType.valueOf(survey.getSurveyType().name()));
+            }
+
             if (!surveyRecord.getAnswerRecords().isEmpty()) {
                 surveyRecord.getAnswerRecords()
                         .forEach(item -> item.setSurveyRecord(surveyRecord));
@@ -134,23 +141,5 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     public int countSurveyRecordSkippedByAccountId(int accountId) {
         return surveyRecordRepository.countSkippedSurveyRecordsByStudentId(accountId);
     }
-
-//    @Override
-//    public Page<SurveyRecordDetailResponse> getAllSurveyRecords(Pageable pageable) {
-//        return surveyRecordRepository.findAll(pageable)
-//                .map(surveyRecord -> {
-//                    Student student = getStudent(surveyRecord.getAccount().getId());
-//
-//                    return surveyRecordMapper.mapToSurveyRecordResponse(surveyRecord, student);
-//                });
-//    }
-//
-//    private Student getStudent(Integer id) {
-//
-//        return studentRepository.findById(id)
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-//                        "Student not found with Id: " + id));
-//    }
-
 
 }

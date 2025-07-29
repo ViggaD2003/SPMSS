@@ -23,13 +23,18 @@ public class CaseController {
         return ResponseEntity.ok(caseService.getAllCases());
     }
 
+    @GetMapping("/view-all-by-category")
+    public ResponseEntity<?> getAllCasesByCategory(@RequestParam(value = "categoryId") Integer categoryId) {
+        return ResponseEntity.ok(caseService.getAllCaseByCategory(categoryId));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER')")
     public ResponseEntity<?> addCase(@Valid @RequestBody AddNewCaseDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(caseService.createCase(dto));
     }
 
-    @PostMapping("/assign")
+    @PatchMapping("/assign")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<?> assignCaseToCounselor(
             @RequestParam Integer counselorId,
@@ -45,7 +50,7 @@ public class CaseController {
         return ResponseEntity.ok(caseService.addSurveyCaseLink(caseIds, surveyId));
     }
 
-    @PostMapping("/remove")
+    @PatchMapping("/remove")
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     public ResponseEntity<?> removeSurveyFromCases(
             @RequestParam List<Integer> caseIds) {

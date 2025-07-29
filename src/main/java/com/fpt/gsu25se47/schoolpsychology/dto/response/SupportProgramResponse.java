@@ -1,13 +1,14 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
+import lombok.Builder;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
 public class SupportProgramResponse {
 
     private Integer id;
@@ -30,7 +31,11 @@ public class SupportProgramResponse {
 
     private CategoryResponse category;
 
-    private List<Integer> programRegistrations;
+    private AccountDto hostedBy;
 
     private SurveyGetAllResponse programSurvey;
+
+    private List<Integer> programRegistrations;
+
+
 }

@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,6 +17,8 @@ public class CreateSurveyRecordDto {
     private Integer surveyId;
 
     private Float totalScore;
+
+    private String surveyRecordType;
 
     private List<SubmitAnswerRecordRequest> answerRecordRequests;
 

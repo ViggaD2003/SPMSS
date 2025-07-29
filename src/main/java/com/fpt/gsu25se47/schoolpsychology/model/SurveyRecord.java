@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,8 @@ public class SurveyRecord {
     private LocalDate completedAt;
 
     private Boolean isSkipped;
+
+    private SurveyRecordType surveyRecordType;
 
     private Integer round;
 

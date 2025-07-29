@@ -69,9 +69,9 @@ public class SurveyServiceImpl implements SurveyService {
 
             survey.setCreateBy(account);
             survey.setRound(1);
-            surveyRepository.save(survey);
+            Survey saved = surveyRepository.save(survey);
 
-            return Optional.of("Create survey successfull");
+            return Optional.of(saved.getId());
 
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);

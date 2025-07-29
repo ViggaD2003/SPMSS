@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.common.GoogleTokenStore;
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.GoogleCalendarService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;

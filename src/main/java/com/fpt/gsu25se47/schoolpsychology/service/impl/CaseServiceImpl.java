@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -116,6 +119,16 @@ public class CaseServiceImpl implements CaseService {
             default:
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
+    }
+
+    @Override
+    public Optional<?> getAllCaseByCategory(Integer categoryId) {
+        List<Cases> cases = caseRepository.findAllByCategoryId(categoryId);
+
+        List<CaseGetAllResponse> casesResponse = cases.stream()
+                .map(caseMapper::mapToCaseGetAllResponse)
+                .toList();
+        return Optional.of(casesResponse);
     }
 
     @Override
