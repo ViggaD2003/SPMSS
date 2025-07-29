@@ -7,12 +7,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class StudentSRCResponse extends AccountDto{
 
     private String studentCode;
 
     private Boolean isEnableSurvey;
+
+    private Boolean hasActiveCases;
 
     private SurveyRecordGetAllResponse latestSurveyRecord;
 }

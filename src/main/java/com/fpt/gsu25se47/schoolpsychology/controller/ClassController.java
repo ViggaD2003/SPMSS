@@ -3,7 +3,9 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateEnrollmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateClassRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponseSRC;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.EnrollmentResponse;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EnrollmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +24,7 @@ public class ClassController {
 
     private final ClassService classService;
     private final EnrollmentService enrollmentService;
+    private final AccountService accountService;
 
     @PreAuthorize("hasRole('MANAGER')")
     @Operation(description = "schoolYear = 'startYear-endYear', ex: '2021-2024'")
@@ -43,14 +46,15 @@ public class ClassController {
         return ResponseEntity.ok(classService.getAllClasses());
     }
 
+    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER')")
     @GetMapping("/{classId}")
-    ResponseEntity<ClassResponse> findById(@PathVariable Integer classId) {
+    ResponseEntity<ClassResponseSRC> findById(@PathVariable Integer classId) {
 
         return ResponseEntity.ok(classService.getClassById(classId));
     }
 
     @GetMapping("/code/{code}")
-    ResponseEntity<ClassResponse> findByCode(@PathVariable String code) {
+    ResponseEntity<ClassResponseSRC> findByCode(@PathVariable String code) {
 
         return ResponseEntity.ok(classService.getClassByCode(code));
     }

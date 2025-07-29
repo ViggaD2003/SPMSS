@@ -26,4 +26,6 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
             , nativeQuery = true)
     List<Cases> findAllByCategoryId(Integer categoryId);
 
+    @Query("SELECT COUNT(c) > 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSED'")
+    boolean existsByStudentId(@Param("studentId") Integer studentId);
 }
