@@ -61,7 +61,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setSlot(slot);
         appointment.setLocation(location);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
-        appointment.getSlot().setStatus(SlotStatus.CLOSED);
 
         return appointmentMapper.toAppointmentResponse(
                 appointmentRepository.save(appointment)

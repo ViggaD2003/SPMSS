@@ -23,12 +23,14 @@ public interface SlotRepository extends JpaRepository<Slot, Integer> {
     @Query("""
                 SELECT s FROM Slot s
                 WHERE s.hostedBy.id = :hostId
-                  AND DATE(s.startDateTime) = DATE(:newStart)
                   AND (
-                        (:newStart < s.endDateTime AND :newEnd > s.startDateTime)
-                      )
+                       s.startDateTime = :newStart
+                    OR s.endDateTime = :newEnd
+                    OR (:newStart > s.startDateTime AND :newStart < s.endDateTime)
+                    OR (:newEnd > s.startDateTime AND :newEnd < s.endDateTime)
+                  )
             """)
-    List<Slot> findConflictingSlots(
+    Slot findConflictingSlot(
             @Param("hostId") Integer hostId,
             @Param("newStart") LocalDateTime newStart,
             @Param("newEnd") LocalDateTime newEnd

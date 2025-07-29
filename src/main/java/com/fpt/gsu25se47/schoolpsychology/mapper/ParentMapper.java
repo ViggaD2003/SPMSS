@@ -22,6 +22,7 @@ public abstract class ParentMapper {
     @Autowired
     private ClassMapper classMapper;
 
+    @Mapping(target = "roleName", source = "account.role")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "dob", source = "account.dob")

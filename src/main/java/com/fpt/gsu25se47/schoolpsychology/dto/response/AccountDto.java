@@ -22,4 +22,6 @@ public abstract class AccountDto {
     private Boolean gender;
 
     private LocalDate dob;
+
+    private String roleName;
 }
