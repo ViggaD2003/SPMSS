@@ -12,6 +12,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +32,7 @@ public class SlotServiceImpl implements SlotService {
 
     private final SlotRepository slotRepository;
     private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final SlotMapper slotMapper;
 
     @Override
@@ -52,15 +51,42 @@ public class SlotServiceImpl implements SlotService {
     @Override
     public List<SlotResponse> getAllSlotsByHostBy(Integer hostById) {
 
+        Account curAccount = accountService.getCurrentAccount();
+
         Account hostBy = accountRepository.findById(hostById)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Host By Account not found for ID: " + hostById));
 
-        List<Slot> publishedSlots = findPublishedSlotsByHost(hostBy.getId());
+        List<Slot> retrievedSlots = getSlotsByRole(hostById, curAccount, hostBy);
 
-        return publishedSlots.stream()
+        return retrievedSlots.stream()
                 .map(s -> slotMapper.toSlotResponse(s, s.getAppointments()))
                 .toList();
+    }
+
+    private List<Slot> getSlotsByRole(Integer hostById, Account curAccount, Account hostBy) {
+
+        List<Slot> retrievedSlots;
+        if (curAccount.getRole() == Role.STUDENT || curAccount.getRole() == Role.PARENTS) {
+
+            retrievedSlots = findPublishedSlotsByHost(hostBy.getId());
+        } else if (curAccount.getRole() == Role.COUNSELOR || curAccount.getRole() == Role.TEACHER) {
+
+            if (Objects.equals(hostById, curAccount.getId())) {
+                retrievedSlots = slotRepository.findAllByHostedById(hostById);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "HostById is not the same ID as current account logged in for role TEACHER, COUNSELOR");
+            }
+        } else {
+            if (Objects.equals(hostById, curAccount.getId())) {
+                retrievedSlots = slotRepository.findAll();
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "HostById is not the same ID as current account logged in for role MANAGER");
+            }
+        }
+        return retrievedSlots;
     }
 
     @Override
