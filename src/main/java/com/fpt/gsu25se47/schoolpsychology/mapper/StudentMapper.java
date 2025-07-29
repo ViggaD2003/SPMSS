@@ -35,12 +35,18 @@ public interface StudentMapper {
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "fullName", source = "account.fullName")
     @Mapping(target = "dob", source = "account.dob")
-    StudentSRCResponse toStudentSrcResponse(Student student);
+    StudentSRCResponse toStudentSrcResponse(Student student, @Context Boolean hasActiveCases);
 
     // Hàm xử lý default để map classDto thủ công
     default StudentDto mapStudentDtoWithClass(Student student, Classes classes, ClassMapper classDtoMapper) {
         StudentDto dto = mapStudentDto(student, classes);
         dto.setClassDto(classDtoMapper.toDto(classes));
         return dto;
+    }
+
+    @AfterMapping
+    default void setHasActiveCasesToStudentSRCResponse(@MappingTarget StudentSRCResponse studentSRCResponse,
+                                                       @Context Boolean hasActiveCases) {
+        studentSRCResponse.setHasActiveCases(hasActiveCases);
     }
 }

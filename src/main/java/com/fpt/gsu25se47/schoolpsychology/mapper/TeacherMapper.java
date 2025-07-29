@@ -10,8 +10,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TeacherMapper {
 
-    @Mapping(target = "roleName", source = "account.role")
     @BeanMapping(builder = @Builder(disableBuilder = true))
+    @Mapping(target = "roleName", source = "account.role")
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "dob", source = "account.dob")
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")

@@ -6,5 +6,5 @@ import lombok.Data;
 public class EnrollmentResponse {
 
     private StudentDto student;
-    private ClassResponse classes;
+    private ClassResponseSRC classes;
 }

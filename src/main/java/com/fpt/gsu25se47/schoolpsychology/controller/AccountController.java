@@ -93,10 +93,4 @@ public class AccountController {
     public ResponseEntity<?> updateIsAbleSurvey(@RequestParam("isAbleSurvey") Boolean isAbleSurvey, @PathVariable Integer accountId) throws BadRequestException {
         return ResponseEntity.ok(accountService.updateIsAbleSurvey(accountId, isAbleSurvey));
     }
-
-    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER')")
-    @GetMapping("/students/classes/{classId}")
-    public ResponseEntity<List<StudentSRCResponse>> getAllStudentsByClassIdWithSR(@PathVariable Integer classId) {
-        return ResponseEntity.ok(accountService.getStudentsByClassWithLSR(classId));
-    }
 }
