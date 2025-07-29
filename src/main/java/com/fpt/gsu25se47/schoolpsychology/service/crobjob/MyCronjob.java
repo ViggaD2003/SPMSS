@@ -4,7 +4,6 @@ import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
-
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
@@ -12,11 +11,8 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -30,9 +26,6 @@ public class MyCronjob {
     private final AppointmentRepository appointmentRepository;
 
     private final AppointmentService appointmentService;
-//    private final AppointmentRecordRepository appointmentRecordRepository;
-
-//    private final AppointmentRecordService appointmentRecordService;
 
     @Scheduled(cron = "0 0 */12 * * *")
     public void updateSurveyStatus() {
