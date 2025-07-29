@@ -12,6 +12,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +32,7 @@ public class SlotServiceImpl implements SlotService {
 
     private final SlotRepository slotRepository;
     private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final SlotMapper slotMapper;
 
     @Override
@@ -43,21 +44,49 @@ public class SlotServiceImpl implements SlotService {
 
         Slot slotUpdated = slotMapper.updateSlotFromRequest(request, slot);
 
-        return slotMapper.toSlotResponse(slotRepository.save(slotUpdated));
+        Slot slotSaved = slotRepository.save(slotUpdated);
+        return slotMapper.toSlotResponse(slotSaved, slotSaved.getAppointments());
     }
 
     @Override
     public List<SlotResponse> getAllSlotsByHostBy(Integer hostById) {
 
+        Account curAccount = accountService.getCurrentAccount();
+
         Account hostBy = accountRepository.findById(hostById)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Host By Account not found for ID: " + hostById));
 
-        List<Slot> publishedSlots = findPublishedSlotsByHost(hostBy.getId());
+        List<Slot> retrievedSlots = getSlotsByRole(hostById, curAccount, hostBy);
 
-        return publishedSlots.stream()
-                .map(slotMapper::toSlotResponse)
+        return retrievedSlots.stream()
+                .map(s -> slotMapper.toSlotResponse(s, s.getAppointments()))
                 .toList();
+    }
+
+    private List<Slot> getSlotsByRole(Integer hostById, Account curAccount, Account hostBy) {
+
+        List<Slot> retrievedSlots;
+        if (curAccount.getRole() == Role.STUDENT || curAccount.getRole() == Role.PARENTS) {
+
+            retrievedSlots = findPublishedSlotsByHost(hostBy.getId());
+        } else if (curAccount.getRole() == Role.COUNSELOR || curAccount.getRole() == Role.TEACHER) {
+
+            if (Objects.equals(hostById, curAccount.getId())) {
+                retrievedSlots = slotRepository.findAllByHostedById(hostById);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "HostById is not the same ID as current account logged in for role TEACHER, COUNSELOR");
+            }
+        } else {
+            if (Objects.equals(hostById, curAccount.getId())) {
+                retrievedSlots = slotRepository.findAll();
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "HostById is not the same ID as current account logged in for role MANAGER");
+            }
+        }
+        return retrievedSlots;
     }
 
     @Override
@@ -71,7 +100,7 @@ public class SlotServiceImpl implements SlotService {
 
             Account account = getHostAccount(request);
 
-            checkSlotConflicts(request, account);
+            checkSlotConflicts(requests, account);
 
             Slot reusableSlot = getReusableSlotIfExists(request);
             if (reusableSlot != null) {
@@ -89,7 +118,9 @@ public class SlotServiceImpl implements SlotService {
         List<Slot> savedSlots = slotRepository.saveAll(slotsToCreate);
         resultSlots.addAll(savedSlots);
 
-        return resultSlots.stream().map(slotMapper::toSlotResponse).toList();
+        return resultSlots.stream()
+                .map(s -> slotMapper.toSlotResponse(s, s.getAppointments()))
+                .toList();
     }
 
     @Override
@@ -101,7 +132,7 @@ public class SlotServiceImpl implements SlotService {
 
         slot.setStatus(status);
 
-        return slotMapper.toSlotResponse(slot);
+        return slotMapper.toSlotResponseWithoutAppointments(slot);
     }
 
     private List<Slot> findPublishedSlotsByHost(Integer hostById) {
@@ -112,7 +143,7 @@ public class SlotServiceImpl implements SlotService {
 
     private static void validateOfficeHours(CreateSlotRequest request) {
         LocalTime officeStart = LocalTime.of(8, 0);   // 8:00 AM
-        LocalTime officeEnd = LocalTime.of(15, 0);    // 3:00 PM
+        LocalTime officeEnd = LocalTime.of(17, 0);    // 17:00 PM
 
         LocalTime slotStart = request.getStartDateTime().toLocalTime();
         LocalTime slotEnd = request.getEndDateTime().toLocalTime();
@@ -143,26 +174,40 @@ public class SlotServiceImpl implements SlotService {
         return null;
     }
 
-    private void checkSlotConflicts(CreateSlotRequest request, Account account) {
-        List<Slot> conflicts = slotRepository.findConflictingSlots(
-                account.getId(),
-                request.getStartDateTime(),
-                request.getEndDateTime()
-        );
+    private void checkSlotConflicts(List<CreateSlotRequest> requests, Account account) {
 
-        if (!conflicts.isEmpty()) {
+        Map<CreateSlotRequest, Slot> conflictingMap = new HashMap<>();
 
-            List<SlotConflictError> conflictErrors = new ArrayList<>();
-            conflictErrors.add(SlotConflictError.builder()
-                    .startDateTime(request.getStartDateTime())
-                    .endDateTime(request.getEndDateTime())
-                    .reason("Overlaps with existing slot ID(s): " +
-                            conflicts.stream().map(Slot::getId).map(String::valueOf).collect(Collectors.joining(", ")))
-                    .build());
+        for (CreateSlotRequest request : requests) {
+            Slot conflict = slotRepository.findConflictingSlot(
+                    account.getId(),
+                    request.getStartDateTime(),
+                    request.getEndDateTime()
+            );
+            if (conflict != null) {
+                conflictingMap.put(request, conflict);
+            }
+        }
+
+        if (!conflictingMap.isEmpty()) {
+            List<String> allConflictIds = conflictingMap.values().stream()
+                    .map(Slot::getId)
+                    .map(String::valueOf)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            List<SlotConflictError> conflictErrors = conflictingMap.keySet().stream()
+                    .map(slot -> SlotConflictError.builder()
+                            .startDateTime(slot.getStartDateTime())
+                            .endDateTime(slot.getEndDateTime())
+                            .reason("Overlaps with existing slot ID(s): " + String.join(", ", allConflictIds))
+                            .build())
+                    .collect(Collectors.toList());
 
             throw new SlotConflictException(conflictErrors);
         }
     }
+
 
     private Account getHostAccount(CreateSlotRequest request) {
         Account account = accountRepository.findById(request.getHostById())

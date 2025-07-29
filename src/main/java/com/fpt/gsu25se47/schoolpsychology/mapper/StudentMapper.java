@@ -9,6 +9,7 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = ClassMapper.class)
 public interface StudentMapper {
 
+    @Mapping(target = "roleName", source = "account.role")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")
     @Mapping(target = "gender", source = "account.gender")
@@ -19,6 +20,7 @@ public interface StudentMapper {
     @Mapping(target = "classDto", ignore = true) // Tạm ignore để tự xử lý sau
     StudentDto mapStudentDto(Student student, @Context Classes classes);
 
+    @Mapping(target = "roleName", source = "account.role")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "fullName", source = "account.fullName")
@@ -27,6 +29,7 @@ public interface StudentMapper {
     @Mapping(target = "classDto", ignore = true)
     StudentDto mapStudentDtoWithoutClass(Student student);
 
+    @Mapping(target = "roleName", source = "account.role")
     @Mapping(target = "latestSurveyRecord", ignore = true)
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "gender", source = "account.gender")

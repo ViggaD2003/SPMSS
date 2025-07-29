@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface CounselorMapper {
 
+    @Mapping(target = "roleName", source = "account.role")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "dob", source = "account.dob")

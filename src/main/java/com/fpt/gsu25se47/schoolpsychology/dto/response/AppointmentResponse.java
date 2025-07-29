@@ -18,11 +18,13 @@ public class AppointmentResponse {
 
     private Integer id;
 
-    private SlotResponse slot;
+//    private SlotResponse slot;
 
     private AccountDto bookedFor;
 
     private AccountDto bookedBy;
+
+    private AccountDto hostedBy;
 
     private Boolean isOnline;
 
