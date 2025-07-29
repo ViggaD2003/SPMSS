@@ -67,7 +67,7 @@ public class MyCronjob {
         }
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 */12 * * *")
     public void updateAppointmentStatus() {
         LocalDateTime cutoff = LocalDateTime.now();
 
@@ -78,7 +78,7 @@ public class MyCronjob {
                 .forEach(a -> appointmentService.updateStatus(a.getId(), AppointmentStatus.ABSENT));
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 */12 * * *")
     public void updateSlotStatus() {
         LocalDateTime cutoff = LocalDateTime.now();
 

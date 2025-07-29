@@ -81,7 +81,8 @@ public class AppointmentController {
 
         return ResponseEntity.ok(appointmentService.getAllAccAppointmentsByStatuses(accountId, List.of(
                 AppointmentStatus.IN_PROGRESS,
-                AppointmentStatus.CONFIRMED
+                AppointmentStatus.CONFIRMED,
+                AppointmentStatus.PENDING
         )));
     }
 
