@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSlotRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SlotResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SlotService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,14 @@ public class SlotController {
         return ResponseEntity.ok(slotService.updateStatusSlot(slotId, status));
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('PARENTS')")
+    @Operation(summary = "Get all slots by hostById",
+    description = """
+            Role: STUDENTS, PARENTS as loggedIn account, pass hostById as counselorId, get published slots by hostById
+            
+            Role: COUNSELOR, TEACHER as loggedIn account, pass hostById same as loggedIn account ID, get all slots of this account
+            
+            Role: MANAGER as loggedIn account, pass hostById same as loggedIn account ID, get all slots
+            """)
     @GetMapping
     ResponseEntity<List<SlotResponse>> findAll(@RequestParam(required = false) Integer hostById) {
         return ResponseEntity.ok(slotService.getAllSlotsByHostBy(hostById));
