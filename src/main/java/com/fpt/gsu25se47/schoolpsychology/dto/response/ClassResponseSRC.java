@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class ClassResponse {
+public class ClassResponseSRC {
 
     private Integer id;
 
@@ -27,5 +27,5 @@ public class ClassResponse {
 
     private Boolean isActive;
 
-    private Integer totalStudents;
+    private List<StudentSRCResponse> students;
 }

@@ -2,7 +2,9 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateClassRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponseSRC;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
@@ -63,42 +65,30 @@ public class ClassServiceImpl implements ClassService {
     }
 
     @Override
-    public ClassResponse getClassByCode(String code) {
+    public ClassResponseSRC getClassByCode(String code) {
 
         Classes classes = classRepository.findByCodeClass(code)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Class not found for ID: " + code));
 
-        List<Student> studentsInClass = enrollmentRepository.findStudentsByClassesId(classes.getId());
-        List<StudentDto> studentDtos = studentsInClass.stream()
-                .map(studentMapper::mapStudentDtoWithoutClass)
-                .toList();
+        List<StudentSRCResponse> students = accountService.getStudentsByClassWithLSR(classes.getId());
 
-        return classMapper.toClassDetailResponse(classes, studentDtos);
+        return classMapper.toClassDetailResponseSRC(classes, students);
     }
 
     @Override
-    public ClassResponse getClassById(Integer classId) {
+    public ClassResponseSRC getClassById(Integer classId) {
         Classes classes = classRepository.findById(classId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Class not found for ID: " + classId));
 
-        List<Student> studentsInClass = enrollmentRepository.findStudentsByClassesId(classId);
-        List<StudentDto> studentDtos = studentsInClass.stream()
-                .map(studentMapper::mapStudentDtoWithoutClass)
-                .toList();
+        List<StudentSRCResponse> students = accountService.getStudentsByClassWithLSR(classId);
 
-        return classMapper.toClassDetailResponse(classes, studentDtos);
+        return classMapper.toClassDetailResponseSRC(classes, students);
     }
 
     @Override
     public List<ClassResponse> getAllClasses() {
-
-        Account account = accountService.getCurrentAccount();
-
-        if (account.getRole() == Role.TEACHER) {
-            return getClassResponsesForTeacher(account);
-        }
 
         return classRepository.findAll()
                 .stream()
@@ -106,21 +96,21 @@ public class ClassServiceImpl implements ClassService {
                 .toList();
     }
 
-    private List<ClassResponse> getClassResponsesForTeacher(Account account) {
-
-        List<Classes> classes = classRepository.findAllByTeacherId(account.getId());
-
-        List<StudentDto> studentDtos = classes.stream()
-                .flatMap(c -> c.getEnrollments()
-                        .stream()
-                        .map(Enrollment::getStudent)
-                        .map(studentMapper::mapStudentDtoWithoutClass))
-                .toList();
-
-        return classes.stream()
-                .map(s -> classMapper.toClassDetailResponse(s, studentDtos))
-                .toList();
-    }
+//    private List<ClassResponse> getClassResponsesForTeacher(Account account) {
+//
+//        List<Classes> classes = classRepository.findAllByTeacherId(account.getId());
+//
+//        List<StudentDto> studentDtos = classes.stream()
+//                .flatMap(c -> c.getEnrollments()
+//                        .stream()
+//                        .map(Enrollment::getStudent)
+//                        .map(studentMapper::mapStudentDtoWithoutClass))
+//                .toList();
+//
+//        return classes.stream()
+//                .map(s -> classMapper.toClassDetailResponse(s, studentDtos))
+//                .toList();
+//    }
 
     private Teacher getTeacher(List<CreateClassRequest> requests) {
 

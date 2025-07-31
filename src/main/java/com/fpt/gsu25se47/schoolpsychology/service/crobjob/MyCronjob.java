@@ -1,10 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.service.crobjob;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
+import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Slot;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SlotRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AppointmentService;
@@ -24,6 +26,8 @@ public class MyCronjob {
     private final SlotRepository slotRepository;
 
     private final AppointmentRepository appointmentRepository;
+
+    private final ClassRepository classRepository;
 
     private final AppointmentService appointmentService;
 
@@ -81,6 +85,19 @@ public class MyCronjob {
             s.setStatus(SlotStatus.CLOSED);
             slotRepository.save(s);
         });
+    }
+
+    @Scheduled(cron = "0 0 */12 * * *")
+    public void updateClassStatus() {
+        LocalDateTime cutoff = LocalDateTime.now();
+
+        List<Classes> classes = classRepository.findAllExpiredClasses(cutoff);
+
+        classes.forEach(c -> {
+            c.setIsActive(false);
+            classRepository.save(c);
+        });
+
     }
 
     private boolean shouldOpen(Survey survey, LocalDate today) {

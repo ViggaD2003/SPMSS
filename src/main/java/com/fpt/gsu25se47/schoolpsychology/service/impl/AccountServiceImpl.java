@@ -36,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final StudentRepository studentRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final ClassRepository classRepository;
+    private final CaseRepository caseRepository;
     private final StudentMapper studentMapper;
     private final SurveyRecordMapper surveyRecordMapper;
     private final AccountMapper accountMapper;
@@ -126,11 +126,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<StudentSRCResponse> getStudentsByClassWithLSR(Integer classId) {
 
-        Classes classes = classRepository.findById(classId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Class not found for ID: " + classId));
-
-        List<Student> students = enrollmentRepository.findStudentsByClassesId(classes.getId());
+        List<Student> students = enrollmentRepository.findStudentsByClassesId(classId);
 
         return students.stream()
                 .map(student -> {
@@ -139,7 +135,9 @@ public class AccountServiceImpl implements AccountService {
                             .stream()
                             .max(Comparator.comparing(SurveyRecord::getCompletedAt));
 
-                    StudentSRCResponse studentSRCResponse = studentMapper.toStudentSrcResponse(student);
+                    boolean hasActiveCases = caseRepository.existsByStudentId(student.getId());
+
+                    StudentSRCResponse studentSRCResponse = studentMapper.toStudentSrcResponse(student, hasActiveCases);
 
                     latestRecord.ifPresent(sr -> {
                         SurveyRecordGetAllResponse sre = surveyRecordMapper.mapToSurveyRecordGetAllResponse(sr);
