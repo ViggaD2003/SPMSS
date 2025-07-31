@@ -115,6 +115,11 @@ public class CaseServiceImpl implements CaseService {
                         caseRepository.findAllByTeacherId(account.getId()).stream()
                                 .map(caseMapper::mapToCaseGetAllResponse).toList()
                 );
+            case STUDENT:
+                return  Optional.of(
+                        caseRepository.findAllByStudentId(account.getId()).stream()
+                                .map(caseMapper::mapToCaseGetAllResponse).toList()
+                );
 
             default:
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");

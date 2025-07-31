@@ -23,7 +23,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                 FROM survey s
                          JOIN students st ON st.id = :accountId
                 WHERE s.status = 'PUBLISHED'
-                  AND st.is_enable_survey = false
+                  AND st.is_enable_survey = true
                   AND (
                     -- Xử lý target_grade_level
                         s.target_grade_level = '[]'

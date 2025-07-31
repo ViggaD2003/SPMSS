@@ -18,7 +18,7 @@ public class CaseController {
     private final CaseService caseService;
 
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<?> getAllCases() {
         return ResponseEntity.ok(caseService.getAllCases());
     }

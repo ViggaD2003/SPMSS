@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import lombok.RequiredArgsConstructor;

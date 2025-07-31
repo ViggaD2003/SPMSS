@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,8 +50,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
             @Param("role") String role,
             @Param("classId") Integer classId
     );
-
-
 
 
 }

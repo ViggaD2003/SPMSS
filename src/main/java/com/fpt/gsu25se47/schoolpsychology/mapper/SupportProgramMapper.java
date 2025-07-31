@@ -7,7 +7,6 @@ import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
-
 @Mapper(componentModel = "spring")
 public abstract class SupportProgramMapper {
 
@@ -23,7 +22,6 @@ public abstract class SupportProgramMapper {
     @Autowired
     protected ParticipantMapper participantMapper;
 
-
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "hostedBy", ignore = true)
@@ -36,7 +34,7 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "programSurvey", expression = "java(mapSurvey(supportProgram.getSurvey()))"),
-            @Mapping(target = "participants", expression = "java(mapToDto(supportProgram.getProgramRegistrations()))")
+            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? null : mapToDto(supportProgram.getProgramRegistrations()))")
     })
     public abstract SupportProgramResponse mapSupportProgramResponse(SupportProgram supportProgram);
 

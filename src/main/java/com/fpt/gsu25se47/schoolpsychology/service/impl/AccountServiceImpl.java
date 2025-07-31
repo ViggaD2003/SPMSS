@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,6 +40,17 @@ public class AccountServiceImpl implements AccountService {
     private final StudentMapper studentMapper;
     private final SurveyRecordMapper surveyRecordMapper;
     private final AccountMapper accountMapper;
+
+    @Override
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                return accountRepository.findByEmail(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
+            }
+        };
+    }
 
     @Override
     public Optional<?> profileAccount() {
