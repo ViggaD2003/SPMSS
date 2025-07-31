@@ -40,6 +40,7 @@ public class ClassController {
         return ResponseEntity.ok(enrollmentService.createBulkEnrollment(request));
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping
     ResponseEntity<List<ClassResponse>> findAll() {
 
