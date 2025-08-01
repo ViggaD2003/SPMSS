@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 
 @Builder
@@ -29,7 +31,7 @@ public class SupportProgramRequest {
 
     private String linkMeet;
 
-    private String thumbnail;
+    private MultipartFile thumbnail;
 
     private Integer hostedBy;
 

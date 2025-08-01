@@ -23,9 +23,9 @@ public class SupportProgramResponse {
 
     private LocalDateTime endDate;
 
-    private Boolean isOnline;
-
     private ProgramStatus status;
+
+    private String thumbnail;
 
     private String linkMeet;
 

@@ -13,6 +13,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.FileUploadService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SupportProgramService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
@@ -25,6 +26,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -43,10 +46,11 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final ParticipantMapper participantMapper;
     private final SurveyRecordService surveyRecordService;
     private final SurveyRecordRepository surveyRecordRepository;
+    private final FileUploadService fileUploadService;
 
     @Override
     @Transactional
-    public SupportProgramResponse createSupportProgram(SupportProgramRequest request, HttpServletRequest servletRequest) {
+    public SupportProgramResponse createSupportProgram(SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException {
 
         Optional<?> surveyId = surveyService.addNewSurvey(request.getAddNewSurveyDto(), servletRequest);
         if (surveyId.isEmpty()) {
@@ -66,11 +70,15 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
 
         SupportProgram supportProgram = supportProgramMapper.mapSupportProgram(request);
+        String thumbnail = fileUploadService.uploadFile(request.getThumbnail());
+        supportProgram.setThumbnail(thumbnail);
         supportProgram.setCategory(category);
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);
         if(request.getStartTime().isEqual(LocalDateTime.now())){
             supportProgram.setStatus(ProgramStatus.ACTIVE);
+        } else {
+            supportProgram.setStatus(ProgramStatus.PLANNING);
         }
 
         return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));

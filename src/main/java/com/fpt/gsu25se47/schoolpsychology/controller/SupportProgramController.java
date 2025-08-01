@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -38,7 +39,7 @@ public class SupportProgramController {
     })
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @PostMapping
-    public ResponseEntity<?> createSupportProgram(@Valid @RequestBody SupportProgramRequest request, HttpServletRequest servletRequest) {
+    public ResponseEntity<?> createSupportProgram(@Valid @RequestBody SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException {
 
         return ResponseEntity.ok(service.createSupportProgram(request, servletRequest));
     }

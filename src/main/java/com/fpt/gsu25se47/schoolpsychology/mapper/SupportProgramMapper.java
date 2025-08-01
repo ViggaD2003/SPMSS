@@ -26,6 +26,7 @@ public abstract class SupportProgramMapper {
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "hostedBy", ignore = true)
     @Mapping(target = "survey", ignore = true)
+    @Mapping(target = "thumbnail", ignore = true)
     @Mapping(target = "programRegistrations", ignore = true)
     public abstract SupportProgram mapSupportProgram(SupportProgramRequest request);
 
