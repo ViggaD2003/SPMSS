@@ -4,6 +4,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.model.Teacher;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import io.jsonwebtoken.Claims;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
@@ -38,6 +40,8 @@ public class JWTServiceImpl implements JWTService {
     private final AccountRepository accountRepo;
 
     private final StudentRepository studentRepo;
+
+    private final TeacherRepository teacherRepository;
 
     private final RelationshipRepository relationshipRepo;
 
@@ -93,6 +97,7 @@ public class JWTServiceImpl implements JWTService {
         switch (account.getRole()) {
             case PARENTS -> handleParentClaims(extraClaims, account);
             case STUDENT -> handleStudentClaims(extraClaims, account);
+            case TEACHER -> handleTeacherClaims(extraClaims, account);
             default -> {
             }
         }
@@ -105,6 +110,7 @@ public class JWTServiceImpl implements JWTService {
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
+
     private void handleParentClaims(Map<String, Object> claims, Account parent) {
         List<Student> students = relationshipRepo.findChildrenByParentAccountId(parent.getId());
 
@@ -132,6 +138,20 @@ public class JWTServiceImpl implements JWTService {
         claims.put("isEnableSurvey", student.getIsEnableSurvey());
         claims.put("teacherId", activeClass != null && activeClass.getTeacher() != null
                 ? activeClass.getTeacher().getId() : null);
+    }
+
+    private void handleTeacherClaims(Map<String, Object> claims, Account teacherAcc) {
+        Teacher teacher = teacherRepository.findById(teacherAcc.getId())
+                .orElseThrow(() -> new RuntimeException("Unauthorized"));
+        Optional<Classes> classes = teacher.getClasses().stream()
+                .filter(Classes::getIsActive)
+                .findFirst();
+
+        claims.put("teacherId", teacher.getId());
+        classes.ifPresent(value -> {
+            claims.put("classId", value.getId());
+            claims.put("isActive", value.getIsActive());
+        });
     }
 
     private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {

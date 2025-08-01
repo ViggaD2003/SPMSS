@@ -41,6 +41,7 @@ public class ClassController {
         return ResponseEntity.ok(enrollmentService.createBulkEnrollment(request));
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping
     ResponseEntity<List<ClassResponse>> findAll(@RequestParam(value = "grade", required = false) Grade grade) {
         return ResponseEntity.ok(classService.getAllClasses(grade));
