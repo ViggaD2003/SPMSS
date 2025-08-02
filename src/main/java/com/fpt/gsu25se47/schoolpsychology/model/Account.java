@@ -91,7 +91,13 @@ public class Account extends Auditable implements UserDetails {
     private List<Notifications> notifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cases> cases = new ArrayList<>();
+    private List<Cases> studentCases = new ArrayList<>();
+
+    @OneToMany(mappedBy = "createBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cases> createdByCases = new ArrayList<>();
+
+    @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cases> counselorCases = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
