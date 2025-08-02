@@ -1,10 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.Classes;
-import com.fpt.gsu25se47.schoolpsychology.model.Student;
-import com.fpt.gsu25se47.schoolpsychology.model.Teacher;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import io.jsonwebtoken.Claims;
@@ -14,9 +12,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Key;
 import java.util.*;
@@ -42,6 +42,8 @@ public class JWTServiceImpl implements JWTService {
     private final StudentRepository studentRepo;
 
     private final TeacherRepository teacherRepository;
+
+    private final CounselorRepository counselorRepository;
 
     private final RelationshipRepository relationshipRepo;
 
@@ -98,6 +100,7 @@ public class JWTServiceImpl implements JWTService {
             case PARENTS -> handleParentClaims(extraClaims, account);
             case STUDENT -> handleStudentClaims(extraClaims, account);
             case TEACHER -> handleTeacherClaims(extraClaims, account);
+            case COUNSELOR -> handleCounselorClaims(extraClaims, account);
             default -> {
             }
         }
@@ -109,6 +112,24 @@ public class JWTServiceImpl implements JWTService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiredTime))
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    private void handleCounselorClaims(Map<String, Object> extraClaims, Account account) {
+
+        Counselor counselor = counselorRepository.findById(account.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Counselor not found for ID: " + account.getId()));
+
+        Optional<Cases> activeCase = counselor.getAccount().getCounselorCases()
+                .stream()
+                .filter(t -> t.getStatus() != Status.CLOSED)
+                .findFirst();
+
+        if (activeCase.isEmpty()) {
+            extraClaims.put("hasActiveCases", false);
+        } else {
+            extraClaims.put("hasActiveCases", true);
+        }
     }
 
     private void handleParentClaims(Map<String, Object> claims, Account parent) {
