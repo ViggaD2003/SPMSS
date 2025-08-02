@@ -5,7 +5,6 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateClassRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponseSRC;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.EnrollmentResponse;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EnrollmentService;
@@ -41,10 +40,10 @@ public class ClassController {
         return ResponseEntity.ok(enrollmentService.createBulkEnrollment(request));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping
-    ResponseEntity<List<ClassResponse>> findAll(@RequestParam(value = "grade", required = false) Grade grade) {
-        return ResponseEntity.ok(classService.getAllClasses(grade));
+    ResponseEntity<List<ClassResponse>> findAll() {
+
+        return ResponseEntity.ok(classService.getAllClasses());
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER')")

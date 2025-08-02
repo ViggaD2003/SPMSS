@@ -187,7 +187,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public Optional<?> getAllSurveyStudentInCase() {
+    public Optional<?> getAllSurveyStudentInCase(Integer caseId) {
         try {
             UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
             if (userDetails == null) {
@@ -195,7 +195,14 @@ public class SurveyServiceImpl implements SurveyService {
             }
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
-            List<Survey> surveys = surveyRepository.findAllSurveyStudentInCase(account.getId());
+            List<Survey> surveys = null;
+
+            if (!account.getRole().name().equals("STUDENT") && caseId != null) {
+                surveys = surveyRepository.findAllSurveyByCaseId(caseId);
+            } else {
+                surveys = surveyRepository.findAllSurveyIsActiveInCase();
+            }
+
             List<SurveyGetAllResponse> surveyGetAllResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
 
             return Optional.of(surveyGetAllResponses);

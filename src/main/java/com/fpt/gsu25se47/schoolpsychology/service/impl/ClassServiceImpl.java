@@ -8,7 +8,6 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.EnrollmentRepository;
@@ -89,9 +88,9 @@ public class ClassServiceImpl implements ClassService {
     }
 
     @Override
-    public List<ClassResponse> getAllClasses(Grade grade) {
+    public List<ClassResponse> getAllClasses() {
 
-        return classRepository.findAllByGrade(grade == null ? null : grade.name())
+        return classRepository.findAll()
                 .stream()
                 .map(classMapper::toClassResponse)
                 .toList();

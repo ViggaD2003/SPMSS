@@ -4,6 +4,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +18,7 @@ public interface AccountService {
 
     Optional<?> profileAccount();
 
-    List<?> listAllAccounts(Role role, Integer classId);
+    List<?> listAllAccounts(Role role, Integer classId, Grade grade);
 
     Optional<?> getAccountById(Integer id) throws BadRequestException;
 

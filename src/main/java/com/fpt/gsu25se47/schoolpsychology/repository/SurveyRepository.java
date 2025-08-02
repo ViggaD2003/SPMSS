@@ -61,10 +61,18 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                 FROM survey s
                          JOIN survey_case_link scl ON s.id = scl.survey_id
                          JOIN cases c ON scl.case_id = c.id
-                WHERE c.student_id = :accountId AND c.status = 'IN_PROGRESS'
+                WHERE scl.is_active = 1 AND c.status = 'IN_PROGRESS'
                 ORDER BY s.created_date DESC;
             """, nativeQuery = true)
-    List<Survey> findAllSurveyStudentInCase(Integer accountId);
+    List<Survey> findAllSurveyIsActiveInCase();
+
+    @Query("""
+            SELECT s FROM Survey s
+            JOIN SurveyCaseLink scl ON s.id = scl.survey.id
+            JOIN Cases c ON scl.cases.id = c.id
+            WHERE c.id = :caseId
+            """)
+    List<Survey> findAllSurveyByCaseId(Integer caseId);
 
     @Query("SELECT s FROM Survey s WHERE s.isRecurring = true AND s.status = 'ARCHIVED'")
     List<Survey> findAllRecurringSurveys();

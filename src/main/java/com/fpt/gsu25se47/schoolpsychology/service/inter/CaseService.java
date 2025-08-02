@@ -11,7 +11,7 @@ public interface CaseService {
 
     Optional<?> assignCounselor(Integer counselorId, Integer caseId);
 
-    Optional<?> getAllCases();
+    Optional<?> getAllCases(List<String> statusCase, Integer categoryId);
 
     Optional<?> getAllCaseByCategory(Integer categoryId);
 

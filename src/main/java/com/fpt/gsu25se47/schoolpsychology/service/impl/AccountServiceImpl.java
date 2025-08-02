@@ -7,6 +7,7 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
@@ -59,8 +60,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<?> listAllAccounts(Role role, Integer classId) {
-        return accountRepository.findAccountsByRoleNative(role == null ? null :  role.name(), classId).stream()
+    public List<?> listAllAccounts(Role role, Integer classId, Grade grade) {
+        return accountRepository.findAccountsByRoleNative(role == null ? null :  role.name(), classId, grade == null ? null : grade.name()).stream()
                 .filter(account -> !"MANAGER".equals(account.getRole().name()))
                 .map(account -> Optional.of(accountMapper.toDto(account)))
                 .toList();

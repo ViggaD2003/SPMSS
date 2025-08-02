@@ -19,8 +19,8 @@ public class CaseController {
 
     @GetMapping
     @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<?> getAllCases() {
-        return ResponseEntity.ok(caseService.getAllCases());
+    public ResponseEntity<?> getAllCases(@RequestParam(required = false) List<String> statusCase, @RequestParam(name = "categoryId", required = false) Integer categoryId) {
+        return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId));
     }
 
     @GetMapping("/view-all-by-category")

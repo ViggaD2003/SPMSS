@@ -90,7 +90,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public Optional<?> getAllCases() {
+    public Optional<?> getAllCases(List<String> statusCase, Integer categoryId) {
         UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
         if (userDetails == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -99,31 +99,13 @@ public class CaseServiceImpl implements CaseService {
         Account account = accountRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        switch (account.getRole()) {
-            case MANAGER:
-                return  Optional.of(caseRepository.findAll().stream()
-                        .map(caseMapper::mapToCaseGetAllResponse).toList());
+        List<Cases> filteredCases = caseRepository.findAllCasesByRoleAndAccountWithStatusSorted(account.getRole().name(), account.getId(), statusCase, statusCase.size(), categoryId);
 
-            case COUNSELOR:
-                return  Optional.of(
-                        caseRepository.findAllByCounselorId(account.getId()).stream()
-                                .map(caseMapper::mapToCaseGetAllResponse).toList()
-                );
-
-            case TEACHER:
-                return  Optional.of(
-                        caseRepository.findAllByTeacherId(account.getId()).stream()
-                                .map(caseMapper::mapToCaseGetAllResponse).toList()
-                );
-            case STUDENT:
-                return  Optional.of(
-                        caseRepository.findAllByStudentId(account.getId()).stream()
-                                .map(caseMapper::mapToCaseGetAllResponse).toList()
-                );
-
-            default:
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        }
+        return Optional.of(
+                filteredCases.stream()
+                        .map(caseMapper::mapToCaseGetAllResponse)
+                        .toList()
+        );
     }
 
     @Override

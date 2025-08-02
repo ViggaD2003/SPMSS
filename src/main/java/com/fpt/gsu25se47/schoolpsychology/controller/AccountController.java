@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,8 +66,9 @@ public class AccountController {
     @ApiResponse(responseCode = "200", description = "Lấy danh sách tài khoản thành công")
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/list-all-account")
-    public ResponseEntity<?> listAllAccounts(@RequestParam(value = "role", required = false) Role role, @RequestParam(value = "classId", required = false) Integer classId) {
-        return ResponseEntity.ok(accountService.listAllAccounts(role, classId));
+    public ResponseEntity<?> listAllAccounts(@RequestParam(value = "role", required = false) Role role, @RequestParam(value = "classId", required = false) Integer classId,
+            @RequestParam(value = "grade", required = false) Grade grade) {
+        return ResponseEntity.ok(accountService.listAllAccounts(role, classId, grade));
     }
 
     @Operation(
