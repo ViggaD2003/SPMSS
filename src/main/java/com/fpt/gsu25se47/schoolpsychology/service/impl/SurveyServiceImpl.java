@@ -85,7 +85,6 @@ public class SurveyServiceImpl implements SurveyService {
             List<Survey> surveys = surveyRepository.findAll();
             List<SurveyGetAllResponse> surveyResponses = surveys.stream().map(surveyMapper::mapToSurveyGetAllResponse).toList();
 
-
             return Optional.of(surveyResponses);
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);

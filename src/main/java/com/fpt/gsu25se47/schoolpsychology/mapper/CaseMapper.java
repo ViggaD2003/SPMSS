@@ -15,7 +15,7 @@ public class CaseMapper {
     private final AccountMapper accountMapper;
 
 
-    public CaseGetAllResponse mapToCaseGetAllResponse(Cases cases) {
+    public CaseGetAllResponse mapToCaseGetAllResponse(Cases cases, Integer surveyId) {
         return CaseGetAllResponse.builder()
                 .id(cases.getId())
                 .title(cases.getTitle())
@@ -23,9 +23,8 @@ public class CaseMapper {
                 .priority(cases.getPriority())
                 .status(cases.getStatus())
                 .progressTrend(cases.getProgressTrend())
-
                 .createBy(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCreateBy()))
-
+                .isAddSurvey(surveyId == null ? null : cases.getSurveyCaseLinks().stream().anyMatch(item -> item.getSurvey().getId().equals(surveyId)))
                 .counselor(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCounselor()))
 
                 .student(cases.getStudent() == null ? null : accountMapper.toDto(cases.getStudent()))
@@ -38,7 +37,7 @@ public class CaseMapper {
 
     public CaseGetDetailResponse mapCaseGetDetailResponse(Cases cases, MentalEvaluationStatic statics) {
         return CaseGetDetailResponse.builder()
-                .caseInfo(mapToCaseGetAllResponse(cases))
+                .caseInfo(mapToCaseGetAllResponse(cases, null))
                 .groupedStatic(statics)
                 .build();
     }

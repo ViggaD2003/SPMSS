@@ -35,16 +35,18 @@ public class CaseController {
             @Parameter(description = "List of status to filter cases", required = false)
             @RequestParam(required = false) List<String> statusCase,
             @Parameter(description = "Category ID to filter cases", required = false)
-            @RequestParam(name = "categoryId", required = false) Integer categoryId) {
-        return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId));
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "surveyId",required = false) Integer surveyId
+    ) {
+        return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId, surveyId));
     }
 
-    @Operation(summary = "Get all cases by category", description = "Retrieve all cases that belong to a specific category")
-    @GetMapping("/view-all-by-category")
-    public ResponseEntity<?> getAllCasesByCategory(
-            @Parameter(description = "Category ID") @RequestParam("categoryId") Integer categoryId) {
-        return ResponseEntity.ok(caseService.getAllCaseByCategory(categoryId));
-    }
+//    @Operation(summary = "Get all cases by category", description = "Retrieve all cases that belong to a specific category")
+//    @GetMapping("/view-all-by-category")
+//    public ResponseEntity<?> getAllCasesByCategory(
+//            @Parameter(description = "Category ID") @RequestParam("categoryId") Integer categoryId) {
+//        return ResponseEntity.ok(caseService.getAllCaseByCategory(categoryId));
+//    }
 
     @Operation(summary = "Create new case", description = "Add a new case to the system")
     @PostMapping

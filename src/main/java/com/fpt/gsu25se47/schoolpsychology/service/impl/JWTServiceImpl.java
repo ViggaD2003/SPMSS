@@ -120,10 +120,21 @@ public class JWTServiceImpl implements JWTService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Counselor not found for ID: " + account.getId()));
 
+        Set<Integer> setCategory = new HashSet<>();
+
         Optional<Cases> activeCase = counselor.getAccount().getCounselorCases()
                 .stream()
-                .filter(t -> t.getStatus() != Status.CLOSED)
+                .filter(t -> {
+                    if(t.getStatus() != Status.CLOSED) {
+                        setCategory.add(t.getInitialLevel().getCategory().getId());
+                        return true;
+                    }
+                    else
+                        return false;
+                })
                 .findFirst();
+
+        extraClaims.put("cateAvailable", setCategory);
 
         if (activeCase.isEmpty()) {
             extraClaims.put("hasActiveCases", false);

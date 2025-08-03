@@ -91,7 +91,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public Optional<?> getAllCases(List<String> statusCase, Integer categoryId) {
+    public Optional<?> getAllCases(List<String> statusCase, Integer categoryId, Integer surveyId) {
         UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
         if (userDetails == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -102,22 +102,23 @@ public class CaseServiceImpl implements CaseService {
 
         List<Cases> filteredCases = caseRepository.findAllCasesByRoleAndAccountWithStatusSorted(account.getRole().name(), account.getId(), statusCase, statusCase.size(), categoryId);
 
+
         return Optional.of(
                 filteredCases.stream()
-                        .map(caseMapper::mapToCaseGetAllResponse)
+                        .map(c -> caseMapper.mapToCaseGetAllResponse(c, categoryId))
                         .toList()
         );
     }
 
-    @Override
-    public Optional<?> getAllCaseByCategory(Integer categoryId) {
-        List<Cases> cases = caseRepository.findAllByCategoryId(categoryId);
-
-        List<CaseGetAllResponse> casesResponse = cases.stream()
-                .map(caseMapper::mapToCaseGetAllResponse)
-                .toList();
-        return Optional.of(casesResponse);
-    }
+//    @Override
+//    public Optional<?> getAllCaseByCategory(Integer categoryId) {
+//        List<Cases> cases = caseRepository.findAllByCategoryId(categoryId);
+//
+//        List<CaseGetAllResponse> casesResponse = cases.stream()
+//                .map(caseMapper::mapToCaseGetAllResponse)
+//                .toList();
+//        return Optional.of(casesResponse);
+//    }
 
     @Override
     public Optional<?> getDetailById(Integer caseId) {

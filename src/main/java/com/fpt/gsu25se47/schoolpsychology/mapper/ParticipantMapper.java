@@ -34,6 +34,6 @@ public abstract class ParticipantMapper {
 
     protected CaseGetAllResponse mapToCase(Cases cases) {
         if(cases == null) return null;
-        return caseMapper.mapToCaseGetAllResponse(cases);
+        return caseMapper.mapToCaseGetAllResponse(cases, null);
     }
 }

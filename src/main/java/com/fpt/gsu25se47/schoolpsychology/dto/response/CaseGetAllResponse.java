@@ -13,6 +13,8 @@ public class CaseGetAllResponse {
 
     private String title;
 
+    private Boolean isAddSurvey;
+
     private String description;
 
     private Priority priority;
