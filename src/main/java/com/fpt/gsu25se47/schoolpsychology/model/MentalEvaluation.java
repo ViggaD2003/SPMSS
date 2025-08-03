@@ -25,9 +25,6 @@ public class MentalEvaluation {
     @Enumerated(EnumType.STRING)
     private Source source;
 
-//    @Enumerated(EnumType.STRING)
-//    private SourceType sourceType;
-
     private Float weightedScore;
 
     private LocalDate latestEvaluatedAt;
@@ -39,6 +36,10 @@ public class MentalEvaluation {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "survey_record_id", referencedColumnName = "id")
     private SurveyRecord surveyRecord;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "program_participant_id", referencedColumnName = "id")
+    private ProgramParticipants programParticipants;
 
     @ManyToOne
     @JoinColumn(name = "student_id")

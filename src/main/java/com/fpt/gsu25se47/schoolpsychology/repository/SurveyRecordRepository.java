@@ -25,4 +25,17 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
 
     @Query("SELECT sr FROM SurveyRecord sr WHERE sr.survey.id =:surveyId")
     List<SurveyRecord> findAllBySurveyId(Integer surveyId);
+
+    @Query(value = """
+    SELECT sr.* 
+    FROM program_participants pp
+    JOIN support_program sp ON pp.program_id = sp.id
+    JOIN survey s ON sp.survey_id = s.id
+    JOIN survey_record sr ON sr.survey_id = s.id AND sr.account_id = pp.student_id
+    WHERE pp.id = :participantId
+    ORDER BY sr.completed_at
+    LIMIT 2
+    """, nativeQuery = true)
+    List<SurveyRecord> findTwoSurveyRecordsByParticipant(@Param("participantId") Integer participantId);
+
 }

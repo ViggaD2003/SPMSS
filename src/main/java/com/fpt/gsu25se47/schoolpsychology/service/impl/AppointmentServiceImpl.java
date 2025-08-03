@@ -107,6 +107,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             request.getAssessmentScores().forEach(t -> assessmentScoresService.createAssessmentScoresWithContext(t, appointment));
             mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(
                     appointment,
+                    null,
                     null
             );
         }

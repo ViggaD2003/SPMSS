@@ -66,9 +66,11 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                         .student(account)
                         .build();
                 SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
-                MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved);
+                if(saved.getSurvey().getSurveyType() != SurveyType.PROGRAM){
+                    MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved, null);
 
-                saved.setMentalEvaluation(mentalEvaluationSaved);
+                    saved.setMentalEvaluation(mentalEvaluationSaved);
+                }
 
                 return surveyRecordMapper.mapToSurveyRecordResponse(saved);
             }
@@ -113,9 +115,11 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
             SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
-            MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved);
+           if(saved.getSurvey().getSurveyType() != SurveyType.PROGRAM){
+               MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved, null);
 
-            saved.setMentalEvaluation(mentalEvaluationSaved);
+               saved.setMentalEvaluation(mentalEvaluationSaved);
+           }
 
             return surveyRecordMapper.mapToSurveyRecordResponse(saved);
 

@@ -19,7 +19,7 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     private final MentalEvaluationRepository mentalEvaluationRepository;
 
     @Override
-    public MentalEvaluation createMentalEvaluationWithContext(Appointment appointment, SurveyRecord surveyRecord) {
+    public MentalEvaluation createMentalEvaluationWithContext(Appointment appointment, SurveyRecord surveyRecord, ProgramParticipants participants) {
 
         if (appointment != null) {
 
@@ -44,6 +44,14 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
             mappedMentalEvaluation.setStudent(student);
             mappedMentalEvaluation.setSurveyRecord(surveyRecord);
             return mentalEvaluationRepository.save(mappedMentalEvaluation);
+        } else if (participants != null) {
+            CreateMentalEvaluationRequest mentalEvaluationRequest = mentalEvaluationMapper.fromProgramParticipant(participants);
+
+            MentalEvaluation mappedMentalEvaluation = mentalEvaluationMapper.toMentalEvaluation(mentalEvaluationRequest);
+            Account student = participants.getStudent();
+            mappedMentalEvaluation.setStudent(student);
+            mappedMentalEvaluation.setProgramParticipants(participants);
+            return mappedMentalEvaluation;
         }
 
         return null;

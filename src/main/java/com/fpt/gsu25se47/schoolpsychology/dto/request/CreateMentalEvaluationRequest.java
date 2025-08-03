@@ -20,4 +20,6 @@ public class CreateMentalEvaluationRequest {
 
     private Integer surveyRecordId;
 
+    private Integer programParticipantId;
+
 }

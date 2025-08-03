@@ -33,13 +33,8 @@ public class ProgramParticipants {
     @JoinColumn(name = "case_id", nullable = false)
     private Cases cases;
 
-    @ManyToOne
-    @JoinColumn(name = "entry_survey_id")
-    private SurveyRecord entrySurvey;
-
-    @ManyToOne
-    @JoinColumn(name = "exit_survey_id")
-    private SurveyRecord exitSurvey;
+    @OneToOne(mappedBy = "programParticipants")
+    private MentalEvaluation mentalEvaluation;
 
     private LocalDateTime joinAt;
 

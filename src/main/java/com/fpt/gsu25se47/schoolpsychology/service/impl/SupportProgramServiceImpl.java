@@ -6,17 +6,16 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramParticipantsResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ParticipantMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SupportProgramMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.FileUploadService;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.SupportProgramService;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.*;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -45,8 +44,10 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final CaseRepository caseRepository;
     private final ParticipantMapper participantMapper;
     private final SurveyRecordService surveyRecordService;
-    private final SurveyRecordRepository surveyRecordRepository;
+    private final MentalEvaluationService mentalEvaluationService;
     private final FileUploadService fileUploadService;
+    private final SurveyRecordRepository surveyRecordRepository;
+    private final MentalEvaluationRepository mentalEvaluationRepository;
 
     @Override
     @Transactional
@@ -68,14 +69,13 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         );
 
 
-
         SupportProgram supportProgram = supportProgramMapper.mapSupportProgram(request);
         String thumbnail = fileUploadService.uploadFile(request.getThumbnail());
         supportProgram.setThumbnail(thumbnail);
         supportProgram.setCategory(category);
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);
-        if(request.getStartTime().isEqual(LocalDateTime.now())){
+        if (request.getStartTime().isEqual(LocalDateTime.now())) {
             supportProgram.setStatus(ProgramStatus.ACTIVE);
         } else {
             supportProgram.setStatus(ProgramStatus.PLANNING);
@@ -94,29 +94,29 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
     @Override
     public List<SupportProgramResponse> getAllSupportPrograms() {
-       try{
-           UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
-           if (userDetails == null) {
-               throw new BadRequestException("Unauthorized");
-           }
+        try {
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+            if (userDetails == null) {
+                throw new BadRequestException("Unauthorized");
+            }
 
-           Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
+            Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
-           switch (currentAccount.getRole()){
-               case COUNSELOR -> {
-                   List<SupportProgram> entity = supportProgramRepository.findAllByHostedBy(currentAccount.getId());
-                   return entity.stream().map(supportProgramMapper::mapSupportProgramResponse).toList();
-               }
-               case MANAGER -> {
-                   List<SupportProgram> entity = supportProgramRepository.findAll();
-                   return entity.stream().map(supportProgramMapper::mapSupportProgramResponse).toList();
-               }
-               default -> throw new IllegalStateException("Unexpected value: " + currentAccount.getRole());
-           }
+            switch (currentAccount.getRole()) {
+                case COUNSELOR -> {
+                    List<SupportProgram> entity = supportProgramRepository.findAllByHostedBy(currentAccount.getId());
+                    return entity.stream().map(supportProgramMapper::mapSupportProgramResponse).toList();
+                }
+                case MANAGER -> {
+                    List<SupportProgram> entity = supportProgramRepository.findAll();
+                    return entity.stream().map(supportProgramMapper::mapSupportProgramResponse).toList();
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + currentAccount.getRole());
+            }
 
-       } catch (Exception e){
-           throw new RuntimeException("Error getting support programs", e);
-       }
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting support programs", e);
+        }
     }
 
     @Override
@@ -140,35 +140,41 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         return participants.stream().map(participantMapper::mapToDto).toList();
     }
 
-//    @Override
-//    public Optional<?> saveSurveySupportProgram(CreateSurveyRecordDto createSurveyRecordDto) {
-//        try {
-//            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
-//            if (userDetails == null) {
-//                throw new BadRequestException("Unauthorized");
-//            }
-//
-//            Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
-//            ProgramParticipants participant = programParticipantRepository.findByStudentId(currentAccount.getId());
-//            SurveyRecordDetailResponse response = surveyRecordService.createSurveyRecord(createSurveyRecordDto);
-//
-//            if(response.getSurveyRecordType() == SurveyRecordType.ENTRY){
-//                participant.setEntrySurvey(surveyRecordRepository.findById(response.getId())
-//                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find survey record")));
-//            } else if(response.getSurveyRecordType() == SurveyRecordType.EXIT){
-//                participant.setExitSurvey(surveyRecordRepository.findById(response.getId())
-//                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find survey record")));
-//            }
-//
-//            programParticipantRepository.save(participant);
-//        } catch (Exception e){
-//            throw new RuntimeException("Error creating survey record", e);
-//        }
-//
-//        return Optional.of("Successfully created survey record");
-//    }
+    @Override
+    public Optional<?> saveSurveySupportProgram(CreateSurveyRecordDto createSurveyRecordDto) {
+        try {
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+            if (userDetails == null) {
+                throw new BadRequestException("Unauthorized");
+            }
 
-//    @Override
+            Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
+            ProgramParticipants participant = programParticipantRepository.findByStudentId(currentAccount.getId());
+            surveyRecordService.createSurveyRecord(createSurveyRecordDto);
+
+            if (programParticipantRepository.hasParticipantCompletedSurveyTwice(participant.getId())) {
+                List<SurveyRecord> surveyRecords = surveyRecordRepository.findTwoSurveyRecordsByParticipant(participant.getId());
+
+                if (surveyRecords.size() == 2) {
+                    float weightScore = (surveyRecords.get(0).getTotalScore() + surveyRecords.get(1).getTotalScore()) / 2;
+
+                    MentalEvaluation mentalEvaluation = mentalEvaluationService.createMentalEvaluationWithContext(null, null, participant);
+                    mentalEvaluation.setWeightedScore(weightScore);
+
+                    participant.setMentalEvaluation(mentalEvaluation);
+                    mentalEvaluationRepository.save(mentalEvaluation);
+                    programParticipantRepository.save(participant);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating survey record", e);
+        }
+
+        return Optional.of("Successfully created survey record");
+    }
+
+    //    @Override
 //    public SupportProgramResponse updateSupportProgram(Integer id, SupportProgramRequest request) {
 //
 //        SupportProgram supportProgram = getSupportProgram(id);
