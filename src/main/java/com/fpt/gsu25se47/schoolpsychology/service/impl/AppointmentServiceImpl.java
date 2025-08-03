@@ -114,7 +114,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment appointmentUpdated = appointmentMapper.updateAppointmentFromRequest(request, appointment);
 
-        appointmentUpdated.setMentalEvaluations(mentalEvaluationSaved);
+        appointmentUpdated.setMentalEvaluation(mentalEvaluationSaved);
         appointmentUpdated.setCases(cases);
         appointmentUpdated.setStatus(AppointmentStatus.COMPLETED);
 

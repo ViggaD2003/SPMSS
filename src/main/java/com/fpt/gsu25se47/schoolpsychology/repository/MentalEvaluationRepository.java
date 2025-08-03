@@ -2,6 +2,9 @@ package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluation, Integer> {
 
@@ -21,5 +24,4 @@ public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluati
 //            AND (:evaluationType IS NULL OR m.evaluationType = :evaluationType)
 //            """)
 //    Page<MentalEvaluation> findAllByDateBetweenAndEvaluationType(LocalDate from, LocalDate to, EvaluationType evaluationType, Pageable pageable);
-
 }

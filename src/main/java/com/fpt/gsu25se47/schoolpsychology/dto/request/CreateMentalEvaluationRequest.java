@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SourceType;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,8 +9,6 @@ import java.time.LocalDate;
 public class CreateMentalEvaluationRequest {
 
     private Source source;
-
-    private SourceType sourceType;
 
     private Float weightedScore;
 

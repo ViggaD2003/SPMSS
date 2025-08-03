@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SurveyRecordType {
-    ENTRY, EXIT, SCREENING, FOLLOWUP
+    SCREENING, FOLLOWUP, PROGRAM
 }

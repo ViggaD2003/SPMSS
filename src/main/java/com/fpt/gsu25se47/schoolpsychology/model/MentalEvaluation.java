@@ -2,7 +2,6 @@ package com.fpt.gsu25se47.schoolpsychology.model;
 
 
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SourceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,8 +25,8 @@ public class MentalEvaluation {
     @Enumerated(EnumType.STRING)
     private Source source;
 
-    @Enumerated(EnumType.STRING)
-    private SourceType sourceType;
+//    @Enumerated(EnumType.STRING)
+//    private SourceType sourceType;
 
     private Float weightedScore;
 

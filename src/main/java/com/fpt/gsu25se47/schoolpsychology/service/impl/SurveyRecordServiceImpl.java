@@ -62,9 +62,14 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                         .round(survey.getRound())
                         .isSkipped(dto.getIsSkipped())
                         .survey(survey)
+                        .surveyRecordType(SurveyRecordType.valueOf(dto.getSurveyRecordType()))
                         .student(account)
                         .build();
                 SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
+                MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved);
+
+                saved.setMentalEvaluation(mentalEvaluationSaved);
+
                 return surveyRecordMapper.mapToSurveyRecordResponse(saved);
             }
 

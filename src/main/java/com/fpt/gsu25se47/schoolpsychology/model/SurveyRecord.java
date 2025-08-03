@@ -30,6 +30,7 @@ public class SurveyRecord {
 
     private Boolean isSkipped;
 
+    @Enumerated(EnumType.STRING)
     private SurveyRecordType surveyRecordType;
 
     private Integer round;

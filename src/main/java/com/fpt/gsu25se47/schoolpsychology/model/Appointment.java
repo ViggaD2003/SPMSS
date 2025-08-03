@@ -77,6 +77,6 @@ public class Appointment extends Auditable {
     private List<AssessmentScores> assessmentScores = new ArrayList<>();
 
     @OneToOne(mappedBy = "appointment")
-    private MentalEvaluation mentalEvaluations;
+    private MentalEvaluation mentalEvaluation;
 }
 

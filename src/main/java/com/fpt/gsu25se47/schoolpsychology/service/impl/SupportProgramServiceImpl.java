@@ -140,33 +140,33 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         return participants.stream().map(participantMapper::mapToDto).toList();
     }
 
-    @Override
-    public Optional<?> saveSurveySupportProgram(CreateSurveyRecordDto createSurveyRecordDto) {
-        try {
-            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
-            if (userDetails == null) {
-                throw new BadRequestException("Unauthorized");
-            }
-
-            Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
-            ProgramParticipants participant = programParticipantRepository.findByStudentId(currentAccount.getId());
-            SurveyRecordDetailResponse response = surveyRecordService.createSurveyRecord(createSurveyRecordDto);
-
-            if(response.getSurveyRecordType() == SurveyRecordType.ENTRY){
-                participant.setEntrySurvey(surveyRecordRepository.findById(response.getId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find survey record")));
-            } else if(response.getSurveyRecordType() == SurveyRecordType.EXIT){
-                participant.setExitSurvey(surveyRecordRepository.findById(response.getId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find survey record")));
-            }
-
-            programParticipantRepository.save(participant);
-        } catch (Exception e){
-            throw new RuntimeException("Error creating survey record", e);
-        }
-
-        return Optional.of("Successfully created survey record");
-    }
+//    @Override
+//    public Optional<?> saveSurveySupportProgram(CreateSurveyRecordDto createSurveyRecordDto) {
+//        try {
+//            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+//            if (userDetails == null) {
+//                throw new BadRequestException("Unauthorized");
+//            }
+//
+//            Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
+//            ProgramParticipants participant = programParticipantRepository.findByStudentId(currentAccount.getId());
+//            SurveyRecordDetailResponse response = surveyRecordService.createSurveyRecord(createSurveyRecordDto);
+//
+//            if(response.getSurveyRecordType() == SurveyRecordType.ENTRY){
+//                participant.setEntrySurvey(surveyRecordRepository.findById(response.getId())
+//                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find survey record")));
+//            } else if(response.getSurveyRecordType() == SurveyRecordType.EXIT){
+//                participant.setExitSurvey(surveyRecordRepository.findById(response.getId())
+//                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find survey record")));
+//            }
+//
+//            programParticipantRepository.save(participant);
+//        } catch (Exception e){
+//            throw new RuntimeException("Error creating survey record", e);
+//        }
+//
+//        return Optional.of("Successfully created survey record");
+//    }
 
 //    @Override
 //    public SupportProgramResponse updateSupportProgram(Integer id, SupportProgramRequest request) {

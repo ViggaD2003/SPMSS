@@ -3,11 +3,14 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyStatic;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor

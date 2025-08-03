@@ -1,6 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.MentalEvaluationStatic;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,6 +33,13 @@ public class CaseMapper {
                 .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
                 .currentLevel(levelMapper.mapToLevelResponse(cases.getCurrentLevel()))
 
+                .build();
+    }
+
+    public CaseGetDetailResponse mapCaseGetDetailResponse(Cases cases, MentalEvaluationStatic statics) {
+        return CaseGetDetailResponse.builder()
+                .caseInfo(mapToCaseGetAllResponse(cases))
+                .groupedStatic(statics)
                 .build();
     }
 }

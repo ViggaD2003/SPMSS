@@ -77,4 +77,11 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     @Query("SELECT s FROM Survey s WHERE s.isRecurring = true AND s.status = 'ARCHIVED'")
     List<Survey> findAllRecurringSurveys();
 
+    @Query("""
+SELECT COUNT(s) FROM Survey s
+ LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id
+ WHERE sr.isSkipped = true
+""")
+    int countSurveySkip();
+
 }

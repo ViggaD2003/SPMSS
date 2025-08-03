@@ -1,12 +1,10 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.Cases;
-import com.fpt.gsu25se47.schoolpsychology.model.Survey;
-import com.fpt.gsu25se47.schoolpsychology.model.SurveyCaseLink;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
@@ -19,8 +17,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.springframework.web.server.ResponseStatusException;
@@ -40,6 +40,7 @@ public class CaseServiceImpl implements CaseService {
     private final SurveyRepository surveyRepository;
 
     private final CaseMapper caseMapper;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     public Optional<?> createCase(AddNewCaseDto dto) {
@@ -120,8 +121,60 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public Optional<?> getDetailById(Integer caseId) {
-        return Optional.empty();
+        Cases cases = caseRepository.findById(caseId)
+                .orElseThrow(() -> new RuntimeException("Case not found"));
+
+        // 1. Handle surveys
+        List<Survey> surveys = surveyRepository.findAllSurveyByCaseId(caseId);
+        AtomicInteger numberOfSkips = new AtomicInteger(0);
+
+        List<DataSet> surveyDataSets = surveys.stream()
+                .flatMap(survey -> survey.getSurveyRecords().stream())
+                .peek(record -> {
+                    if (Boolean.TRUE.equals(record.getIsSkipped())) {
+                        // count skipped
+                        numberOfSkips.incrementAndGet();
+                    }
+                })
+                .map(record -> mapToDataSet(record.getMentalEvaluation()))
+                .filter(dataSet -> dataSet != null)
+                .toList();
+
+        SurveyStatic surveyStatic = SurveyStatic.builder()
+                .totalSurvey(surveys.size())
+                .numberOfSkips(numberOfSkips.get())
+                .dataSet(surveyDataSets)
+                .build();
+
+        // 2. Handle appointments
+        List<Appointment> appointments = appointmentRepository.findAllByCaseId(caseId);
+        int numOfAbsent = (int) appointments.stream()
+                .filter(appt -> AppointmentStatus.ABSENT.equals(appt.getStatus()))
+                .count();
+
+        List<DataSet> appointmentDataSets = appointments.stream()
+                .map(appt -> mapToDataSet(appt.getMentalEvaluation()))
+                .filter(dataSet -> dataSet != null)
+                .toList();
+
+        AppointmentStatic appointmentStatic = AppointmentStatic.builder()
+                .total(appointments.size())
+                .numOfAbsent(numOfAbsent)
+                .dataSet(appointmentDataSets)
+                .build();
+
+        // 3. Compose final grouped data
+        MentalEvaluationStatic evaluationStatic = MentalEvaluationStatic.builder()
+                .survey(surveyStatic)
+                .appointment(appointmentStatic)
+                .build();
+
+        CaseGetDetailResponse response = caseMapper
+                .mapCaseGetDetailResponse(cases, evaluationStatic);
+
+        return Optional.of(response);
     }
+
 
     @Override
     public Optional<?> addSurveyCaseLink(List<Integer> caseIds, Integer surveyId) {
@@ -174,7 +227,13 @@ public class CaseServiceImpl implements CaseService {
 
     }
 
+    private DataSet mapToDataSet(MentalEvaluation evaluation) {
+        if (evaluation == null) return null;
 
-
+        return DataSet.builder()
+                .score(evaluation.getWeightedScore())
+                .createdAt(evaluation.getLatestEvaluatedAt())
+                .build();
+    }
 
 }

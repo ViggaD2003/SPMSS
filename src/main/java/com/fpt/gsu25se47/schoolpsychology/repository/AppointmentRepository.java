@@ -34,6 +34,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
     List<Appointment> findAllByStatus(AppointmentStatus status);
 
+    @Query("SELECT a FROM Appointment a WHERE a.cases.id =:caseId")
+    List<Appointment> findAllByCaseId(Integer caseId);
+
     @Query("""
                 SELECT a FROM Appointment a
                 WHERE a.bookedFor.id = :bookedForId

@@ -44,11 +44,11 @@ public class SupportProgramController {
         return ResponseEntity.ok(service.createSupportProgram(request, servletRequest));
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
-    @PostMapping("/save-survey-record")
-    public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto){
-        return ResponseEntity.ok(service.saveSurveySupportProgram(dto));
-    }
+//    @PreAuthorize("hasRole('STUDENT')")
+//    @PostMapping("/save-survey-record")
+//    public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto){
+//        return ResponseEntity.ok(service.saveSurveySupportProgram(dto));
+//    }
 
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @PostMapping("/add-participants")
