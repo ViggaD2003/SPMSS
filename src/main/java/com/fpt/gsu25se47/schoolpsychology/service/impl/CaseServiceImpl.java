@@ -225,7 +225,22 @@ public class CaseServiceImpl implements CaseService {
         });
 
         return Optional.of("Removed survey case link successfully !");
+    }
 
+    @Override
+    public Optional<?> removeSurveyByCaseId(List<Integer> caseIds, Integer surveyId) {
+        List<SurveyCaseLink> surveyCaseLinks = surveyCaseLinkRepository.findAllBySurveyId(surveyId);
+        List<SurveyCaseLink> filteredSurveyCaseLink = surveyCaseLinks.stream()
+                .filter(item -> caseIds.contains(item.getCases().getId()))
+                .toList();
+
+        filteredSurveyCaseLink.forEach(item -> {
+            item.setIsActive(false);
+            item.setRemoveAt(LocalDate.now());
+            surveyCaseLinkRepository.save(item);
+        });
+
+        return Optional.of("Removed survey case link successfully !");
     }
 
     private DataSet mapToDataSet(MentalEvaluation evaluation) {

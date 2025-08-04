@@ -21,4 +21,5 @@ public interface CaseService {
 
     Optional<?> removeSurveyCaseLink(List<Integer> caseIds);
 
+    Optional<?> removeSurveyByCaseId(List<Integer> caseIds, Integer surveyId);
 }
