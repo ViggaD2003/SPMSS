@@ -29,9 +29,7 @@ public class SupportProgramRequest {
     @TodayOrFuture
     private LocalDateTime endTime;
 
-    private String linkMeet;
-
-    private MultipartFile thumbnail;
+    private String location;
 
     private Integer hostedBy;
 

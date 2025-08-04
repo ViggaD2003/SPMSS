@@ -5,13 +5,14 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramParticipantsResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 public interface SupportProgramService {
-    SupportProgramResponse createSupportProgram(SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException;
+    SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException;
 
     SupportProgramResponse getSupportProgramById(Integer id);
 

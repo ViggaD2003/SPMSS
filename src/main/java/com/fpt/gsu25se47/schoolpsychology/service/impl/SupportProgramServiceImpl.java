@@ -24,6 +24,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
     @Override
     @Transactional
-    public SupportProgramResponse createSupportProgram(SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException {
+    public SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException {
 
         Optional<?> surveyId = surveyService.addNewSurvey(request.getAddNewSurveyDto(), servletRequest);
         if (surveyId.isEmpty()) {
@@ -68,10 +69,9 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                 () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find account")
         );
 
-
         SupportProgram supportProgram = supportProgramMapper.mapSupportProgram(request);
-        String thumbnail = fileUploadService.uploadFile(request.getThumbnail());
-        supportProgram.setThumbnail(thumbnail);
+        String rawFile = fileUploadService.uploadFile(thumbnail);
+        supportProgram.setThumbnail(rawFile);
         supportProgram.setCategory(category);
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);

@@ -11,9 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,22 +39,27 @@ public class SupportProgramController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error", content = @Content)
     })
-    @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
-    @PostMapping
-    public ResponseEntity<?> createSupportProgram(@Valid @RequestBody SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException {
 
-        return ResponseEntity.ok(service.createSupportProgram(request, servletRequest));
+    @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createSupportProgram(
+            @RequestPart("thumbnail") MultipartFile thumbnail,
+            @RequestPart("request") @Valid SupportProgramRequest request,
+            HttpServletRequest servletRequest
+    ) throws IOException {
+        return ResponseEntity.ok(service.createSupportProgram(thumbnail, request, servletRequest));
     }
 
-//    @PreAuthorize("hasRole('STUDENT')")
-//    @PostMapping("/save-survey-record")
-//    public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto){
-//        return ResponseEntity.ok(service.saveSurveySupportProgram(dto));
-//    }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/save-survey-record")
+    public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto){
+        return ResponseEntity.ok(service.saveSurveySupportProgram(dto));
+    }
 
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @PostMapping("/add-participants")
-    public ResponseEntity<?> addParticipants(@RequestParam("programId") Integer programId, @RequestParam("listCaseIds")List<Integer> caseIds) {
+    public ResponseEntity<?> addParticipants(@RequestParam("programId") Integer programId, @RequestParam("listCaseIds") List<Integer> caseIds) {
         return ResponseEntity.ok(service.addParticipantsToSupportProgram(programId, caseIds));
     }
 
