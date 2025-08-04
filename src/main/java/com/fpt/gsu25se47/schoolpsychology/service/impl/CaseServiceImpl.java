@@ -105,7 +105,7 @@ public class CaseServiceImpl implements CaseService {
 
         return Optional.of(
                 filteredCases.stream()
-                        .map(c -> caseMapper.mapToCaseGetAllResponse(c, categoryId))
+                        .map(c -> caseMapper.mapToCaseGetAllResponse(c, surveyId))
                         .toList()
         );
     }
