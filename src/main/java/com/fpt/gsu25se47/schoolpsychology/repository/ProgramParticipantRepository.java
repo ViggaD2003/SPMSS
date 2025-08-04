@@ -29,5 +29,6 @@ public interface ProgramParticipantRepository extends JpaRepository<ProgramParti
     """, nativeQuery = true)
     boolean hasParticipantCompletedSurveyTwice(@Param("participantId") Integer participantId);
 
-
+    @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.cases.id = :caseId")
+    List<ProgramParticipants> findAllByCaseId(Integer caseId);
 }
