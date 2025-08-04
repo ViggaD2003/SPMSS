@@ -5,6 +5,8 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
@@ -15,14 +17,11 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -41,13 +40,14 @@ public class CaseServiceImpl implements CaseService {
 
     private final CaseMapper caseMapper;
     private final AppointmentRepository appointmentRepository;
+    private final ProgramParticipantRepository programParticipantRepository;
 
     @Override
     public Optional<?> createCase(AddNewCaseDto dto) {
         Account student = accountRepository.findById(dto.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
-        if(student.getRole().name() != "STUDENT"){
+        if(student.getRole().equals(Role.STUDENT)){
             throw new IllegalArgumentException("Account is not STUDENT");
         }
 
@@ -102,7 +102,6 @@ public class CaseServiceImpl implements CaseService {
 
         List<Cases> filteredCases = caseRepository.findAllCasesByRoleAndAccountWithStatusSorted(account.getRole().name(), account.getId(), statusCase, statusCase.size(), categoryId);
 
-
         return Optional.of(
                 filteredCases.stream()
                         .map(c -> caseMapper.mapToCaseGetAllResponse(c, surveyId))
@@ -138,7 +137,7 @@ public class CaseServiceImpl implements CaseService {
                     }
                 })
                 .map(record -> mapToDataSet(record.getMentalEvaluation()))
-                .filter(dataSet -> dataSet != null)
+                .filter(Objects::nonNull)
                 .toList();
 
         SurveyStatic surveyStatic = SurveyStatic.builder()
@@ -155,7 +154,7 @@ public class CaseServiceImpl implements CaseService {
 
         List<DataSet> appointmentDataSets = appointments.stream()
                 .map(appt -> mapToDataSet(appt.getMentalEvaluation()))
-                .filter(dataSet -> dataSet != null)
+                .filter(Objects::nonNull)
                 .toList();
 
         AppointmentStatic appointmentStatic = AppointmentStatic.builder()
@@ -164,10 +163,29 @@ public class CaseServiceImpl implements CaseService {
                 .dataSet(appointmentDataSets)
                 .build();
 
+        // 3. Handle Program Support
+        List<ProgramParticipants> participants = programParticipantRepository.findAllByCaseId(caseId);
+        numOfAbsent = (int) participants.stream().filter(pp -> RegistrationStatus.ABSENT.equals(pp.getStatus()))
+                .count();
+
+        List<MentalEvaluation> mentalEvaluationOfPp = participants.stream().map(pp -> pp.getMentalEvaluation()).toList();
+
+        List<DataSet> programSupportDataSets = mentalEvaluationOfPp.stream()
+                .map(this::mapToDataSet)
+                .filter(Objects::nonNull)
+                .toList();
+
+        ProgramSupportStatic programSupportStatic = ProgramSupportStatic.builder()
+                .numOfAbsent(numOfAbsent)
+                .total(participants.size())
+                .dataSet(programSupportDataSets)
+                .build();
+
         // 3. Compose final grouped data
         MentalEvaluationStatic evaluationStatic = MentalEvaluationStatic.builder()
                 .survey(surveyStatic)
                 .appointment(appointmentStatic)
+                .program(programSupportStatic)
                 .build();
 
         CaseGetDetailResponse response = caseMapper
