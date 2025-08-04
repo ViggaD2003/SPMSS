@@ -48,8 +48,18 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Stop and remove old containers
+        run: |
+          docker compose -p backend-gsu25se47 down --remove-orphans || true
+
+      - name: Remove old images
+        run: |
+          docker rmi ${{ secrets.DOCKER_USERNAME }}/spmss:latest || true
+
+      - name: Cleanup dangling images
+        run: docker image prune -f
+
       - name: Pull Image And Deploy From VPS
         run: docker compose -p backend-gsu25se47 up -d --build
 
-      - name: Cleanup Image
-        run: docker image prune -a -f
+
