@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface SurveyService {
 
-    Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request);
+    Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto);
 
     Optional<?> getAllSurveys();
 

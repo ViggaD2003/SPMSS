@@ -44,10 +44,8 @@ public class SupportProgramController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createSupportProgram(
             @RequestPart("thumbnail") MultipartFile thumbnail,
-            @RequestPart("request") @Valid SupportProgramRequest request,
-            HttpServletRequest servletRequest
-    ) throws IOException {
-        return ResponseEntity.ok(service.createSupportProgram(thumbnail, request, servletRequest));
+            @RequestPart("request") @Valid SupportProgramRequest request) throws IOException {
+        return ResponseEntity.ok(service.createSupportProgram(thumbnail, request));
     }
 
 

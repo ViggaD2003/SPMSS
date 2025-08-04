@@ -43,7 +43,50 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/spmss:latest
-            docker stop spmss || true
-            docker rm spmss || true
-            docker run -d --name spmss -p 80:8080 ${{ secrets.DOCKER_USERNAME }}/spmss:latest
+            cd ~/spmss-deploy
+
+            # Pull image mới
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/spmss:latest
+
+            # Tạo/ghi đè docker-compose.yml
+            cat > docker-compose.yml <<EOF
+            version: '3.8'
+
+            services:
+              mysql:
+                image: mysql
+                restart: always
+                environment:
+                  MYSQL_ROOT_PASSWORD: root
+                ports:
+                  - "3306:3306"
+                volumes:
+                  - spmss-mysql-data:/var/lib/mysql
+                networks:
+                  - spmss-network
+
+              spmss:
+                image: ${{ secrets.DOCKER_USERNAME }}/spmss:latest
+                ports:
+                  - "8080:8080"
+                environment:
+                  SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/school_mental_health_support_db?createDatabaseIfNotExist=true
+                  SPRING_DATASOURCE_USERNAME: root
+                  SPRING_DATASOURCE_PASSWORD: root
+                  SPRING_JPA_HIBERNATE_DDL_AUTO: update
+                depends_on:
+                  - mysql
+                networks:
+                  - spmss-network
+
+            volumes:
+              spmss-mysql-data:
+
+            networks:
+              spmss-network:
+            EOF
+
+            # Khởi động lại container bằng Docker Compose
+            sudo docker-compose down
+            sudo docker-compose up -d
+          

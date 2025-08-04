@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SupportProgramService {
-    SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException;
+    SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request) throws IOException;
 
     SupportProgramResponse getSupportProgramById(Integer id);
 
