@@ -31,11 +31,11 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("*")); // hoặc cấu hình cụ thể
+                    config.setAllowedOriginPatterns(List.of("*")); // Sử dụng patterns thay vì origins
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setExposedHeaders(List.of("Authorization"));
-                    config.setAllowCredentials(true);
+                    config.setAllowCredentials(true); // ✅ Cho phép gửi cookie/token
                     config.setMaxAge(3600L);
                     return config;
                 }))
