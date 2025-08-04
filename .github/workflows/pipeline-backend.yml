@@ -60,6 +60,6 @@ jobs:
         run: docker image prune -f
 
       - name: Pull Image And Deploy From VPS
-        run: docker compose -p backend-gsu25se47 up -d --build
+        run: docker compose -p backend-gsu25se47 up -d --pull always
 
 
