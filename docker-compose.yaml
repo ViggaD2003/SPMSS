@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  cloudflare-tunnel:
+    container_name: cloudflare_tunnel
+    image: cloudflare/cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - spmss-network
+      
   mysql:
     container_name: spmss_mysql
     image: mysql
