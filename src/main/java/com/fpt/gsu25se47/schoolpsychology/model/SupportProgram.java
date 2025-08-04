@@ -37,7 +37,7 @@ public class SupportProgram extends Auditable {
     @Enumerated(EnumType.STRING)
     private ProgramStatus status;
 
-    private String linkMeet;
+    private String location;
 
     private String thumbnail;
 

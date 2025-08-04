@@ -35,7 +35,7 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "programSurvey", expression = "java(mapSurvey(supportProgram.getSurvey()))"),
-            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? null : mapToDto(supportProgram.getProgramRegistrations()))")
+            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? 0 : supportProgram.getProgramRegistrations().size())")
     })
     public abstract SupportProgramResponse mapSupportProgramResponse(SupportProgram supportProgram);
 
@@ -54,8 +54,8 @@ public abstract class SupportProgramMapper {
         return surveyMapper.mapToSurveyGetAllResponse(survey);
     }
 
-    protected List<ProgramParticipantsResponse> mapToDto(List<ProgramParticipants> participants) {
-        if (participants == null) return null;
-        return participants.stream().map(participantMapper::mapToDto).toList();
-    }
+//    protected List<ProgramParticipantsResponse> mapToDto(List<ProgramParticipants> participants) {
+//        if (participants == null) return null;
+//        return participants.stream().map(participantMapper::mapToDto).toList();
+//    }
 }

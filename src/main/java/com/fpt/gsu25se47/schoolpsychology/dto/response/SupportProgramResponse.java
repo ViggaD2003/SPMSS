@@ -19,15 +19,15 @@ public class SupportProgramResponse {
 
     private Integer maxParticipants;
 
-    private LocalDateTime startDate;
+    private LocalDateTime startTime;
 
-    private LocalDateTime endDate;
+    private LocalDateTime endTime;
 
     private ProgramStatus status;
 
     private String thumbnail;
 
-    private String linkMeet;
+    private String location;
 
     private CategoryResponse category;
 
@@ -35,6 +35,7 @@ public class SupportProgramResponse {
 
     private SurveyGetAllResponse programSurvey;
 
-    private List<ProgramParticipantsResponse> participants;
+    //    private List<ProgramParticipantsResponse> participants;
+    private Integer participants;
 
 }
