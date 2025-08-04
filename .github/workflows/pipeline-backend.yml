@@ -49,7 +49,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Pull Image And Deploy From VPS
-        run: docker compose -p backend-gsu25se47 up -d --build
+        run: docker compose -p backend-gsu25se47 up -d --pull always
 
       - name: Cleanup Image
         run: docker image prune -a -f
