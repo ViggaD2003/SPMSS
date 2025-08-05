@@ -35,7 +35,10 @@ public class SystemConfigServiceImpl implements SystemConfigService {
             return type.cast(Double.parseDouble(value));
         } else if (type == String.class) {
             return type.cast(value);
-        } else {
+        } else if (type == Long.class) {
+            return type.cast(Double.valueOf(value).longValue());
+        }
+        else {
             throw new IllegalArgumentException("Unsupported type: " + type.getName());
         }
     }
