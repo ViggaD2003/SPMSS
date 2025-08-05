@@ -286,6 +286,4 @@ INSERT INTO system_config (config_group, config_key, config_value, value_type, c
 INSERT INTO system_config (config_group, config_key, config_value, value_type, category, description, is_active, is_editable, updated_at) VALUES
 ('FILE', 'file.size', '5', 'long', 'file_size', 'File upload size (MB)', 1, 1, NOW()),
 
-select * from questions
-
 commit;
