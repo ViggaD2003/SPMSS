@@ -86,6 +86,3 @@ VALUES
     (2, 3, 'Average'),
     (2, 4, 'Good'),
     (2, 5, 'Excellent');
-
-
-select * from questions

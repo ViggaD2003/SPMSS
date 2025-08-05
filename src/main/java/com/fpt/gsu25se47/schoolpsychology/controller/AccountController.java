@@ -30,6 +30,7 @@ public class AccountController {
             description = "Trả về thông tin hồ sơ của tài khoản đang đăng nhập theo vai trò: STUDENT, PARENTS, COUNSELOR, hoặc TEACHER"
     )
     @ApiResponse(responseCode = "200", description = "Lấy thông tin thành công")
+    @PreAuthorize("hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('PARENTS') or hasRole('TEACHER')")
     @GetMapping
     public ResponseEntity<?> getProfileAccount() {
         return ResponseEntity.ok(accountService.profileAccount());
