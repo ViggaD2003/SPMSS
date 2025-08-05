@@ -7,6 +7,7 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.SystemConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class AdminController {
     private final QuartzSchedulerService quartzSchedulerService;
     private final SystemConfigService systemConfigService;
 
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "Update thời gian cập nhật trang thái tự động của models",
     description = """
             definition: các models cần update thời gian check và cập nhật tự động\n
@@ -46,6 +48,7 @@ public class AdminController {
         return ResponseEntity.ok("Update status cron time successfully");
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "Lấy tất cả các tác vụ cập nhật thời gian tự động")
     @GetMapping("/scheduler/jobs")
     ResponseEntity<?> getAllScheduledJobs() {
@@ -53,6 +56,7 @@ public class AdminController {
         return ResponseEntity.ok(quartzSchedulerService.getAllScheduledJobs());
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "Lấy tất cả các config của hệ thống")
     @GetMapping("/system/configs")
     ResponseEntity<List<SystemConfig>> getAllSystemConfigs() {
@@ -60,6 +64,7 @@ public class AdminController {
         return ResponseEntity.ok(systemConfigService.getAllConfigs());
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "Lấy tất cả các config của hệ thống theo groupName",
     description = """
             Hiện tại groupName đang có trong hệ thống là : APPOINTMENT, SURVEY, SUPPORT_PROGRAM
@@ -70,6 +75,7 @@ public class AdminController {
         return ResponseEntity.ok(systemConfigService.getConfigsByGroup(groupName));
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "Cập nhật value của key trong hệ thống",
     description = """
             Ví dụ: Cập nhật tính năng cho phép tạo appointment\n
