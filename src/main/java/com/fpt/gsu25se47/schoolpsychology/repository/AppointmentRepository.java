@@ -4,7 +4,6 @@ import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,4 +50,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
                 WHERE s.hostedBy.id = :hostById AND a.status IN (:statuses)
             """)
     List<Appointment> findAllByHostByWithStatus(Integer hostById, List<AppointmentStatus> statuses);
+
+    int countByBookedByIdAndStartDateTimeBetween(Integer bookedById, LocalDateTime start, LocalDateTime end);
 }
