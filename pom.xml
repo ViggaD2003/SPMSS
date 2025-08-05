@@ -150,6 +150,13 @@
             <version>2.5.0</version>
         </dependency>
 
+        <!-- ✅ Cron Utils -->
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>9.2.1</version>
+        </dependency>
+
         <!-- ✅ Test Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
