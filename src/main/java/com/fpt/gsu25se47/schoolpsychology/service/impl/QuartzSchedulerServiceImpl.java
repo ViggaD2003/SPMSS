@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.jobs.*;
 import com.fpt.gsu25se47.schoolpsychology.jobs.enums.QuartzJobDefinition;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.QuartzSchedulerService;
+import com.fpt.gsu25se47.schoolpsychology.utils.CronUtils;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
@@ -206,7 +207,9 @@ public class QuartzSchedulerServiceImpl implements QuartzSchedulerService {
                         jobMap.put("triggerName", trigger.getKey().getName());
 
                         if (trigger instanceof CronTrigger cronTrigger) {
+                            String description = CronUtils.describeCronExpression(cronTrigger.getCronExpression());
                             jobMap.put("cron", cronTrigger.getCronExpression());
+                            jobMap.put("cronDescription", description);
                         } else {
                             jobMap.put("cron", "Not a cron trigger");
                         }
