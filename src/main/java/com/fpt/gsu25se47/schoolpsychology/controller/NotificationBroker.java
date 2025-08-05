@@ -14,18 +14,12 @@ import org.springframework.stereotype.Controller;
 public class NotificationBroker {
 
     private final NotificationService notificationService;
-    private final SimpMessagingTemplate messagingTemplate;
 
 
     @MessageMapping("/send")
     public void sendMessage(NotiRequest notiRequest) {
-        NotiResponse response = notificationService.sendNotification(notiRequest);
-        // Gửi đến user cụ thể
-        messagingTemplate.convertAndSendToUser(
-                notiRequest.getUsername(), // username của user nhận
-                "/queue/notifications",
-                response
-        );
+        NotiResponse response = notificationService.saveNotification(notiRequest);
+        notificationService.sendNotification(notiRequest.getUsername(), "/queue/notifications", response);
     }
 
 }

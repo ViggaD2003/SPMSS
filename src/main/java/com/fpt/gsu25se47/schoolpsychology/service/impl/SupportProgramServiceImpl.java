@@ -4,6 +4,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramParticipantsResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramDetail;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
@@ -86,8 +87,8 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
 
     @Override
-    public SupportProgramResponse getSupportProgramById(Integer id) {
-        return supportProgramMapper.mapSupportProgramResponse(
+    public SupportProgramDetail getSupportProgramById(Integer id) {
+        return supportProgramMapper.mapSupportProgramDetail(
                 getSupportProgram(id)
         );
     }
@@ -174,9 +175,9 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         return Optional.of("Successfully created survey record");
     }
 
-    //    @Override
-//    public SupportProgramResponse updateSupportProgram(Integer id, SupportProgramRequest request) {
-//
+    @Override
+    public SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus newStatus) {
+
 //        SupportProgram supportProgram = getSupportProgram(id);
 //
 //        if (!Objects.equals(request.getCategoryId(), supportProgram.getCategory().getId())) {
@@ -191,8 +192,13 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 //        SupportProgram supportProgramUpdated = supportProgramRepository.save(supportProgram);
 //
 //        return supportProgramMapper.toSupportProgramResponse(supportProgramUpdated);
-//    }
-//
+
+        SupportProgram supportProgram = getSupportProgram(id);
+
+        supportProgram.setStatus(newStatus);
+        return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
+    }
+
     private SupportProgram getSupportProgram(Integer id) {
 
         return supportProgramRepository.findById(id)

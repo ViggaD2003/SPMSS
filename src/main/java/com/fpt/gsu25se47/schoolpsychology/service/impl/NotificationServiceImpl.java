@@ -9,6 +9,7 @@ import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.NotificationRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,9 +24,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final AccountRepository accountRepository;
 
+    private final SimpMessagingTemplate messagingTemplate;
+
 
     @Override
-    public NotiResponse sendNotification(NotiRequest request) {
+    public NotiResponse saveNotification(NotiRequest request) {
         Notifications notification = notificationMapper.mapNotification(request);
 
         Account account = accountRepository.findByEmail(request.getUsername())
@@ -44,6 +47,15 @@ public class NotificationServiceImpl implements NotificationService {
         return notifications.stream()
                 .map(notificationMapper::mapToResponse)
                 .toList();
+    }
+
+    @Override
+    public void sendNotification(String username, String destination, Object payload) {
+        messagingTemplate.convertAndSendToUser(
+                username, // username của user nhận
+                destination,
+                payload
+        );
     }
 
 

@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SupportProgramService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -47,7 +47,6 @@ public class SupportProgramController {
         return ResponseEntity.ok(service.createSupportProgram(thumbnail, request));
     }
 
-
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/save-survey-record")
     public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto){
@@ -70,5 +69,11 @@ public class SupportProgramController {
     @GetMapping("/{programId}")
     public ResponseEntity<?> getSupportProgram(@PathVariable Integer programId) {
         return ResponseEntity.ok(service.getSupportProgramById(programId));
+    }
+
+    @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateSupportProgram(@PathVariable Integer id, @RequestParam ProgramStatus status) {
+        return ResponseEntity.ok(service.updateSupportProgram(id, status));
     }
 }

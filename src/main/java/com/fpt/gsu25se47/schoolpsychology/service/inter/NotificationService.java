@@ -6,8 +6,9 @@ import java.util.List;
 
 public interface NotificationService {
 
-    NotiResponse sendNotification(NotiRequest request);
+    NotiResponse saveNotification(NotiRequest request);
 
     List<NotiResponse> getAllNotificationsByAccountId(Integer accountId);
 
+    void sendNotification(String username, String destination, Object payload);
 }
