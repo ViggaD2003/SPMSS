@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AccountService accountService;
     private final AssessmentScoresService assessmentScoresService;
     private final MentalEvaluationService mentalEvaluationService;
+    private final SystemConfigService systemConfigService;
 
     private final AppointmentMapper appointmentMapper;
 
@@ -41,8 +43,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentResponse createAppointment(CreateAppointmentRequest request) {
 
+        // system config for appointment feature enabled
+        validateAppointmentFeatureEnabled();
+
         // bookedBy ( person who book appointment )
         Account bookedBy = accountService.getCurrentAccount();
+
+        // system config for max appointments per day
+        validateMaxAppointments(request, bookedBy);
 
         ensureNoAppointmentConflicts(request);
 
@@ -260,6 +268,30 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "There's already appointment booking this time");
+        }
+    }
+
+    private void validateMaxAppointments(CreateAppointmentRequest request, Account bookedBy) {
+        Integer maxAppointments = systemConfigService.getValueAs("appointment.max_per_day", Integer.class);
+
+        LocalDateTime startOfDay = request.getStartDateTime().toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        int currentAppointments = appointmentRepository.countByBookedByIdAndStartDateTimeBetween(
+                bookedBy.getId(), startOfDay, endOfDay
+        );
+
+        if (currentAppointments >= maxAppointments) {
+            throw new IllegalStateException("Your account has reached the maximum appointments for the day.");
+        }
+    }
+
+    private void validateAppointmentFeatureEnabled() {
+        Boolean appointmentEnabled = systemConfigService.getValueAs("appointment.enabled", Boolean.class);
+        if (!appointmentEnabled) {
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Appointment feature is currently disabled.");
         }
     }
 }

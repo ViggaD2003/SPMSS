@@ -29,6 +29,8 @@ public interface StudentMapper {
     @Mapping(target = "classDto", ignore = true)
     StudentDto mapStudentDtoWithoutClass(Student student);
 
+    @Mapping(target = "phoneNumber", source = "account.phoneNumber")
+    @Mapping(target = "email", source = "account.email")
     @Mapping(target = "roleName", source = "account.role")
     @Mapping(target = "latestSurveyRecord", ignore = true)
     @BeanMapping(builder = @Builder(disableBuilder = true))
