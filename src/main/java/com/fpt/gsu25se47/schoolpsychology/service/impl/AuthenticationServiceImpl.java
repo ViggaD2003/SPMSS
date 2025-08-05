@@ -288,11 +288,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .status(true)
                 .build();
 
-        accountRepo.save(account);
 
 
-        switch (request.getRole().name()) {
-            case "TEACHER" -> {
+        switch (request.getRole()) {
+            case TEACHER -> {
                 String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
 
                 Teacher teacher = Teacher.builder()
@@ -304,7 +303,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
                 teacherRepository.save(teacher);
             }
-            case "COUNSELOR" -> {
+            case COUNSELOR -> {
                 String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
 
                 Counselor counselor = Counselor.builder()
@@ -315,7 +314,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .build();
                 counselorRepository.save(counselor);
             }
-            case "STUDENT" -> {
+            case STUDENT -> {
                 Student student = Student.builder()
                         .id(account.getId())
                         .account(account)
@@ -325,7 +324,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
                 studentRepository.save(student);
             }
-            case "GUARDIAN" -> {
+            case PARENTS -> {
                 Guardian guardian = Guardian.builder()
                         .id(account.getId())
                         .account(account)
@@ -333,6 +332,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 guardianRepository.save(guardian);
             }
         }
+
+        accountRepo.save(account);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -386,6 +387,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String googleAccessToken = tokenResponse.getAccessToken();
         String googleRefreshToken = tokenResponse.getRefreshToken();
 
+        System.out.println("???????????????????? LOG ?????????????????????????");
+        System.out.println("Access " + googleAccessToken + "\n" + "Refresh " +  googleRefreshToken);
+        System.out.println("???????????????????? LOG ?????????????????????????");
+
         // Save Google tokens
         tokenStore.saveTokens(googleAccessToken, googleRefreshToken);
 
@@ -405,7 +410,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (newAccess == null) {
             throw new IllegalStateException("Failed to generate access token");
         }
-
 
         response.sendRedirect("http://localhost:5173/login-success?token=" + newAccess.getValue());
     }
