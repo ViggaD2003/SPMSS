@@ -62,8 +62,8 @@ VALUES
 -- SURVEY
 INSERT INTO survey (created_date, updated_date, description, end_date, is_recurring, is_required, recurring_cycle, start_date, status, survey_type, target_grade_level, target_scope, title, category_id, account_id)
 VALUES
-    (NOW(), NULL, 'Quarterly emotional health survey', '2025-03-30', b'1', b'1', 'MONTHLY' , '2025-03-01', 'PUBLISHED', 'SCREENING', 'GRADE_10', 'GRADE', 'Emotional Health Q1', 1, 1),
-    (NOW(), NULL, 'Follow-up survey on social skills', '2025-04-15', b'0', b'1', 'WEEKLY', '2025-04-01', 'DRAFT', 'FOLLOWUP', 'GRADE_11', 'GRADE', 'Social Skills Follow-up', 2, 2);
+    (NOW(), NULL, 'Quarterly emotional health survey', '2025-03-30', b'1', b'1', 'MONTHLY' , '2025-03-01', 'PUBLISHED', 'SCREENING', '["GRADE_10"]', 'GRADE', 'Emotional Health Q1', 1, 1),
+    (NOW(), NULL, 'Follow-up survey on social skills', '2025-04-15', b'0', b'1', 'WEEKLY', '2025-04-01', 'DRAFT', 'FOLLOWUP', '["GRADE_11"]', 'GRADE', 'Social Skills Follow-up', 2, 2);
 
 INSERT INTO questions (is_active, is_required, survey_id, created_date, description, text, question_type)
 VALUES
@@ -87,14 +87,6 @@ VALUES
     (2, 4, 'Good'),
     (2, 5, 'Excellent');
 
-#
-# Quartz seems to work best with the driver mm.mysql-2.0.7-bin.jar
-#
-# PLEASE consider using mysql with innodb tables to avoid locking issues
-#
-# In your Quartz properties file, you'll need to set
-# org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.StdJDBCDelegate
-#
 
 DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;
 DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;
@@ -284,8 +276,8 @@ INSERT INTO system_config (config_group, config_key, config_value, value_type, c
 ('SUPPORT_PROGRAM', 'support_program.allow_student_leave', 'true', 'boolean', 'support_program', 'Allow students to leave a support program early', 1, 1, NOW());
 
 INSERT INTO system_config (config_group, config_key, config_value, value_type, category, description, is_active, is_editable, updated_at) VALUES
-('FILE', 'file.size', '5', 'long', 'file_size', 'File upload size (MB)', 1, 1, NOW()),
+('FILE', 'file.size', '5', 'long', 'file_size', 'File upload size (MB)', 1, 1, NOW());
 
-select * from questions
+select * from questions;
 
 commit;
