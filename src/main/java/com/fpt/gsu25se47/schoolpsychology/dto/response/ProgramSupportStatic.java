@@ -8,7 +8,10 @@ import java.util.List;
 @Data
 @Builder
 public class ProgramSupportStatic {
-    private int total;
+
+    private int activePrograms;
+
+    private int completedPrograms;
 
     private int numOfAbsent;
 

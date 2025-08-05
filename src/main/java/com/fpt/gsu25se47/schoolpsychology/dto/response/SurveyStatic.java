@@ -9,7 +9,9 @@ import java.util.List;
 @Builder
 public class SurveyStatic {
 
-    private int totalSurvey;
+    private int activeSurveys;
+
+    private int completedSurveys;
 
     private int numberOfSkips;
 

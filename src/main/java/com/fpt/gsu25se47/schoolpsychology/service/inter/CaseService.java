@@ -13,7 +13,6 @@ public interface CaseService {
 
     Optional<?> getAllCases(List<String> statusCase, Integer categoryId, Integer surveyId);
 
-//    Optional<?> getAllCaseByCategory(Integer categoryId);
 
     Optional<?> getDetailById(Integer caseId);
 

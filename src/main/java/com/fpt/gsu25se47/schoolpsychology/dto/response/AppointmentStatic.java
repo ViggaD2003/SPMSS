@@ -9,7 +9,9 @@ import java.util.List;
 @Builder
 public class AppointmentStatic {
 
-    private int total;
+    private int activeAppointments;
+
+    private int completedAppointments;
 
     private int numOfAbsent;
 

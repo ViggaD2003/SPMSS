@@ -170,31 +170,23 @@ public class CaseServiceImpl implements CaseService {
         );
     }
 
-//    @Override
-//    public Optional<?> getAllCaseByCategory(Integer categoryId) {
-//        List<Cases> cases = caseRepository.findAllByCategoryId(categoryId);
-//
-//        List<CaseGetAllResponse> casesResponse = cases.stream()
-//                .map(caseMapper::mapToCaseGetAllResponse)
-//                .toList();
-//        return Optional.of(casesResponse);
-//    }
-
     @Override
     public Optional<?> getDetailById(Integer caseId) {
         Cases cases = caseRepository.findById(caseId)
                 .orElseThrow(() -> new RuntimeException("Case not found"));
 
         // 1. Handle surveys
-        List<Survey> surveys = surveyRepository.findAllSurveyByCaseId(caseId);
         AtomicInteger numberOfSkips = new AtomicInteger(0);
+        AtomicInteger numberOfNotSkips = new AtomicInteger(0);
 
-        List<DataSet> surveyDataSets = surveys.stream()
+        List<DataSet> surveyDataSets = surveyRepository.findAllSurveyByCaseId(caseId).stream()
                 .flatMap(survey -> survey.getSurveyRecords().stream())
                 .peek(record -> {
                     if (Boolean.TRUE.equals(record.getIsSkipped())) {
                         // count skipped
                         numberOfSkips.incrementAndGet();
+                    } else {
+                        numberOfNotSkips.incrementAndGet();
                     }
                 })
                 .map(record -> mapToDataSet(record.getMentalEvaluation()))
@@ -202,15 +194,25 @@ public class CaseServiceImpl implements CaseService {
                 .toList();
 
         SurveyStatic surveyStatic = SurveyStatic.builder()
-                .totalSurvey(surveys.size())
+                .activeSurveys(surveyRepository.findAllSurveyWithLinkActiveByCaseId(caseId).size())
+                .completedSurveys(numberOfNotSkips.get())
                 .numberOfSkips(numberOfSkips.get())
                 .dataSet(surveyDataSets)
                 .build();
 
         // 2. Handle appointments
         List<Appointment> appointments = appointmentRepository.findAllByCaseId(caseId);
-        int numOfAbsent = (int) appointments.stream()
+        int numOfAbsent =
+                (int) appointments.stream()
                 .filter(appt -> AppointmentStatus.ABSENT.equals(appt.getStatus()))
+                .count();
+
+        int numOfActive = (int) appointments.stream()
+                .filter(appt -> AppointmentStatus.CONFIRMED.equals(appt.getStatus()) || AppointmentStatus.IN_PROGRESS.equals(appt.getStatus()))
+                .count();
+
+        int numOfCompleted =  (int) appointments.stream()
+                .filter(appt -> AppointmentStatus.COMPLETED.equals(appt.getStatus()))
                 .count();
 
         List<DataSet> appointmentDataSets = appointments.stream()
@@ -219,7 +221,8 @@ public class CaseServiceImpl implements CaseService {
                 .toList();
 
         AppointmentStatic appointmentStatic = AppointmentStatic.builder()
-                .total(appointments.size())
+                .activeAppointments(numOfActive)
+                .completedAppointments(numOfCompleted)
                 .numOfAbsent(numOfAbsent)
                 .dataSet(appointmentDataSets)
                 .build();
@@ -227,6 +230,13 @@ public class CaseServiceImpl implements CaseService {
         // 3. Handle Program Support
         List<ProgramParticipants> participants = programParticipantRepository.findAllByCaseId(caseId);
         numOfAbsent = (int) participants.stream().filter(pp -> RegistrationStatus.ABSENT.equals(pp.getStatus()))
+                .count();
+
+        numOfActive = (int) participants.stream().filter(pp -> RegistrationStatus.ENROLLED.equals(pp.getStatus()) || RegistrationStatus.ACTIVE.equals(pp.getStatus()))
+                .count();
+
+
+        numOfCompleted = (int) participants.stream().filter(pp -> RegistrationStatus.COMPLETED.equals(pp.getStatus()))
                 .count();
 
         List<MentalEvaluation> mentalEvaluationOfPp = participants.stream().map(pp -> pp.getMentalEvaluation()).toList();
@@ -237,12 +247,13 @@ public class CaseServiceImpl implements CaseService {
                 .toList();
 
         ProgramSupportStatic programSupportStatic = ProgramSupportStatic.builder()
+                .activePrograms(numOfActive)
                 .numOfAbsent(numOfAbsent)
-                .total(participants.size())
+                .completedPrograms(numOfCompleted)
                 .dataSet(programSupportDataSets)
                 .build();
 
-        // 3. Compose final grouped data
+        // 4. Compose final grouped data
         MentalEvaluationStatic evaluationStatic = MentalEvaluationStatic.builder()
                 .survey(surveyStatic)
                 .appointment(appointmentStatic)

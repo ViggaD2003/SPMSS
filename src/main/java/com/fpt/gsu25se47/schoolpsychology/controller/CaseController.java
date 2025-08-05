@@ -36,17 +36,10 @@ public class CaseController {
             @RequestParam(required = false) List<String> statusCase,
             @Parameter(description = "Category ID to filter cases", required = false)
             @RequestParam(name = "categoryId", required = false) Integer categoryId,
-            @RequestParam(name = "surveyId",required = false) Integer surveyId
+            @RequestParam(name = "surveyId", required = false) Integer surveyId
     ) {
         return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId, surveyId));
     }
-
-//    @Operation(summary = "Get all cases by category", description = "Retrieve all cases that belong to a specific category")
-//    @GetMapping("/view-all-by-category")
-//    public ResponseEntity<?> getAllCasesByCategory(
-//            @Parameter(description = "Category ID") @RequestParam("categoryId") Integer categoryId) {
-//        return ResponseEntity.ok(caseService.getAllCaseByCategory(categoryId));
-//    }
 
     @Operation(summary = "Create new case", description = "Add a new case to the system")
     @PostMapping
@@ -80,6 +73,14 @@ public class CaseController {
     public ResponseEntity<?> removeSurveyFromCases(
             @Parameter(description = "List of case IDs to remove surveys from") @RequestParam List<Integer> caseIds) {
         return ResponseEntity.ok(caseService.removeSurveyCaseLink(caseIds));
+    }
+
+    @Operation(summary = "Remove Survey out of Survey Case Link", description = "Survey which you want to remove")
+    @PatchMapping("/remove-survey")
+    public ResponseEntity<?> removeSurveyFromCases(
+            @Parameter(description = "List of case IDs to remove surveys from") @RequestParam List<Integer> caseIds,
+            @Parameter(description = "Survey id need to remove") @RequestParam Integer surveyId) {
+        return ResponseEntity.ok(caseService.removeSurveyByCaseId(caseIds, surveyId));
     }
 
     @Operation(summary = "Get case by ID", description = "Retrieve detailed information for a specific case")
