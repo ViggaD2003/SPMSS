@@ -25,8 +25,8 @@ public class SurveyController {
     @PostMapping
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @Operation(summary = "Tạo khảo sát mới", description = "Dành cho Cố vấn hoặc Quản lý. Tạo khảo sát mới với thông tin đầu vào.")
-    public ResponseEntity<?> createSurvey(@Valid @RequestBody AddNewSurveyDto dto, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(surveyService.addNewSurvey(dto, request));
+    public ResponseEntity<?> createSurvey(@Valid @RequestBody AddNewSurveyDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(surveyService.addNewSurvey(dto));
     }
 
     @PreAuthorize("hasRole('MANAGER')")

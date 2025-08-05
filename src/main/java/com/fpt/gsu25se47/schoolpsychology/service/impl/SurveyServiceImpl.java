@@ -38,7 +38,7 @@ public class SurveyServiceImpl implements SurveyService {
 
     @Override
     @Transactional
-    public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto, HttpServletRequest request) {
+    public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto) {
         try {
             UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
             if (userDetails == null) {

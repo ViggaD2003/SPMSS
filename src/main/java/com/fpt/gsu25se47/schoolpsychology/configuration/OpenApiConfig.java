@@ -17,6 +17,10 @@ import io.swagger.v3.oas.annotations.servers.Server;
         security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerToken")},
         servers = {
                 @Server(
+                        description = "Prod",
+                        url = "https://spmss-api.ocgi.space"
+                ),
+                @Server(
                         description = "localhost",
                         url = "http://localhost:8080/"
                 )

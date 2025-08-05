@@ -11,4 +11,6 @@ public class MentalEvaluationStatic {
 
     private AppointmentStatic appointment;
 
+    private ProgramSupportStatic program;
+
 }

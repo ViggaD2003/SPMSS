@@ -52,9 +52,9 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
     @Override
     @Transactional
-    public SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request, HttpServletRequest servletRequest) throws IOException {
+    public SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request) throws IOException {
 
-        Optional<?> surveyId = surveyService.addNewSurvey(request.getAddNewSurveyDto(), servletRequest);
+        Optional<?> surveyId = surveyService.addNewSurvey(request.getAddNewSurveyDto());
         if (surveyId.isEmpty()) {
             throw new RuntimeException("Could not add new survey");
         }
