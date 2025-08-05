@@ -89,3 +89,202 @@ VALUES
 
 
 select * from questions
+
+#
+# Quartz seems to work best with the driver mm.mysql-2.0.7-bin.jar
+#
+# PLEASE consider using mysql with innodb tables to avoid locking issues
+#
+# In your Quartz properties file, you'll need to set
+# org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+#
+
+DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;
+DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;
+DROP TABLE IF EXISTS QRTZ_SCHEDULER_STATE;
+DROP TABLE IF EXISTS QRTZ_LOCKS;
+DROP TABLE IF EXISTS QRTZ_SIMPLE_TRIGGERS;
+DROP TABLE IF EXISTS QRTZ_SIMPROP_TRIGGERS;
+DROP TABLE IF EXISTS QRTZ_CRON_TRIGGERS;
+DROP TABLE IF EXISTS QRTZ_BLOB_TRIGGERS;
+DROP TABLE IF EXISTS QRTZ_TRIGGERS;
+DROP TABLE IF EXISTS QRTZ_JOB_DETAILS;
+DROP TABLE IF EXISTS QRTZ_CALENDARS;
+
+
+CREATE TABLE QRTZ_JOB_DETAILS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    JOB_NAME  VARCHAR(200) NOT NULL,
+    JOB_GROUP VARCHAR(200) NOT NULL,
+    DESCRIPTION VARCHAR(250) NULL,
+    JOB_CLASS_NAME   VARCHAR(250) NOT NULL,
+    IS_DURABLE VARCHAR(1) NOT NULL,
+    IS_NONCONCURRENT VARCHAR(1) NOT NULL,
+    IS_UPDATE_DATA VARCHAR(1) NOT NULL,
+    REQUESTS_RECOVERY VARCHAR(1) NOT NULL,
+    JOB_DATA BLOB NULL,
+    PRIMARY KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)
+);
+
+CREATE TABLE QRTZ_TRIGGERS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    TRIGGER_NAME VARCHAR(200) NOT NULL,
+    TRIGGER_GROUP VARCHAR(200) NOT NULL,
+    JOB_NAME  VARCHAR(200) NOT NULL,
+    JOB_GROUP VARCHAR(200) NOT NULL,
+    DESCRIPTION VARCHAR(250) NULL,
+    NEXT_FIRE_TIME BIGINT(13) NULL,
+    PREV_FIRE_TIME BIGINT(13) NULL,
+    PRIORITY INTEGER NULL,
+    TRIGGER_STATE VARCHAR(16) NOT NULL,
+    TRIGGER_TYPE VARCHAR(8) NOT NULL,
+    START_TIME BIGINT(13) NOT NULL,
+    END_TIME BIGINT(13) NULL,
+    CALENDAR_NAME VARCHAR(200) NULL,
+    MISFIRE_INSTR SMALLINT(2) NULL,
+    JOB_DATA BLOB NULL,
+    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+    FOREIGN KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)
+        REFERENCES QRTZ_JOB_DETAILS(SCHED_NAME,JOB_NAME,JOB_GROUP)
+);
+
+CREATE TABLE QRTZ_SIMPLE_TRIGGERS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    TRIGGER_NAME VARCHAR(200) NOT NULL,
+    TRIGGER_GROUP VARCHAR(200) NOT NULL,
+    REPEAT_COUNT BIGINT(7) NOT NULL,
+    REPEAT_INTERVAL BIGINT(12) NOT NULL,
+    TIMES_TRIGGERED BIGINT(10) NOT NULL,
+    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+    FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+        REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+);
+
+CREATE TABLE QRTZ_CRON_TRIGGERS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    TRIGGER_NAME VARCHAR(200) NOT NULL,
+    TRIGGER_GROUP VARCHAR(200) NOT NULL,
+    CRON_EXPRESSION VARCHAR(200) NOT NULL,
+    TIME_ZONE_ID VARCHAR(80),
+    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+    FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+        REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+);
+
+CREATE TABLE QRTZ_SIMPROP_TRIGGERS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    TRIGGER_NAME VARCHAR(200) NOT NULL,
+    TRIGGER_GROUP VARCHAR(200) NOT NULL,
+    STR_PROP_1 VARCHAR(512) NULL,
+    STR_PROP_2 VARCHAR(512) NULL,
+    STR_PROP_3 VARCHAR(512) NULL,
+    INT_PROP_1 INT NULL,
+    INT_PROP_2 INT NULL,
+    LONG_PROP_1 BIGINT NULL,
+    LONG_PROP_2 BIGINT NULL,
+    DEC_PROP_1 NUMERIC(13,4) NULL,
+    DEC_PROP_2 NUMERIC(13,4) NULL,
+    BOOL_PROP_1 VARCHAR(1) NULL,
+    BOOL_PROP_2 VARCHAR(1) NULL,
+    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+    FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+    REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+);
+
+CREATE TABLE QRTZ_BLOB_TRIGGERS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    TRIGGER_NAME VARCHAR(200) NOT NULL,
+    TRIGGER_GROUP VARCHAR(200) NOT NULL,
+    BLOB_DATA BLOB NULL,
+    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+    FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+        REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
+);
+
+CREATE TABLE QRTZ_CALENDARS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    CALENDAR_NAME  VARCHAR(200) NOT NULL,
+    CALENDAR BLOB NOT NULL,
+    PRIMARY KEY (SCHED_NAME,CALENDAR_NAME)
+);
+
+CREATE TABLE QRTZ_PAUSED_TRIGGER_GRPS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    TRIGGER_GROUP  VARCHAR(200) NOT NULL,
+    PRIMARY KEY (SCHED_NAME,TRIGGER_GROUP)
+);
+
+CREATE TABLE QRTZ_FIRED_TRIGGERS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    ENTRY_ID VARCHAR(95) NOT NULL,
+    TRIGGER_NAME VARCHAR(200) NOT NULL,
+    TRIGGER_GROUP VARCHAR(200) NOT NULL,
+    INSTANCE_NAME VARCHAR(200) NOT NULL,
+    FIRED_TIME BIGINT(13) NOT NULL,
+    SCHED_TIME BIGINT(13) NOT NULL,
+    PRIORITY INTEGER NOT NULL,
+    STATE VARCHAR(16) NOT NULL,
+    JOB_NAME VARCHAR(200) NULL,
+    JOB_GROUP VARCHAR(200) NULL,
+    IS_NONCONCURRENT VARCHAR(1) NULL,
+    REQUESTS_RECOVERY VARCHAR(1) NULL,
+    PRIMARY KEY (SCHED_NAME,ENTRY_ID)
+);
+
+CREATE TABLE QRTZ_SCHEDULER_STATE
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    INSTANCE_NAME VARCHAR(200) NOT NULL,
+    LAST_CHECKIN_TIME BIGINT(13) NOT NULL,
+    CHECKIN_INTERVAL BIGINT(13) NOT NULL,
+    PRIMARY KEY (SCHED_NAME,INSTANCE_NAME)
+);
+
+CREATE TABLE QRTZ_LOCKS
+  (
+    SCHED_NAME VARCHAR(120) NOT NULL,
+    LOCK_NAME  VARCHAR(40) NOT NULL,
+    PRIMARY KEY (SCHED_NAME,LOCK_NAME)
+);
+
+
+commit;
+
+-- ============================
+-- SURVEY CONFIGS
+-- ============================
+INSERT INTO system_config (config_group, config_key, config_value, value_type, category, description, is_active, is_editable, updated_at) VALUES
+('SURVEY', 'survey.enabled', 'true', 'boolean', 'survey', 'Enable or disable survey feature', 1, 1, NOW()),
+('SURVEY', 'survey.result.threshold.low', '40', 'integer', 'survey', 'Threshold for low risk score', 1, 1, NOW()),
+('SURVEY', 'survey.result.threshold.medium', '70', 'integer', 'survey', 'Threshold for medium risk score', 1, 1, NOW()),
+('SURVEY', 'survey.result.threshold.high', '90', 'integer', 'survey', 'Threshold for high risk score', 1, 1, NOW()),
+('SURVEY', 'survey.auto_assign_after_threshold', 'true', 'boolean', 'survey', 'Auto-assign counselor if score exceeds threshold', 1, 1, NOW());
+
+-- ============================
+-- APPOINTMENT CONFIGS
+-- ============================
+INSERT INTO system_config (config_group, config_key, config_value, value_type, category, description, is_active, is_editable, updated_at) VALUES
+('APPOINTMENT', 'appointment.enabled', 'true', 'boolean', 'appointment', 'Enable or disable appointment feature', 1, 1, NOW()),
+('APPOINTMENT', 'appointment.max_per_day', '5', 'integer', 'appointment', 'Maximum appointments per counselor per day', 1, 1, NOW()),
+('APPOINTMENT', 'appointment.allow_reschedule', 'true', 'boolean', 'appointment', 'Allow students to reschedule appointments', 1, 1, NOW()),
+('APPOINTMENT', 'appointment.cancel_deadline_hours', '24', 'integer', 'appointment', 'Hours before appointment to allow cancellation', 1, 1, NOW()),
+('APPOINTMENT', 'appointment.min_interval_minutes', '30', 'integer', 'appointment', 'Minimum minutes between counselor appointments', 1, 1, NOW());
+
+-- ============================
+-- SUPPORT PROGRAM CONFIGS
+-- ============================
+INSERT INTO system_config (config_group, config_key, config_value, value_type, category, description, is_active, is_editable, updated_at) VALUES
+('SUPPORT_PROGRAM', 'support_program.enabled', 'true', 'boolean', 'support_program', 'Enable or disable support programs', 1, 1, NOW()),
+('SUPPORT_PROGRAM', 'support_program.max_students_per_program', '50', 'integer', 'support_program', 'Maximum students allowed per support program', 1, 1, NOW()),
+('SUPPORT_PROGRAM', 'support_program.feedback_required', 'true', 'boolean', 'support_program', 'Require feedback after program ends', 1, 1, NOW()),
+('SUPPORT_PROGRAM', 'support_program.default_duration_weeks', '8', 'integer', 'support_program', 'Default number of weeks for a support program', 1, 1, NOW()),
+('SUPPORT_PROGRAM', 'support_program.allow_student_leave', 'true', 'boolean', 'support_program', 'Allow students to leave a support program early', 1, 1, NOW());
