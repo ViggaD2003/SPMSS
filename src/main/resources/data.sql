@@ -283,6 +283,8 @@ INSERT INTO system_config (config_group, config_key, config_value, value_type, c
 ('SUPPORT_PROGRAM', 'support_program.default_duration_weeks', '8', 'integer', 'support_program', 'Default number of weeks for a support program', 1, 1, NOW()),
 ('SUPPORT_PROGRAM', 'support_program.allow_student_leave', 'true', 'boolean', 'support_program', 'Allow students to leave a support program early', 1, 1, NOW());
 
+INSERT INTO system_config (config_group, config_key, config_value, value_type, category, description, is_active, is_editable, updated_at) VALUES
+('FILE', 'file.size', '5', 'long', 'file_size', 'File upload size (MB)', 1, 1, NOW()),
 
 select * from questions
 
