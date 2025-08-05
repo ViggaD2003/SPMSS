@@ -13,4 +13,7 @@ public class NotiRequest {
 
     private String username;
 
+    private String notificationType;
+
+    private Integer relatedEntityId;
 }

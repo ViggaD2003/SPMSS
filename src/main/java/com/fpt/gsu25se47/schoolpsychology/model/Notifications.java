@@ -39,5 +39,11 @@ public class Notifications extends Auditable {
 
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
+
+    @Column(name = "notification_type")
+    private String notificationType;
+
+    @Column(name = "related_entity_id")
+    private Integer relatedEntityId;
 }
 

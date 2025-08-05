@@ -37,8 +37,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setReceiver(account);
         notification.setIsRead(false);
 
-        Notifications entity = notificationRepository.save(notification);
-        return notificationMapper.mapToResponse(entity);
+        return notificationMapper.mapToResponse(notificationRepository.save(notification));
     }
 
     @Override

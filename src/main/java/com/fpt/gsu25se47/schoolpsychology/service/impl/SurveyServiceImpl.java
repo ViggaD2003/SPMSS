@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.QuestionMapper;
@@ -8,6 +9,7 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +19,8 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.management.Notification;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +39,7 @@ public class SurveyServiceImpl implements SurveyService {
     private final SurveyMapper surveyMapper;
 
     private final QuestionMapper questionMapper;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -71,8 +76,20 @@ public class SurveyServiceImpl implements SurveyService {
             survey.setRound(1);
             Survey saved = surveyRepository.save(survey);
 
-            return Optional.of(saved.getId());
+            accountRepository.findAllWithRoleStudent().forEach(student -> {
+                NotiResponse payload = notificationService.saveNotification(
+                        NotiRequest.builder()
+                        .title("Thông báo mới từ trường")
+                        .content("Khảo sát " + saved.getTitle() + " mới được thêm")
+                        .username(student.getEmail())
+                        .notificationType("SURVEY")
+                        .relatedEntityId(saved.getId())
+                        .build()
+                );
+                notificationService.sendNotification(student.getEmail(), "/queue/notifications", payload);
+            });
 
+            return Optional.of("Created successfully !");
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Could not create survey. Please check your data.");

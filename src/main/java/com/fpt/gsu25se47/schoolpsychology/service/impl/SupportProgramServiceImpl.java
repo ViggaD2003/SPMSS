@@ -2,11 +2,9 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramParticipantsResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramDetail;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ParticipantMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SupportProgramMapper;
@@ -50,6 +48,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final FileUploadService fileUploadService;
     private final SurveyRecordRepository surveyRecordRepository;
     private final MentalEvaluationRepository mentalEvaluationRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -138,6 +137,22 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         });
 
         List<ProgramParticipants> participants = programParticipantRepository.findByProgramId(supportProgramId);
+
+        participants.forEach(participant -> {
+            NotiResponse programSupport = notificationService.saveNotification(
+                    NotiRequest.builder()
+                            .title("Bạn đã được thêm chương trình hỗ trợ mới")
+                            .content("Chương trình hỗ trợ " + supportProgram.getName())
+                            .username(participant.getStudent().getEmail())
+                            .notificationType("CASE")
+                            .relatedEntityId(supportProgram.getId())
+                            .build()
+            );
+
+            notificationService.sendNotification(participant.getStudent().getEmail(), "/queue/notifications", programSupport);
+
+        });
+
         return participants.stream().map(participantMapper::mapToDto).toList();
     }
 

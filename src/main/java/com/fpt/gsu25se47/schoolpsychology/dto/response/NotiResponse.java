@@ -20,6 +20,10 @@ public class NotiResponse {
 
     private Boolean isRead;
 
+    private String notificationType;
+
+    private Long relatedEntityId;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

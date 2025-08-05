@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
@@ -10,7 +11,9 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -41,53 +45,110 @@ public class CaseServiceImpl implements CaseService {
     private final CaseMapper caseMapper;
     private final AppointmentRepository appointmentRepository;
     private final ProgramParticipantRepository programParticipantRepository;
+    private final NotificationService notificationService;
 
     @Override
+    @Transactional
     public Optional<?> createCase(AddNewCaseDto dto) {
+        // Lấy thông tin student
         Account student = accountRepository.findById(dto.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
-        if(student.getRole().equals(Role.STUDENT)){
+        // Kiểm tra role (nên dùng != cho rõ ràng)
+        if (student.getRole() != Role.STUDENT) {
             throw new IllegalArgumentException("Account is not STUDENT");
         }
 
-        if(!caseRepository.isStudentFreeFromOpenCases(dto.getStudentId())){
+        // Kiểm tra xem student có đang "free"
+        if (!caseRepository.isStudentFreeFromOpenCases(dto.getStudentId())) {
             throw new IllegalArgumentException("Student is not available to open cases");
         }
 
-        Account createBy = accountRepository.findById(dto.getCreateBy())
+        // Lấy người tạo case
+        Account createdBy = accountRepository.findById(dto.getCreateBy())
                 .orElseThrow(() -> new IllegalArgumentException("Create By not found"));
+
+        // Lấy level ban đầu và hiện tại
+        Level initialLevel = levelRepository.findById(dto.getInitialLevelId())
+                .orElseThrow(() -> new IllegalArgumentException("Initial Level not found"));
+
+        Level currentLevel = levelRepository.findById(dto.getCurrentLevelId())
+                .orElseThrow(() -> new IllegalArgumentException("Current Level not found"));
+
+        // Tạo case
         Cases cases = Cases.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .priority(dto.getPriority())
                 .status(Status.NEW)
                 .progressTrend(dto.getProgressTrend())
-                .createBy(createBy)
+                .createBy(createdBy)
                 .student(student)
-                .initialLevel(levelRepository.findById(dto.getInitialLevelId()).orElseThrow(() -> new IllegalArgumentException("Initial Level not found")))
-                .currentLevel(levelRepository.findById(dto.getCurrentLevelId()).orElseThrow(() -> new IllegalArgumentException("Current Level not found")))
-                .progressTrend(dto.getProgressTrend())
+                .initialLevel(initialLevel)
+                .currentLevel(currentLevel)
                 .build();
 
+        // Lưu case trước khi gửi notification (nếu notification cần caseId)
         caseRepository.save(cases);
-        return Optional.of("Case created !");
+
+        // Gửi notification cho student
+        NotiResponse studentRes = notificationService.saveNotification(
+                NotiRequest.builder()
+                        .title("Bạn đã được tạo case mới")
+                        .content("Case " + cases.getTitle())
+                        .username(student.getEmail())
+                        .notificationType("CASE")
+                        .relatedEntityId(cases.getId())
+                        .build()
+        );
+
+        notificationService.sendNotification(student.getEmail(), "/queue/notifications", studentRes);
+
+        // Gửi notification cho phụ huynh
+        String parentEmail = student.getGuardian().getAccount().getEmail();
+        NotiResponse parentRes = notificationService.saveNotification(
+                NotiRequest.builder()
+                        .title("Con bạn đã được tạo case mới")
+                        .content("Case " + cases.getTitle())
+                        .username(parentEmail)
+                        .notificationType("CASE")
+                        .relatedEntityId(cases.getId())
+                        .build()
+        );
+
+        notificationService.sendNotification(parentEmail, "/queue/notifications", parentRes);
+
+        NotiResponse managerRes = notificationService.saveNotification(
+                NotiRequest.builder()
+                        .title("Teacher " + createdBy.getEmail() + " mới tạo 1 case mới")
+                        .content("Case " + cases.getTitle())
+                        .username("danhkvtse172932@fpt.edu.vn")
+                        .notificationType("CASE")
+                        .relatedEntityId(cases.getId())
+                        .build()
+        );
+
+        notificationService.sendNotification("danhkvtse172932@fpt.edu.vn", "/queue/notifications", managerRes);
+
+
+        return Optional.of("Case created!");
     }
+
 
     @Override
     public Optional<?> assignCounselor(Integer counselorId, Integer caseId) {
-       Account account = accountRepository.findById(counselorId)
-               .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        Account account = accountRepository.findById(counselorId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
-       Cases cases = caseRepository.findById(caseId)
-               .orElseThrow(() -> new IllegalArgumentException("Cases is not found"));
+        Cases cases = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Cases is not found"));
 
-       cases.setCounselor(account);
-       cases.setStatus(Status.IN_PROGRESS);
+        cases.setCounselor(account);
+        cases.setStatus(Status.IN_PROGRESS);
 
-       caseRepository.save(cases);
+        caseRepository.save(cases);
 
-       return Optional.of("Case assigned successfully !");
+        return Optional.of("Case assigned successfully !");
     }
 
     @Override
@@ -197,7 +258,7 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public Optional<?> addSurveyCaseLink(List<Integer> caseIds, Integer surveyId) {
-        try{
+        try {
             UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
             if (userDetails == null) {
                 throw new BadRequestException("Unauthorized");
@@ -220,10 +281,23 @@ public class CaseServiceImpl implements CaseService {
                         .isActive(true)
                         .build();
                 surveyCaseLinkRepository.save(surveyCaseLink);
+
+
+                NotiResponse studentRes = notificationService.saveNotification(
+                        NotiRequest.builder()
+                                .title("Bạn có bài survey mới")
+                                .content("Survey " + survey.getId())
+                                .username(item.getStudent().getEmail())
+                                .notificationType("SURVEY")
+                                .relatedEntityId(survey.getId())
+                                .build()
+                );
+
+                notificationService.sendNotification(item.getStudent().getEmail(), "/queue/notifications", studentRes);
             });
 
             return Optional.of("Added survey case link successfully !");
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to create survey case link: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to create survey case link");
         }

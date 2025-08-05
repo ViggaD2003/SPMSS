@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +20,9 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
         WHERE s.hostedBy.role = 'COUNSELOR'
     """)
     List<Account> findCounselorsWithSlots();
+
+    @Query(" SELECT ac FROM Account ac WHERE ac.role = 'STUDENT' ")
+    List<Account> findAllWithRoleStudent();
 
     @Query(value = """
     SELECT DISTINCT a.*
