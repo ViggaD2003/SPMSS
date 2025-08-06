@@ -12,6 +12,7 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.TeacherDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -35,7 +36,15 @@ public class TeacherDashboardServiceImpl implements TeacherDashboardService {
                 .findFirst()
                 .orElse(null);
 
-        assert currentClass != null;
+        if (currentClass == null) {
+
+            return TeacherDashboardResponse.builder()
+                    .overview(null)
+                    .cases(Collections.emptyList())
+                    .caseSummary(Collections.emptyList())
+                    .alertSkippedSurveys(null)
+                    .build();
+        }
 
         List<Account> students = currentClass.getEnrollments()
                 .stream()
