@@ -4,10 +4,8 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.*;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.Teacher.TeacherDashboardResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Teacher.AlertSkippedSurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Teacher.CaseSummDetailMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Teacher.CaseSummaryMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Teacher.StudentSkippedSurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.repository.CaseRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.TeacherDashboardService;
@@ -21,12 +19,10 @@ import java.util.List;
 public class TeacherDashboardServiceImpl implements TeacherDashboardService {
 
     private final SurveyRecordRepository surveyRecordRepository;
-    private final CaseRepository caseRepository;
+    private final CategoryRepository categoryRepository;
     private final AccountService accountService;
     private final CaseSummDetailMapper caseSummDetailMapper;
-    private final CaseSummaryMapper caseSummaryMapper;
     private final AlertSkippedSurveyMapper alertSkippedSurveyMapper;
-    private final StudentSkippedSurveyMapper studentSkippedSurveyMapper;
 
     @Override
     public TeacherDashboardResponse getTeacherDashboardResponse() {
@@ -51,14 +47,15 @@ public class TeacherDashboardServiceImpl implements TeacherDashboardService {
 
         List<CaseSummDetailResponse> caseSummDetailResponses = getCaseSummDetailResponses(students);
 
-        List<CaseSummaryResponse> caseSummaryResponses = getCaseSummaryResponses(students);
+        List<CaseSummaryResponse> caseSummaryResponses = getCaseSummaryResponses(account.getId());
 
         List<StudentSkippedSurveyResponse> studentSkippedSurveyResponses = getStudentSkippedSurveyResponses(students);
 
         int studentsCount = (int) students.stream()
-                .map(a -> surveyRecordRepository.findSkippedSurveyRecordsByStudentIdInCurrentMonth(a.getId()))
-                .filter(list -> !list.isEmpty())
-                .count();
+                .mapToLong(a -> surveyRecordRepository
+                        .findSkippedSurveyRecordsByStudentIdInCurrentMonth(a.getId())
+                        .size())
+                .sum();
 
         AlertSkippedSurveyResponse alertSkippedSurveyResponse = alertSkippedSurveyMapper.toAlertSkippedSurveyResponse(studentSkippedSurveyResponses,
                 studentsCount);
@@ -90,25 +87,17 @@ public class TeacherDashboardServiceImpl implements TeacherDashboardService {
                 .toList();
     }
 
-    private List<CaseSummaryResponse> getCaseSummaryResponses(List<Account> students) {
-        List<CaseSummaryResponse> caseSummaryResponses = students.stream()
-                .flatMap(a -> a.getStudentCases()
-                        .stream()
-                        .map((c) -> {
-                            int count = (int) caseRepository.countCasesWithLevelId(c.getCurrentLevel().getId());
-                            return caseSummaryMapper.toCaseSummaryResponse(c, count);
-                        }))
-                .toList();
-        return caseSummaryResponses;
+    private List<CaseSummaryResponse> getCaseSummaryResponses(Integer teacherId) {
+
+        return categoryRepository.getCaseCountsByCategoryForCurrentTeacher(teacherId);
     }
 
     private List<CaseSummDetailResponse> getCaseSummDetailResponses(List<Account> students) {
-        List<CaseSummDetailResponse> caseSummDetailResponses = students.stream()
+        return students.stream()
                 .flatMap(a -> a.getStudentCases()
                         .stream()
                         .map(caseSummDetailMapper::toCaseSummDetailResponse))
                 .toList();
-        return caseSummDetailResponses;
     }
 
     private static OverviewResponse getOverviewResponse(List<Account> students) {
@@ -132,12 +121,11 @@ public class TeacherDashboardServiceImpl implements TeacherDashboardService {
                 .filter(sr -> sr != null && sr.stream().anyMatch(s -> !s.getIsSkipped()))
                 .count();
 
-        OverviewResponse overviewResponse = OverviewResponse.builder()
+        return OverviewResponse.builder()
                 .totalStudents(totalStudents)
                 .studentsCompletedSurveys(studentsCompletedSurveys)
                 .studentsWithCases(studentsWithCases)
                 .studentsInPrograms(studentsInPrograms)
                 .build();
-        return overviewResponse;
     }
 }
