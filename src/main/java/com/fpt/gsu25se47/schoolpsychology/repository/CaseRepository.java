@@ -56,4 +56,7 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
 
     @Query("SELECT COUNT(c) > 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSED'")
     boolean existsByStudentId(@Param("studentId") Integer studentId);
+
+    @Query("SELECT COUNT(c) FROM Cases c WHERE c.currentLevel.id = :levelId")
+    long countCasesWithLevelId(Integer levelId);
 }
