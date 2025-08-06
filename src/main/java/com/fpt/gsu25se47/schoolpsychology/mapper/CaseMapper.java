@@ -14,7 +14,6 @@ public class CaseMapper {
     private final LevelMapper levelMapper;
     private final AccountMapper accountMapper;
 
-
     public CaseGetAllResponse mapToCaseGetAllResponse(Cases cases, Integer surveyId) {
         return CaseGetAllResponse.builder()
                 .id(cases.getId())

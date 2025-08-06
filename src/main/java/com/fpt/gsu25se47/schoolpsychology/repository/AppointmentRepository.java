@@ -52,4 +52,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     List<Appointment> findAllByHostByWithStatus(Integer hostById, List<AppointmentStatus> statuses);
 
     int countByBookedByIdAndStartDateTimeBetween(Integer bookedById, LocalDateTime start, LocalDateTime end);
+
+    @Query(value = """
+    SELECT DISTINCT a.*
+    FROM appointment a
+    JOIN cases c ON a.case_id = c.id
+    JOIN levels l ON c.current_level_id = l.id  -- hoặc initial_level_id
+    JOIN categories cat ON l.category_id = cat.id
+    WHERE cat.id = ?\s
+            """, nativeQuery = true)
+    List<Appointment> findAllAppointmentWithCategory(Integer categoryId);
 }

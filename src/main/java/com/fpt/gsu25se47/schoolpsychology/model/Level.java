@@ -47,4 +47,7 @@ public class Level {
 
     @OneToMany(mappedBy = "initialLevel", cascade = CascadeType.ALL)
     private List<Cases> levelOfInitCase = new ArrayList<>();
+
+    @OneToMany(mappedBy = "level", cascade = CascadeType.ALL)
+    private List<SurveyRecord> surveyRecords = new ArrayList<>();
 }

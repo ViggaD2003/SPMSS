@@ -288,8 +288,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .status(true)
                 .build();
 
-
-
         switch (request.getRole()) {
             case TEACHER -> {
                 String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
