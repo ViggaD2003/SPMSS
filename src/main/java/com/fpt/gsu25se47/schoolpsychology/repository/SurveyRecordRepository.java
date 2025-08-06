@@ -27,15 +27,24 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
     List<SurveyRecord> findAllBySurveyId(Integer surveyId);
 
     @Query(value = """
-    SELECT sr.* 
-    FROM program_participants pp
-    JOIN support_program sp ON pp.program_id = sp.id
-    JOIN survey s ON sp.survey_id = s.id
-    JOIN survey_record sr ON sr.survey_id = s.id AND sr.account_id = pp.student_id
-    WHERE pp.id = :participantId
-    ORDER BY sr.completed_at
-    LIMIT 2
-    """, nativeQuery = true)
+            SELECT sr.* 
+            FROM program_participants pp
+            JOIN support_program sp ON pp.program_id = sp.id
+            JOIN survey s ON sp.survey_id = s.id
+            JOIN survey_record sr ON sr.survey_id = s.id AND sr.account_id = pp.student_id
+            WHERE pp.id = :participantId
+            ORDER BY sr.completed_at
+            LIMIT 2
+            """, nativeQuery = true)
     List<SurveyRecord> findTwoSurveyRecordsByParticipant(@Param("participantId") Integer participantId);
+
+    @Query("""
+                SELECT sr FROM SurveyRecord sr
+                WHERE sr.student.id = :studentId
+                  AND sr.isSkipped = true
+                  AND FUNCTION('MONTH', sr.completedAt) = FUNCTION('MONTH', CURRENT_DATE)
+                  AND FUNCTION('YEAR', sr.completedAt) = FUNCTION('YEAR', CURRENT_DATE)
+            """)
+    List<SurveyRecord> findSkippedSurveyRecordsByStudentIdInCurrentMonth(@Param("studentId") int studentId);
 
 }
