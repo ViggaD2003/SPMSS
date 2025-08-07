@@ -39,7 +39,7 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
 
     @Query("""
             SELECT sp FROM SupportProgram sp
-            WHERE sp.category.id = :categoryId
+            WHERE sp.category.id = :categoryId AND sp.status = 'ACTIVE'
             """)
     List<SupportProgram> recommendSupportPrograms(Integer categoryId);
 }

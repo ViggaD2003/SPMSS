@@ -255,9 +255,12 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     public Optional<?> getSuggestSupportProgram(Integer studentId) {
         SurveyRecord surveyRecordLatest = surveyRecordRepository.findLatestSurveyRecordByStudentId(studentId);
 
-        List<SupportProgram> recommendSupportProgram = supportProgramRepository.recommendSupportPrograms(surveyRecordLatest.getLevel().getCategory().getId());
+        List<SupportProgramResponse> recommendSupportProgram = supportProgramRepository
+                .recommendSupportPrograms(surveyRecordLatest.getLevel().getCategory().getId())
+                .stream().map(supportProgramMapper::mapSupportProgramResponse)
+                .toList();
 
-
+        return Optional.of(recommendSupportProgram);
     }
 
     @Override
