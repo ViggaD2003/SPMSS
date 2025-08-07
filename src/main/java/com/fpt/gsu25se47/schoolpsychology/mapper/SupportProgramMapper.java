@@ -47,6 +47,7 @@ public abstract class SupportProgramMapper {
     })
     public abstract SupportProgramDetail mapSupportProgramDetail(SupportProgram supportProgram);
 
+
     protected CategoryResponse mapCategory(Category category) {
         if (category == null) return null;
         return categoryMapper.mapToCategorySurveyResponse(category);

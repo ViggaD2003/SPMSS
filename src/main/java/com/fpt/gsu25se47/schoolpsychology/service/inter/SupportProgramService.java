@@ -3,10 +3,10 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ProgramParticipantsResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.RegisterProgramParticipantResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramDetail;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -25,4 +25,6 @@ public interface SupportProgramService {
     SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus status);
 
     Optional<?> saveSurveySupportProgram(CreateSurveyRecordDto createSurveyRecordDto);
+
+    RegisterProgramParticipantResponse registerStudentToSupportProgram(Integer studentId, Integer supportProgramId);
 }
