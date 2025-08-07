@@ -24,6 +24,7 @@ public abstract class AccountMapper {
 
     @Autowired
     private CounselorMapper counselorMapper;
+
     @Autowired
     private ParentMapper parentMapper;
 
