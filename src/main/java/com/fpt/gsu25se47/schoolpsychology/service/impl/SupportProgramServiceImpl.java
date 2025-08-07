@@ -202,6 +202,12 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Student not found for ID: " + studentId));
 
+        if (supportProgram.getStatus() != ProgramStatus.PLANNING) {
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "This support program status is not PLANNING");
+        }
+
         if (programParticipantRepository.findByStudentId(student.getId()) != null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Student is already registered to this program for studentId: " + studentId);
