@@ -125,11 +125,10 @@ public class JWTServiceImpl implements JWTService {
         Optional<Cases> activeCase = counselor.getAccount().getCounselorCases()
                 .stream()
                 .filter(t -> {
-                    if(t.getStatus() != Status.CLOSED) {
+                    if (t.getStatus() != Status.CLOSED) {
                         setCategory.add(t.getInitialLevel().getCategory().getId());
                         return true;
-                    }
-                    else
+                    } else
                         return false;
                 })
                 .findFirst();
@@ -166,10 +165,17 @@ public class JWTServiceImpl implements JWTService {
         Student student = studentRepo.findById(studentAcc.getId())
                 .orElseThrow(() -> new RuntimeException("Unauthorized"));
         Classes activeClass = classRepository.findActiveClassByStudentId(student.getId());
+        Optional<Integer> caseId = student.getAccount()
+                .getStudentCases()
+                .stream()
+                .filter(c -> c.getStatus() != Status.CLOSED)
+                .map(Cases::getId)
+                .findFirst();
 
         claims.put("isEnableSurvey", student.getIsEnableSurvey());
         claims.put("teacherId", activeClass != null && activeClass.getTeacher() != null
                 ? activeClass.getTeacher().getId() : null);
+        claims.put("caseId", caseId.orElse(null));
     }
 
     private void handleTeacherClaims(Map<String, Object> claims, Account teacherAcc) {
