@@ -1,20 +1,24 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.CategoryMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.DashBoardMapper;
+import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Manager.DashBoardMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.DashBoardService;
+import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DashBoardServiceImpl implements DashBoardService {
@@ -27,8 +31,6 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     private final CategoryRepository categoryRepository;
 
-    private final LevelRepository levelRepository;
-
     private final AccountRepository accountRepository;
 
     private final CaseRepository caseRepository;
@@ -39,12 +41,12 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     public Optional<?> managerDashboard() {
-        Overview overview = Overview.builder()
+        OverviewManager overview = OverviewManager.builder()
                 .totalStudents(accountRepository.findAllWithRoleStudent().size())
                 .totalPrograms(supportProgramRepository.findAll().size())
                 .totalSurveys(surveyRepository.findAll().size())
                 .totalAppointments(appointmentRepository.findAll().size())
-                .activeCases(caseRepository.findAllActiveCases().size())
+                .activeCases(caseRepository.findAllActiveCases(null).size())
                 .build();
 
         List<Category> categories = categoryRepository.findAll();
@@ -53,7 +55,7 @@ public class DashBoardServiceImpl implements DashBoardService {
 
         List<SurveyLevelByCategory> surveyLevelByCategories = categories.stream().map(dashBoardMapper::mapToSurveyLevelByCategory).toList();
 
-        List<CaseGetAllResponse> activeCasesList = caseRepository.findAllActiveCases()
+        List<CaseGetAllResponse> activeCasesList = caseRepository.findAllActiveCases(null)
                 .stream()
                 .map(c -> caseMapper.mapToCaseGetAllResponse(c, null)).toList();
 
@@ -64,4 +66,46 @@ public class DashBoardServiceImpl implements DashBoardService {
                         .activeCasesList(activeCasesList)
                 .build());
     }
+
+    @Override
+    public Optional<?> counselorDashboard() {
+        try {
+            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
+            if (userDetails == null) {
+                throw new BadRequestException("Unauthorized");
+            }
+
+            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
+
+
+            OverviewCounselor overview = OverviewCounselor.builder()
+                    .myActiveCases(caseRepository.findAllActiveCases(account.getId()).size())
+                    .myAppointmentsThisMonth(appointmentRepository.findMyHostedAppointmentsThisMonth(account.getId()).size())
+                    .mySurveysReviewed(surveyRepository.findByAccountId(account.getId()).size())
+                    .programsReferred(supportProgramRepository.findAllByHostedBy(account.getId()).size())
+                    .build();
+
+            List<UpcomingAppointments> upcomingAppointments = appointmentRepository.findAllByHostByWithStatusConfirmed(account.getId())
+                    .stream().map(dashBoardMapper::mapToUpcomingAppointment).toList();
+
+            List<CaseByCategory> caseByCategories = caseRepository.findCaseStatsByCategory(account.getId());
+
+            List<CaseGetAllResponse> activeCasesList = caseRepository.findAllActiveCases(account.getId())
+                    .stream()
+                    .map(c -> caseMapper.mapToCaseGetAllResponse(c, null)).toList();
+
+            return Optional.of(CounselorDashboard.builder()
+                            .overview(overview)
+                            .upcomingAppointments(upcomingAppointments)
+                            .caseByCategory(caseByCategories)
+                            .acitveCaseList(activeCasesList)
+                    .build());
+
+        } catch (Exception e){
+            log.error("Failed to view counselor dashboard: {}", e.getMessage(), e);
+            throw new RuntimeException("Could not view counselor dashboard");
+        }
+    }
+
+
 }

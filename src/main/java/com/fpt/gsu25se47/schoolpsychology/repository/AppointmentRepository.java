@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,6 +51,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
                 WHERE s.hostedBy.id = :hostById AND a.status IN (:statuses)
             """)
     List<Appointment> findAllByHostByWithStatus(Integer hostById, List<AppointmentStatus> statuses);
+    @Query("""
+                SELECT a FROM Appointment a
+                JOIN Slot s on s.id = a.slot.id
+                WHERE s.hostedBy.id = :hostById AND a.status = 'CONFIRMED'
+            """)
+    List<Appointment> findAllByHostByWithStatusConfirmed(Integer hostById);
 
     int countByBookedByIdAndStartDateTimeBetween(Integer bookedById, LocalDateTime start, LocalDateTime end);
 
@@ -59,7 +66,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     JOIN cases c ON a.case_id = c.id
     JOIN levels l ON c.current_level_id = l.id  -- hoặc initial_level_id
     JOIN categories cat ON l.category_id = cat.id
-    WHERE cat.id = ?\s
+    WHERE cat.id = :categoryId
             """, nativeQuery = true)
     List<Appointment> findAllAppointmentWithCategory(Integer categoryId);
+
+
+    @Query("""
+        SELECT a FROM Appointment a
+        JOIN a.slot s
+        WHERE s.hostedBy.id = :counselorId
+        AND YEAR(a.startDateTime) = YEAR(CURRENT_DATE)
+        AND MONTH(a.startDateTime) = MONTH(CURRENT_DATE)
+        ORDER BY a.startDateTime DESC
+        """)
+    List<Appointment> findMyHostedAppointmentsThisMonth(@Param("counselorId") Integer counselorId);
 }

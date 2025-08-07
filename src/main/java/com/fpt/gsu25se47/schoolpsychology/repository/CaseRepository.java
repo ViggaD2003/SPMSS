@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.CaseByCategory;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,28 +10,28 @@ import java.util.List;
 
 public interface CaseRepository extends JpaRepository<Cases, Integer> {
     @Query(value = """
-    SELECT c.*
-    FROM cases c
-    LEFT JOIN accounts counselor ON c.counselor_id = counselor.id
-    LEFT JOIN accounts teacher ON c.create_by = teacher.id
-    LEFT JOIN accounts student ON c.student_id = student.id
-    LEFT JOIN levels l ON c.initial_level_id = l.id
-    WHERE 
-        (
-            (:role = 'MANAGER')
-            OR (:role = 'COUNSELOR' AND counselor.id = :accountId)
-            OR (:role = 'TEACHER' AND teacher.id = :accountId)
-            OR (:role = 'STUDENT' AND student.id = :accountId)
-        )
-        AND (
-            :statusCount = 0 OR c.status IN (:statuses)
-        )
-        AND (
-            :categoryId IS NULL OR l.category_id = :categoryId
-        )
-    ORDER BY 
-        FIELD(c.status, 'IN_PROGRESS', 'NEW', 'CLOSED')
-    """, nativeQuery = true)
+            SELECT c.*
+            FROM cases c
+            LEFT JOIN accounts counselor ON c.counselor_id = counselor.id
+            LEFT JOIN accounts teacher ON c.create_by = teacher.id
+            LEFT JOIN accounts student ON c.student_id = student.id
+            LEFT JOIN levels l ON c.initial_level_id = l.id
+            WHERE 
+                (
+                    (:role = 'MANAGER')
+                    OR (:role = 'COUNSELOR' AND counselor.id = :accountId)
+                    OR (:role = 'TEACHER' AND teacher.id = :accountId)
+                    OR (:role = 'STUDENT' AND student.id = :accountId)
+                )
+                AND (
+                    :statusCount = 0 OR c.status IN (:statuses)
+                )
+                AND (
+                    :categoryId IS NULL OR l.category_id = :categoryId
+                )
+            ORDER BY 
+                FIELD(c.status, 'IN_PROGRESS', 'NEW', 'CLOSED')
+            """, nativeQuery = true)
     List<Cases> findAllCasesByRoleAndAccountWithStatusSorted(
             @Param("role") String role,
             @Param("accountId") Integer accountId,
@@ -39,8 +40,12 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
             @Param("categoryId") Integer categoryId
     );
 
-    @Query(" SELECT c FROM Cases c WHERE c.status = 'IN_PROGRESS' or c.status = 'NEW' ")
-    List<Cases> findAllActiveCases();
+    @Query("""
+                SELECT c FROM Cases c
+                WHERE (c.status = 'IN_PROGRESS' OR c.status = 'NEW')
+                AND (:counselorId IS NULL OR c.counselor.id = :counselorId)
+            """)
+    List<Cases> findAllActiveCases(@Param("counselorId") Integer counselorId);
 
     @Query("SELECT COUNT(c) = 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSE'")
     boolean isStudentFreeFromOpenCases(@Param("studentId") Integer studentId);
@@ -59,4 +64,18 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
 
     @Query("SELECT COUNT(c) FROM Cases c WHERE c.currentLevel.id = :levelId")
     long countCasesWithLevelId(Integer levelId);
+
+    @Query("""
+        SELECT c.name as category,
+               COUNT(cs.id) as totalCases,
+               SUM(CASE WHEN cs.status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as inProgress,
+               SUM(CASE WHEN cs.status = 'CLOSED' THEN 1 ELSE 0 END) as closed  
+        FROM Cases cs
+        JOIN cs.currentLevel cl
+        JOIN cl.category c
+        WHERE (:counselorId IS NULL OR cs.counselor.id = :counselorId)
+        GROUP BY c.id, c.name
+        ORDER BY c.name
+        """)
+    List<CaseByCategory> findCaseStatsByCategory(@Param("counselorId") Integer counselorId);
 }

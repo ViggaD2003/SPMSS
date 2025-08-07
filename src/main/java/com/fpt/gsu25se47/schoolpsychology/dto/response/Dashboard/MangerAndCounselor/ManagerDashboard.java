@@ -1,5 +1,6 @@
-package com.fpt.gsu25se47.schoolpsychology.dto.response;
+package com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @Builder
 public class ManagerDashboard {
 
-    private Overview overview;
+    private OverviewManager overview;
 
     private List<ActivityByCategory> activityByCategories;
 

@@ -1,10 +1,12 @@
-package com.fpt.gsu25se47.schoolpsychology.mapper;
+package com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Manager;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ActivityByCategory;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.ActivityByCategory;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.UpcomingAppointments;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Levels;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyLevelByCategory;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.SurveyLevelByCategory;
+import com.fpt.gsu25se47.schoolpsychology.mapper.LevelMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
-import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -36,6 +38,14 @@ public abstract class DashBoardMapper {
             @Mapping(target = "category", source = "category.name")
     })
     public abstract SurveyLevelByCategory mapToSurveyLevelByCategory(Category category);
+
+
+    @Mappings({
+            @Mapping(target = "student", source = "appointment.bookedFor.fullName"),
+            @Mapping(target = "date", source = "appointment.startDateTime")
+    })
+    public abstract UpcomingAppointments mapToUpcomingAppointment(Appointment appointment);
+
 
     protected List<Levels> mapToLevels(Category category) {
         return category.getLevels().stream().map(levelMapper::mapToLevelsResponse).toList();
