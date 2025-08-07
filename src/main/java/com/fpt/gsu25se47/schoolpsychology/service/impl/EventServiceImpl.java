@@ -67,7 +67,7 @@ public class EventServiceImpl implements EventService {
                         appointment.getId(),
                         appointment.getReasonBooking(),
                         Source.APPOINTMENT,
-                        appointment.getCases().getStatus() != Status.CLOSED,
+                        (appointment.getCases() != null && appointment.getCases().getStatus() != Status.CLOSED),
                         appointment.getStartDateTime().toLocalDate(),
                         appointment.getStartDateTime().toLocalTime(),
                         appointment.getStatus().name(),
