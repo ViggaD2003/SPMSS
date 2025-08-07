@@ -30,7 +30,7 @@ public class ProgramParticipants {
     private Account student;
 
     @ManyToOne
-    @JoinColumn(name = "case_id", nullable = false)
+    @JoinColumn(name = "case_id", nullable = true)
     private Cases cases;
 
     @OneToOne(mappedBy = "programParticipants")

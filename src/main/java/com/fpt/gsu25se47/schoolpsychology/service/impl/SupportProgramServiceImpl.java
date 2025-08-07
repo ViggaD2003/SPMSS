@@ -5,18 +5,16 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
-import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ParticipantMapper;
+import com.fpt.gsu25se47.schoolpsychology.mapper.ProgramParticipantsMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SupportProgramMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.*;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
@@ -36,6 +34,7 @@ import java.util.Optional;
 public class SupportProgramServiceImpl implements SupportProgramService {
 
     private final SupportProgramMapper supportProgramMapper;
+    private final ProgramParticipantsMapper programParticipantsMapper;
     private final ProgramParticipantRepository programParticipantRepository;
     private final SupportProgramRepository supportProgramRepository;
     private final SurveyRepository surveyRepository;
@@ -48,6 +47,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final FileUploadService fileUploadService;
     private final SurveyRecordRepository surveyRecordRepository;
     private final MentalEvaluationRepository mentalEvaluationRepository;
+    private final StudentRepository studentRepository;
     private final NotificationService notificationService;
 
     @Override
@@ -188,6 +188,62 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         }
 
         return Optional.of("Successfully created survey record");
+    }
+
+    @Transactional
+    @Override
+    public RegisterProgramParticipantResponse registerStudentToSupportProgram(Integer studentId, Integer supportProgramId) {
+
+        SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Support Program not found for ID: " + supportProgramId));
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Student not found for ID: " + studentId));
+
+        if (programParticipantRepository.findByStudentId(student.getId()) != null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Student is already registered to this program for studentId: " + studentId);
+        }
+
+        if (student.getAccount().getStudentCases().stream()
+                .anyMatch(c -> !c.getStatus().equals(Status.CLOSED))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "This student is having mental cases in progress");
+        }
+
+        List<ProgramParticipants> participants = supportProgram.getProgramRegistrations();
+
+        if (!participants.isEmpty() && participants.size() >= supportProgram.getMaxParticipants()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "The number of participants is exceeded");
+        }
+
+
+        ProgramParticipants programParticipants = ProgramParticipants.builder()
+                .program(supportProgram)
+                .student(student.getAccount())
+                .joinAt(LocalDateTime.now())
+                .status(RegistrationStatus.ENROLLED)
+                .finalScore(0f)
+                .build();
+
+        programParticipantRepository.save(programParticipants);
+
+        NotiResponse programSupport = notificationService.saveNotification(
+                NotiRequest.builder()
+                        .title("Bạn đã được thêm chương trình hỗ trợ mới")
+                        .content("Chương trình hỗ trợ " + supportProgram.getName())
+                        .username(student.getAccount().getEmail())
+                        .notificationType("CASE")
+                        .relatedEntityId(supportProgram.getId())
+                        .build()
+        );
+
+        notificationService.sendNotification(student.getAccount().getEmail(), "/queue/notifications", programSupport);
+
+        return programParticipantsMapper.toRegisterProgramParticipantResponse(programParticipants);
     }
 
     @Override

@@ -30,7 +30,9 @@ public class ProcessRecurringSurveysJob implements Job {
                 int numberDoSurvey = survey.getEndDate().getDayOfMonth() - survey.getStartDate().getDayOfMonth();
                 survey.setEndDate(today.plusDays(numberDoSurvey));
                 survey.setStatus(SurveyStatus.PUBLISHED);
-                survey.setRound(survey.getRound() + 1);
+                survey.setRound(
+                        survey.getRound() == null ? 1 : survey.getRound() + 1
+                );
                 surveyRepository.save(survey);
                 System.out.println("Recurring survey " + survey.getId() + " has been published");
             }
