@@ -47,4 +47,12 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
             """)
     List<SurveyRecord> findSkippedSurveyRecordsByStudentIdInCurrentMonth(@Param("studentId") int studentId);
 
+    @Query(value = """
+            SELECT *
+            FROM survey_record
+            WHERE account_id = :studentId
+            ORDER BY completed_at DESC
+            LIMIT 1;
+            """, nativeQuery = true)
+    SurveyRecord findLatestSurveyRecordByStudentId(Integer studentId);
 }

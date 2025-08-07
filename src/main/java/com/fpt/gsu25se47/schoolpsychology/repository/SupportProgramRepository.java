@@ -36,4 +36,10 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
 
     @Query("SELECT sp FROM SupportProgram sp WHERE sp.hostedBy.id = :hostedById")
     List<SupportProgram> findAllByHostedBy(Integer hostedById);
+
+    @Query("""
+            SELECT sp FROM SupportProgram sp
+            WHERE sp.category.id = :categoryId
+            """)
+    List<SupportProgram> recommendSupportPrograms(Integer categoryId);
 }

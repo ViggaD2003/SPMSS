@@ -253,6 +253,15 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
+    public Optional<?> getSuggestSupportProgram(Integer studentId) {
+        SurveyRecord surveyRecordLatest = surveyRecordRepository.findLatestSurveyRecordByStudentId(studentId);
+
+        List<SupportProgram> recommendSupportProgram = supportProgramRepository.recommendSupportPrograms(surveyRecordLatest.getLevel().getCategory().getId());
+
+
+    }
+
+    @Override
     public SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus newStatus) {
 
 //        SupportProgram supportProgram = getSupportProgram(id);
