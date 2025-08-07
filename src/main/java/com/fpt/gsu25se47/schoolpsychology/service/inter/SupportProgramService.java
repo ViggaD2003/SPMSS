@@ -27,4 +27,5 @@ public interface SupportProgramService {
     Optional<?> saveSurveySupportProgram(CreateSurveyRecordDto createSurveyRecordDto);
 
     RegisterProgramParticipantResponse registerStudentToSupportProgram(Integer supportProgramId);
-}
+
+    Optional<?> getSuggestSupportProgram(Integer studentId);}

@@ -35,7 +35,6 @@ public class SupportProgramResponse {
 
     private SurveyGetAllResponse programSurvey;
 
-    //    private List<ProgramParticipantsResponse> participants;
     private Integer participants;
 
 }
