@@ -1,12 +1,10 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SupportProgramRepository extends JpaRepository<SupportProgram, Integer> {
@@ -36,4 +34,13 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
 
     @Query("SELECT sp FROM SupportProgram sp WHERE sp.hostedBy.id = :hostedById")
     List<SupportProgram> findAllByHostedBy(Integer hostedById);
+
+    @Query("""
+                SELECT sp FROM SupportProgram sp
+                WHERE sp.startTime < :endDateTime
+                  AND sp.endTime > :startDateTime
+                  AND sp.status <> 'COMPLETED'
+            """)
+    List<SupportProgram> findProgramsBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+
 }

@@ -86,10 +86,19 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     List<Survey> findAllRecurringSurveys();
 
     @Query("""
-SELECT COUNT(s) FROM Survey s
- LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id
- WHERE sr.isSkipped = true
-""")
+            SELECT COUNT(s) FROM Survey s
+             LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id
+             WHERE sr.isSkipped = true
+            """)
     int countSurveySkip();
+
+    @Query("""
+                SELECT s FROM Survey s
+                WHERE
+                    s.startDate < :startDate AND
+                    s.endDate > :endDate AND
+                    s.status = 'PUBLISHED'
+            """)
+    List<Survey> findSurveysBetween(LocalDate startDate, LocalDate endDate);
 
 }
