@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class SupportProgramController {
 
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/save-survey-record")
-    public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto){
+    public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto) {
         return ResponseEntity.ok(service.saveSurveySupportProgram(dto));
     }
 
@@ -78,9 +79,9 @@ public class SupportProgramController {
         return ResponseEntity.ok(service.updateSupportProgram(id, status));
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/participants/register")
-    ResponseEntity<RegisterProgramParticipantResponse> registerParticipantsToProgram(@RequestParam Integer studentId,
-                                                                                     @RequestParam Integer programId) {
-        return ResponseEntity.ok(service.registerStudentToSupportProgram(studentId, programId));
+    ResponseEntity<RegisterProgramParticipantResponse> registerParticipantsToProgram(@RequestParam Integer programId) {
+        return ResponseEntity.ok(service.registerStudentToSupportProgram(programId));
     }
 }

@@ -47,8 +47,8 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final FileUploadService fileUploadService;
     private final SurveyRecordRepository surveyRecordRepository;
     private final MentalEvaluationRepository mentalEvaluationRepository;
-    private final StudentRepository studentRepository;
     private final NotificationService notificationService;
+    private final AccountService accountService;
 
     @Override
     @Transactional
@@ -192,15 +192,14 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
     @Transactional
     @Override
-    public RegisterProgramParticipantResponse registerStudentToSupportProgram(Integer studentId, Integer supportProgramId) {
+    public RegisterProgramParticipantResponse registerStudentToSupportProgram(Integer supportProgramId) {
 
         SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Support Program not found for ID: " + supportProgramId));
 
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Student not found for ID: " + studentId));
+        Account account = accountService.getCurrentAccount();
+        Student student = account.getStudent();
 
         if (supportProgram.getStatus() != ProgramStatus.PLANNING) {
 
@@ -210,7 +209,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         if (programParticipantRepository.findByStudentId(student.getId()) != null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Student is already registered to this program for studentId: " + studentId);
+                    "Student is already registered to this program for studentId: " + student.getId());
         }
 
         if (student.getAccount().getStudentCases().stream()
