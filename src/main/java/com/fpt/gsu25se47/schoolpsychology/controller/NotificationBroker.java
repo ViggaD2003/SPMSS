@@ -15,7 +15,6 @@ public class NotificationBroker {
 
     private final NotificationService notificationService;
 
-
     @MessageMapping("/send")
     public void sendMessage(NotiRequest notiRequest) {
         NotiResponse response = notificationService.saveNotification(notiRequest);

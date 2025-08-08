@@ -33,4 +33,5 @@ public class CreateAppointmentRequest {
 
     @NotBlank(message = "Reason for booking is required")
     private String reasonBooking;
+
 }
