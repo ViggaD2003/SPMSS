@@ -86,7 +86,7 @@ public class SurveyServiceImpl implements SurveyService {
                 notificationService.sendNotification(student.getEmail(), "/queue/notifications", payload);
             });
 
-            return Optional.of("Created successfully !");
+            return Optional.of(saved.getId());
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Could not create survey. Please check your data.");
