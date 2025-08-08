@@ -71,7 +71,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             @Param("bookedById") Integer bookedById,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
-            @Param("cancelStatus") String cancelStatus
+            @Param("cancelStatus") AppointmentStatus cancelStatus
     );
 
     @Query(value = """
