@@ -52,6 +52,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
                 WHERE s.hostedBy.id = :hostById AND a.status IN (:statuses)
             """)
     List<Appointment> findAllByHostByWithStatus(Integer hostById, List<AppointmentStatus> statuses);
+
     @Query("""
                 SELECT a FROM Appointment a
                 JOIN Slot s on s.id = a.slot.id
@@ -59,26 +60,38 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             """)
     List<Appointment> findAllByHostByWithStatusConfirmed(Integer hostById);
 
-    int countByBookedByIdAndStartDateTimeBetween(Integer bookedById, LocalDateTime start, LocalDateTime end);
+    @Query("""
+                SELECT COUNT(a)
+                FROM Appointment a
+                WHERE a.bookedBy.id = :bookedById
+                  AND a.startDateTime BETWEEN :start AND :end
+                  AND a.status <> :cancelStatus
+            """)
+    int countActiveAppointmentsInRange(
+            @Param("bookedById") Integer bookedById,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("cancelStatus") String cancelStatus
+    );
 
     @Query(value = """
-    SELECT DISTINCT a.*
-    FROM appointment a
-    JOIN cases c ON a.case_id = c.id
-    JOIN levels l ON c.current_level_id = l.id  -- hoặc initial_level_id
-    JOIN categories cat ON l.category_id = cat.id
-    WHERE cat.id = :categoryId
+            SELECT DISTINCT a.*
+            FROM appointment a
+            JOIN cases c ON a.case_id = c.id
+            JOIN levels l ON c.current_level_id = l.id  -- hoặc initial_level_id
+            JOIN categories cat ON l.category_id = cat.id
+            WHERE cat.id = :categoryId
             """, nativeQuery = true)
     List<Appointment> findAllAppointmentWithCategory(Integer categoryId);
 
 
     @Query("""
-        SELECT a FROM Appointment a
-        JOIN a.slot s
-        WHERE s.hostedBy.id = :counselorId
-        AND YEAR(a.startDateTime) = YEAR(CURRENT_DATE)
-        AND MONTH(a.startDateTime) = MONTH(CURRENT_DATE)
-        ORDER BY a.startDateTime DESC
-        """)
+            SELECT a FROM Appointment a
+            JOIN a.slot s
+            WHERE s.hostedBy.id = :counselorId
+            AND YEAR(a.startDateTime) = YEAR(CURRENT_DATE)
+            AND MONTH(a.startDateTime) = MONTH(CURRENT_DATE)
+            ORDER BY a.startDateTime DESC
+            """)
     List<Appointment> findMyHostedAppointmentsThisMonth(@Param("counselorId") Integer counselorId);
 }

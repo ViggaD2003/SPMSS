@@ -280,8 +280,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         LocalDateTime startOfDay = request.getStartDateTime().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        int currentAppointments = appointmentRepository.countByBookedByIdAndStartDateTimeBetween(
-                bookedBy.getId(), startOfDay, endOfDay
+        int currentAppointments = appointmentRepository.countActiveAppointmentsInRange(
+                bookedBy.getId(), startOfDay, endOfDay, AppointmentStatus.CANCELED.name()
         );
 
         if (currentAppointments >= maxAppointments) {
