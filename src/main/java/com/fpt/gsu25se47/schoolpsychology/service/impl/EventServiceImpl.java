@@ -7,11 +7,8 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.SupportProgramRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EventService;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -49,7 +46,11 @@ public class EventServiceImpl implements EventService {
                         && sp.getStatus() != ProgramStatus.COMPLETED)
                 .toList();
 
-        List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(curAcc.getId());
+        List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(curAcc.getId())
+                .stream()
+                .filter(s -> !s.getStartDate().isBefore(startDate)
+                        && !s.getEndDate().isAfter(endDate))
+                .toList();
 
         List<EventResponse> events = new ArrayList<>();
 
