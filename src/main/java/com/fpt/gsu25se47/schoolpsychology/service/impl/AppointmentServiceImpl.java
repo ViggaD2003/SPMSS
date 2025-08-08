@@ -50,7 +50,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         // system config for max appointments per day
         validateMaxAppointments(request, bookedBy);
 
-        ensureNoAppointmentConflicts(request);
+//        ensureNoAppointmentConflicts(request);
 
         Account bookedFor = getBookedFor(request);
 
@@ -68,9 +68,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setLocation(location);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
 
-        return appointmentMapper.toAppointmentResponse(
+        AppointmentResponse appointmentResponse = appointmentMapper.toAppointmentResponse(
                 appointmentRepository.save(appointment)
         );
+
+        appointmentResponse.setSystemConfigs(systemConfigService.getConfigsByGroup("APPOINTMENT"));
+
+        return appointmentResponse;
     }
 
     @Override
