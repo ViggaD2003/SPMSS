@@ -77,11 +77,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         supportProgram.setCategory(category);
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);
-        if (request.getStartTime().isEqual(LocalDateTime.now())) {
-            supportProgram.setStatus(ProgramStatus.ACTIVE);
-        } else {
-            supportProgram.setStatus(ProgramStatus.PLANNING);
-        }
+        supportProgram.setStatus(ProgramStatus.ACTIVE);
 
         return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
     }
@@ -203,10 +199,10 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         Account account = accountService.getCurrentAccount();
         Student student = account.getStudent();
 
-        if (supportProgram.getStatus() != ProgramStatus.PLANNING) {
+        if (supportProgram.getStatus() != ProgramStatus.ACTIVE) {
 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "This support program status is not PLANNING");
+                    "This support program status is not ACTIVE");
         }
 
         if (programParticipantRepository.findByStudentId(student.getId()) != null) {
@@ -243,7 +239,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                         .title("Bạn đã được thêm chương trình hỗ trợ mới")
                         .content("Chương trình hỗ trợ " + supportProgram.getName())
                         .username(student.getAccount().getEmail())
-                        .notificationType("CASE")
+                        .notificationType("PROGRAM")
                         .relatedEntityId(supportProgram.getId())
                         .build()
         );
@@ -271,7 +267,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         } else {
             recommendSupportProgram = supportProgramRepository
-                    .recommendSupportPrograms(surveyRecordLatest.getLevel().getCategory().getId())
+                    .recommendSupportPrograms(surveyRecordLatest.getSurvey().getCategory().getId())
                     .stream().map(supportProgramMapper::mapSupportProgramResponse)
                     .toList();
 
