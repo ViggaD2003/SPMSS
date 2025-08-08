@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +57,9 @@ public class EventServiceImpl implements EventService {
         events.addAll(appointments.stream()
                 .map((appointment) -> new EventResponse(
                         appointment.getId(),
-                        "Cuộc hẹn với " + (appointment.getHostType().name().equals("TEACHER") ? "giáo viên" : "tư vấn viên"),
+                        "Cuộc hẹn với " + Optional.ofNullable(appointment.getHostType())
+                                .map(ht -> ht == HostType.TEACHER ? "giáo viên" : "tư vấn viên")
+                                .orElse("không xác định"),
                         Source.APPOINTMENT,
                         (appointment.getCases() != null && appointment.getCases().getStatus() != Status.CLOSED),
                         appointment.getStartDateTime().toLocalDate(),
@@ -88,8 +91,8 @@ public class EventServiceImpl implements EventService {
                         Source.SURVEY,
                         survey.getSurveyCaseLinks().stream()
                                 .anyMatch(s -> s.getCases() != null && s.getCases().getStatus() != Status.CLOSED),
-                        survey.getStartDate(),
-                        survey.getStartDate().atStartOfDay().toLocalTime(),
+                        startDate,
+                        startDate.atStartOfDay().toLocalTime(),
                         survey.getStatus().name(),
                         null
                 ))

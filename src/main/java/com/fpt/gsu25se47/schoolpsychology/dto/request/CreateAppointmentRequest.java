@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -27,6 +28,8 @@ public class CreateAppointmentRequest {
     @NotNull(message = "End date/time is required")
     @Future(message = "End date/time must be in the future")
     private LocalDateTime endDateTime;
+
+    private HostType hostType;
 
     @NotBlank(message = "Reason for booking is required")
     private String reasonBooking;
