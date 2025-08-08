@@ -26,6 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -253,15 +255,15 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
     @Override
     public Optional<?> getSuggestSupportProgram(Integer studentId) {
-        List<SupportProgramResponse> recommendSupportProgram;
-        if(caseRepository.existsByStudentId(studentId)){
-            return Optional.of(recommendSupportProgram.get());
+
+        if (caseRepository.existsByStudentId(studentId)) {
+            return Optional.of(Collections.emptyList());
         }
 
         SurveyRecord surveyRecordLatest = surveyRecordRepository.findLatestSurveyRecordByStudentId(studentId);
 
-
-        if(surveyRecordLatest == null) {
+        List<SupportProgramResponse> recommendSupportProgram;
+        if (surveyRecordLatest == null) {
             recommendSupportProgram = supportProgramRepository
                     .findAll().stream().filter(sp -> sp.getStatus() == ProgramStatus.ACTIVE)
                     .map(supportProgramMapper::mapSupportProgramResponse)
