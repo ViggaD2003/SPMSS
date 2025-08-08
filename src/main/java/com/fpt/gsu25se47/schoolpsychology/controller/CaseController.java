@@ -5,7 +5,6 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -32,9 +31,9 @@ public class CaseController {
     @GetMapping
     @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<?> getAllCases(
-            @Parameter(description = "List of status to filter cases", required = false)
+            @Parameter(description = "List of status to filter cases")
             @RequestParam(required = false) List<String> statusCase,
-            @Parameter(description = "Category ID to filter cases", required = false)
+            @Parameter(description = "Category ID to filter cases")
             @RequestParam(name = "categoryId", required = false) Integer categoryId,
             @RequestParam(name = "surveyId", required = false) Integer surveyId
     ) {
