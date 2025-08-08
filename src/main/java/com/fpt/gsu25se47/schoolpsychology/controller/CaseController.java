@@ -85,7 +85,7 @@ public class CaseController {
 
     @Operation(summary = "Get case by ID", description = "Retrieve detailed information for a specific case")
     @GetMapping("/{caseId}")
-    @PreAuthorize("hasRole('COUNSELOR') or hasRole('TEACHER') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('COUNSELOR') or hasRole('TEACHER') or hasRole('MANAGER') or hasRole('PARENTS') or hasRole('STUDENT')")
     public ResponseEntity<?> getCaseById(
             @Parameter(description = "ID of the case") @PathVariable Integer caseId) {
         return ResponseEntity.ok(caseService.getDetailById(caseId));
