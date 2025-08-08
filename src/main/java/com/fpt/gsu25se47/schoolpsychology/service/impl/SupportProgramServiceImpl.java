@@ -253,14 +253,14 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
     @Override
     public Optional<?> getSuggestSupportProgram(Integer studentId) {
-
+        List<SupportProgramResponse> recommendSupportProgram;
         if(caseRepository.existsByStudentId(studentId)){
-            return Optional.empty();
+            return Optional.of(recommendSupportProgram.get());
         }
 
         SurveyRecord surveyRecordLatest = surveyRecordRepository.findLatestSurveyRecordByStudentId(studentId);
 
-        List<SupportProgramResponse> recommendSupportProgram;
+
         if(surveyRecordLatest == null) {
             recommendSupportProgram = supportProgramRepository
                     .findAll().stream().filter(sp -> sp.getStatus() == ProgramStatus.ACTIVE)
