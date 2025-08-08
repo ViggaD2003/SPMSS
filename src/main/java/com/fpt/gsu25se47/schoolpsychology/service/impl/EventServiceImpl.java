@@ -19,19 +19,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
 
-    private final AppointmentRepository appointmentRepository;
-    private final SupportProgramRepository supportProgramRepository;
     private final SurveyRepository surveyRepository;
     private final AccountRepository accountRepository;
-    private final SurveyService surveyService;
 
     @Override
     public List<EventResponse> getEvents(Integer studentId, LocalDate startDate, LocalDate endDate) {
@@ -54,11 +49,7 @@ public class EventServiceImpl implements EventService {
                         && sp.getStatus() != ProgramStatus.COMPLETED)
                 .toList();
 
-        Optional<?> optionalSurveys = surveyService.getAllSurveyWithPublished();
-
-        List<Survey> surveys = optionalSurveys
-                .map(o -> (List<Survey>) o)
-                .orElse(Collections.emptyList());
+        List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(curAcc.getId());
 
         List<EventResponse> events = new ArrayList<>();
 
