@@ -59,7 +59,7 @@ public class EventServiceImpl implements EventService {
         events.addAll(appointments.stream()
                 .map((appointment) -> new EventResponse(
                         appointment.getId(),
-                        appointment.getReasonBooking(),
+                        "Cuộc hẹn với " + appointment.getHostType(),
                         Source.APPOINTMENT,
                         (appointment.getCases() != null && appointment.getCases().getStatus() != Status.CLOSED),
                         appointment.getStartDateTime().toLocalDate(),
