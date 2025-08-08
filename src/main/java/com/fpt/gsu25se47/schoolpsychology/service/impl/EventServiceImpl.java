@@ -2,10 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.EventResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EventService;
@@ -17,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +57,9 @@ public class EventServiceImpl implements EventService {
         events.addAll(appointments.stream()
                 .map((appointment) -> new EventResponse(
                         appointment.getId(),
-                        appointment.getReasonBooking(),
+                        "Cuộc hẹn với " + Optional.ofNullable(appointment.getHostType())
+                                .map(ht -> ht == HostType.TEACHER ? "giáo viên" : "tư vấn viên")
+                                .orElse("không xác định"),
                         Source.APPOINTMENT,
                         (appointment.getCases() != null && appointment.getCases().getStatus() != Status.CLOSED),
                         appointment.getStartDateTime().toLocalDate(),
@@ -91,8 +91,8 @@ public class EventServiceImpl implements EventService {
                         Source.SURVEY,
                         survey.getSurveyCaseLinks().stream()
                                 .anyMatch(s -> s.getCases() != null && s.getCases().getStatus() != Status.CLOSED),
-                        survey.getStartDate(),
-                        survey.getStartDate().atStartOfDay().toLocalTime(),
+                        startDate,
+                        startDate.atStartOfDay().toLocalTime(),
                         survey.getStatus().name(),
                         null
                 ))
