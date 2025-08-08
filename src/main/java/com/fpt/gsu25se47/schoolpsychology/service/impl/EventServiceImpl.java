@@ -2,10 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.EventResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EventService;
@@ -59,7 +56,7 @@ public class EventServiceImpl implements EventService {
         events.addAll(appointments.stream()
                 .map((appointment) -> new EventResponse(
                         appointment.getId(),
-                        "Cuộc hẹn với " + appointment.getHostType(),
+                        "Cuộc hẹn với " + (appointment.getHostType().name().equals("TEACHER") ? "giáo viên" : "tư vấn viên"),
                         Source.APPOINTMENT,
                         (appointment.getCases() != null && appointment.getCases().getStatus() != Status.CLOSED),
                         appointment.getStartDateTime().toLocalDate(),
