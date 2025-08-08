@@ -258,6 +258,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private void ensureNoAppointmentConflicts(CreateAppointmentRequest request) {
 
         List<Appointment> conflictingAppointments = appointmentRepository.findConflictingAppointments(
+                request.getSlotId(),
                 request.getStartDateTime(),
                 request.getEndDateTime()
         );
