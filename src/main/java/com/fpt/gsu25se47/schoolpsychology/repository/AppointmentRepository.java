@@ -17,7 +17,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     @Query("""
                 SELECT a FROM Appointment a
                 WHERE
-                    a.slot.id = :slotId
+                    a.slot.id = :slotId AND
                     a.startDateTime < :endDateTime AND
                     a.endDateTime > :startDateTime AND
                     (a.status <> 'CANCELLED' AND a.status <> 'ABSENT' AND a.status <> 'COMPLETED')
