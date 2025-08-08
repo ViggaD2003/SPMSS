@@ -33,23 +33,25 @@ public class EventServiceImpl implements EventService {
                         "Student not found for ID: " + studentId));
 
         List<Appointment> appointments = curAcc.getAppointmentsForMe().stream()
-                .filter(a -> !a.getStartDateTime().isBefore(startDate.atStartOfDay())    // a.startDateTime >= start of startDate
-                        && !a.getEndDateTime().isAfter(endDate.plusDays(1).atStartOfDay())
-                        && a.getStatus() != AppointmentStatus.ABSENT && a.getStatus() != AppointmentStatus.CANCELED && a.getStatus() != AppointmentStatus.COMPLETED)
+                .filter(a -> a.getStartDateTime().isBefore(endDate.plusDays(1).atStartOfDay()) // starts before filter end
+                        && a.getEndDateTime().isAfter(startDate.atStartOfDay())               // ends after filter start
+                        && a.getStatus() != AppointmentStatus.ABSENT
+                        && a.getStatus() != AppointmentStatus.CANCELED
+                        && a.getStatus() != AppointmentStatus.COMPLETED)
                 .toList();
 
         List<SupportProgram> supportPrograms = curAcc.getProgramRegistrations()
                 .stream()
                 .map(ProgramParticipants::getProgram)
-                .filter(sp -> !sp.getStartTime().isBefore(startDate.atStartOfDay())
-                        && !sp.getEndTime().isAfter(endDate.plusDays(1).atStartOfDay())
+                .filter(sp -> sp.getStartTime().isBefore(endDate.plusDays(1).atStartOfDay())
+                        && sp.getEndTime().isAfter(startDate.atStartOfDay())
                         && sp.getStatus() != ProgramStatus.COMPLETED)
                 .toList();
 
         List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(curAcc.getId())
                 .stream()
-                .filter(s -> !s.getStartDate().isBefore(startDate)
-                        && !s.getEndDate().isAfter(endDate))
+                .filter(s -> s.getStartDate().isBefore(endDate.plusDays(1))
+                        && s.getEndDate().isAfter(startDate))
                 .toList();
 
         List<EventResponse> events = new ArrayList<>();
