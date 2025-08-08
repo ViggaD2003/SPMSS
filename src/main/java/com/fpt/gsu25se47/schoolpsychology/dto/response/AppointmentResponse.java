@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fpt.gsu25se47.schoolpsychology.model.SystemConfig;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SessionFlow;
@@ -54,4 +55,5 @@ public class AppointmentResponse {
 
     private List<AssessmentScoreResponse> assessmentScores;
 
+    private List<SystemConfig> systemConfigs;
 }
