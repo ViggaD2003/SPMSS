@@ -22,6 +22,7 @@ public interface SlotMapper {
 
     @Mapping(target = "fullName", source = "hostedBy.fullName")
     @Mapping(target = "roleName", source = "hostedBy.role")
+    @Mapping(target = "status", expression = "java(slot.getStatus().name())")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     SlotResponse toSlotResponse(Slot slot, @Context List<Appointment> appointments);
 
@@ -40,7 +41,6 @@ public interface SlotMapper {
 
     @AfterMapping
     default void setBookedToSlotResponse(@MappingTarget SlotResponse slotResponse, @Context List<Appointment> appointments) {
-
         List<BookedSlot> booked = slotResponse.getBooked();
         appointments.forEach(a -> {
             if (a.getStatus() != AppointmentStatus.CANCELED) {

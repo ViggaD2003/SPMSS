@@ -31,12 +31,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final CounselorRepository counselorRepository;
     private final SlotRepository slotRepository;
     private final CaseRepository caseRepository;
-
     private final AccountService accountService;
     private final AssessmentScoresService assessmentScoresService;
     private final MentalEvaluationService mentalEvaluationService;
     private final SystemConfigService systemConfigService;
-
     private final AppointmentMapper appointmentMapper;
 
     @Transactional
