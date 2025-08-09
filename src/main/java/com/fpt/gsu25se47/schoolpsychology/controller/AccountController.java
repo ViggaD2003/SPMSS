@@ -1,14 +1,14 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
@@ -95,5 +95,15 @@ public class AccountController {
     @PatchMapping("/update-able-survey/{accountId}")
     public ResponseEntity<?> updateIsAbleSurvey(@RequestParam("isAbleSurvey") Boolean isAbleSurvey, @PathVariable Integer accountId) throws BadRequestException {
         return ResponseEntity.ok(accountService.updateIsAbleSurvey(accountId, isAbleSurvey));
+    }
+
+    @GetMapping("/students-without-or-inactive-class")
+    ResponseEntity<List<StudentDto>> getAllStudentsInactiveClass(
+            @RequestParam(required = false) Grade grade,
+            @RequestParam(required = false) String schoolYear,
+            @RequestParam(required = false) String classCode
+    ) {
+
+        return ResponseEntity.ok(accountService.getStudentsWithoutClassOrInactiveClass(grade, schoolYear, classCode));
     }
 }

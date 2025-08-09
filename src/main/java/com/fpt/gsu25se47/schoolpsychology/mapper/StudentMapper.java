@@ -20,6 +20,8 @@ public interface StudentMapper {
     @Mapping(target = "classDto", ignore = true) // Tạm ignore để tự xử lý sau
     StudentDto mapStudentDto(Student student, @Context Classes classes);
 
+    @Mapping(target = "email", source = "account.email")
+    @Mapping(target = "phoneNumber", source = "account.phoneNumber")
     @Mapping(target = "roleName", source = "account.role")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "gender", source = "account.gender")

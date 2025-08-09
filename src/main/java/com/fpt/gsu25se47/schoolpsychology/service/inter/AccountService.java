@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
@@ -31,4 +32,6 @@ public interface AccountService {
     Optional<?> listAllCounselors();
 
     List<StudentSRCResponse> getStudentsByClassWithLSR(Integer classId);
+
+    List<StudentDto> getStudentsWithoutClassOrInactiveClass(Grade grade, String schoolYear, String classCode);
 }
