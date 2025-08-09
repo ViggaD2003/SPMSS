@@ -33,6 +33,7 @@ public class DashboardController {
 
 
     @PreAuthorize("hasRole('COUNSELOR')")
+    @GetMapping("/counselor")
     public ResponseEntity<?> getCounselorDashboard() {
         return ResponseEntity.ok(dashBoardService.counselorDashboard());
     }
