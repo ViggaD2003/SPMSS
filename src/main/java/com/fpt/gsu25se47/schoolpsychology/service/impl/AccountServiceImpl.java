@@ -1,33 +1,37 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.AccountDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AccountMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
-import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.Account;
+import com.fpt.gsu25se47.schoolpsychology.model.Enrollment;
+import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
-import com.fpt.gsu25se47.schoolpsychology.repository.*;
+import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.CaseRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.EnrollmentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -147,6 +151,23 @@ public class AccountServiceImpl implements AccountService {
 
                     return studentSRCResponse;
                 })
+                .toList();
+    }
+
+    @Override
+    public List<StudentDto> getStudentsWithoutClassOrInactiveClass(Grade grade, String schoolYear, String classCode) {
+        return studentRepository.findStudentsWithoutClassOrInactiveClass()
+                .stream()
+                .filter(s -> grade == null || s.getTargetLevel() == grade)
+                .filter(s -> schoolYear == null || classCode == null ||
+                        s.getEnrollments().stream()
+                                .map(Enrollment::getClasses)
+                                .anyMatch(c ->
+                                        (schoolYear.isEmpty() || schoolYear.equals(c.getSchoolYear())) &&
+                                                (classCode.isEmpty() || c.getCodeClass().contains(classCode))
+                                )
+                )
+                .map(studentMapper::mapStudentDtoWithoutClass)
                 .toList();
     }
 }
