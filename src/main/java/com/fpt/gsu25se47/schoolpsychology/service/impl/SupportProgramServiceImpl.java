@@ -223,7 +223,6 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     "The number of participants is exceeded");
         }
 
-
         ProgramParticipants programParticipants = ProgramParticipants.builder()
                 .program(supportProgram)
                 .student(student.getAccount())
@@ -247,6 +246,25 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         notificationService.sendNotification(student.getAccount().getEmail(), "/queue/notifications", programSupport);
 
         return programParticipantsMapper.toRegisterProgramParticipantResponse(programParticipants);
+    }
+
+    @Override
+    @Transactional
+    public String unRegisterStudentFromSupportProgram(Integer supportProgramId, Integer studentId) {
+        SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
+                .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + supportProgramId));
+
+        List<ProgramParticipants> participants = supportProgram.getProgramRegistrations();
+        participants.removeIf(p -> {
+            if (p.getStudent().getId().equals(studentId)) {
+                p.setProgram(null);
+                return true;
+            }
+            return false;
+        });
+        supportProgram.setProgramRegistrations(participants);
+        supportProgramRepository.save(supportProgram);
+        return "Successfully unregistered support program";
     }
 
     @Override

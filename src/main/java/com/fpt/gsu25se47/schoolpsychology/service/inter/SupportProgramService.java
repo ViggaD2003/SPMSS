@@ -28,4 +28,6 @@ public interface SupportProgramService {
 
     RegisterProgramParticipantResponse registerStudentToSupportProgram(Integer supportProgramId);
 
+    String unRegisterStudentFromSupportProgram(Integer supportProgramId, Integer studentId);
+
     Optional<?> getSuggestSupportProgram(Integer studentId);}

@@ -152,5 +152,11 @@ public class SupportProgramController {
     public ResponseEntity<?> viewRecommendSupportProgram(@RequestParam("studentId") Integer studentId) {
         return ResponseEntity.ok(service.getSuggestSupportProgram(studentId));
     }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/participants/unregister")
+    public ResponseEntity<String> unregisterStudentFromSupportProgram(@RequestParam("supportProgramId") Integer supportProgramId, @RequestParam("studentId") Integer studentId) {
+        return ResponseEntity.ok(service.unRegisterStudentFromSupportProgram(supportProgramId, studentId));
+    }
 }
 
