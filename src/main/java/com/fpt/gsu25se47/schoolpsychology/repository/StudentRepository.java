@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface StudentRepository extends JpaRepository<Student, Integer> {
@@ -12,4 +13,11 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     String findTopStudentCode();
 
     Optional<Student> findByStudentCode(String studentCode);
+
+    @Query("""
+            SELECT s FROM Student s JOIN s.enrollments e JOIN e.classes c
+            WHERE e.classes.id IS NULL OR c.isActive = false
+            """)
+    List<Student> findStudentsWithoutClassOrInactiveClass();
+
 }
