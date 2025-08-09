@@ -40,7 +40,7 @@ public class DashBoardServiceImpl implements DashBoardService {
     private final CaseMapper caseMapper;
 
     @Override
-    public Optional<?> managerDashboard() {
+    public ManagerDashboard managerDashboard() {
         OverviewManager overview = OverviewManager.builder()
                 .totalStudents(accountRepository.findAllWithRoleStudent().size())
                 .totalPrograms(supportProgramRepository.findAll().size())
@@ -59,16 +59,15 @@ public class DashBoardServiceImpl implements DashBoardService {
                 .stream()
                 .map(c -> caseMapper.mapToCaseGetAllResponse(c, null)).toList();
 
-        return Optional.of(ManagerDashboard.builder()
-                        .overview(overview)
-                        .activityByCategories(activityByCategories)
-                        .surveyLevelByCategories(surveyLevelByCategories)
-                        .activeCasesList(activeCasesList)
-                .build());
+        return ManagerDashboard.builder()
+                .overview(overview)
+                .activityByCategories(activityByCategories)
+                .surveyLevelByCategories(surveyLevelByCategories)
+                .activeCasesList(activeCasesList).build();
     }
 
     @Override
-    public Optional<?> counselorDashboard() {
+    public CounselorDashboard counselorDashboard() {
         try {
             UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
             if (userDetails == null) {
@@ -94,12 +93,12 @@ public class DashBoardServiceImpl implements DashBoardService {
                     .stream()
                     .map(c -> caseMapper.mapToCaseGetAllResponse(c, null)).toList();
 
-            return Optional.of(CounselorDashboard.builder()
-                            .overview(overview)
-                            .upcomingAppointments(upcomingAppointments)
-                            .caseByCategory(caseByCategories)
-                            .acitveCaseList(activeCasesList)
-                    .build());
+            return CounselorDashboard.builder()
+                    .overview(overview)
+                    .upcomingAppointments(upcomingAppointments)
+                    .caseByCategory(caseByCategories)
+                    .acitveCaseList(activeCasesList)
+                    .build();
 
         } catch (Exception e){
             log.error("Failed to view counselor dashboard: {}", e.getMessage(), e);

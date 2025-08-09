@@ -1,5 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.CounselorDashboard;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.ManagerDashboard;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.Teacher.TeacherDashboardResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.DashBoardService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.TeacherDashboardService;
@@ -27,14 +29,14 @@ public class DashboardController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/manager")
-    public ResponseEntity<?> getManagerDashboard() {
+    public ResponseEntity<ManagerDashboard> getManagerDashboard() {
         return ResponseEntity.ok(dashBoardService.managerDashboard());
     }
 
 
     @PreAuthorize("hasRole('COUNSELOR')")
     @GetMapping("/counselor")
-    public ResponseEntity<?> getCounselorDashboard() {
+    public ResponseEntity<CounselorDashboard> getCounselorDashboard() {
         return ResponseEntity.ok(dashBoardService.counselorDashboard());
     }
 }
