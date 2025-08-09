@@ -27,11 +27,11 @@ public class ProgramParticipants {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private Account student;
+    private Account student; //gửi id
 
     @ManyToOne
     @JoinColumn(name = "case_id", nullable = true)
-    private Cases cases;
+    private Cases cases; //gửi id
 
     @OneToOne(mappedBy = "programParticipants")
     private MentalEvaluation mentalEvaluation;

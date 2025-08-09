@@ -66,16 +66,18 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
     long countCasesWithLevelId(Integer levelId);
 
     @Query("""
-        SELECT c.name as category,
-               COUNT(cs.id) as totalCases,
-               SUM(CASE WHEN cs.status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as inProgress,
-               SUM(CASE WHEN cs.status = 'CLOSED' THEN 1 ELSE 0 END) as closed  
-        FROM Cases cs
-        JOIN cs.currentLevel cl
-        JOIN cl.category c
-        WHERE (:counselorId IS NULL OR cs.counselor.id = :counselorId)
-        GROUP BY c.id, c.name
-        ORDER BY c.name
-        """)
+    SELECT new com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.CaseByCategory(
+        c.name,
+        CAST(COUNT(cs.id) AS int),
+        CAST(SUM(CASE WHEN cs.status = 'IN_PROGRESS' THEN 1 ELSE 0 END) AS int),
+        CAST(SUM(CASE WHEN cs.status = 'CLOSED' THEN 1 ELSE 0 END) AS int)
+    )
+    FROM Cases cs
+    JOIN cs.currentLevel cl
+    JOIN cl.category c
+    WHERE (:counselorId IS NULL OR cs.counselor.id = :counselorId)
+    GROUP BY c.id, c.name
+    ORDER BY c.name
+""")
     List<CaseByCategory> findCaseStatsByCategory(@Param("counselorId") Integer counselorId);
 }

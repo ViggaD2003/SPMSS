@@ -76,7 +76,6 @@ public class DashBoardServiceImpl implements DashBoardService {
 
             Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
-
             OverviewCounselor overview = OverviewCounselor.builder()
                     .myActiveCases(caseRepository.findAllActiveCases(account.getId()).size())
                     .myAppointmentsThisMonth(appointmentRepository.findMyHostedAppointmentsThisMonth(account.getId()).size())
