@@ -41,6 +41,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentResponse createAppointment(CreateAppointmentRequest request) {
 
+        Cases cases = null;
+        if (request.getCaseId() != null) {
+            cases = caseRepository.findById(request.getCaseId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Case not found for ID: " + request.getCaseId()));
+        }
+
         // system config for appointment feature enabled
         validateAppointmentFeatureEnabled();
 
@@ -67,6 +74,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setSlot(slot);
         appointment.setLocation(location);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setCases(cases);
 
         AppointmentResponse appointmentResponse = appointmentMapper.toAppointmentResponse(
                 appointmentRepository.save(appointment)

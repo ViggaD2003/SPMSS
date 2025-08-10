@@ -62,7 +62,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         return students.stream()
                 .filter(student -> !existingStudentIds.contains(student.getId()))
-                .map(student -> enrollmentMapper.toEnrollment(request, student, clazz))
+                .map(student -> {
+                    student.setTargetLevel(clazz.getGrade());
+                    return enrollmentMapper.toEnrollment(request, student, clazz);
+                })
                 .toList();
     }
 
