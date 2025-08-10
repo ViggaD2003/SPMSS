@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Data
 public class CreateAppointmentRequest {
 
+    private Integer caseId;
+
     @NotNull(message = "Slot ID is required")
     private Integer slotId;
 
