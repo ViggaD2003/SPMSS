@@ -47,6 +47,13 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
             """)
     List<Cases> findAllActiveCases(@Param("counselorId") Integer counselorId);
 
+    @Query("""
+                SELECT COUNT(c) FROM Cases c
+                WHERE c.status = 'CLOSED'
+                AND c.student.id = :studentId
+            """)
+    int countAllClosedCases(@Param("studentId") Integer studentId);
+
     @Query("SELECT COUNT(c) = 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSE'")
     boolean isStudentFreeFromOpenCases(@Param("studentId") Integer studentId);
 

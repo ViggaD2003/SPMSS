@@ -6,6 +6,7 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Manager.DashBoardMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
+import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.DashBoardService;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
@@ -15,6 +16,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +40,8 @@ public class DashBoardServiceImpl implements DashBoardService {
     private final DashBoardMapper dashBoardMapper;
 
     private final CaseMapper caseMapper;
+
+    private final MentalEvaluationRepository mentalEvaluationRepository;
 
     @Override
     public ManagerDashboard managerDashboard() {
@@ -105,5 +109,64 @@ public class DashBoardServiceImpl implements DashBoardService {
         }
     }
 
+    @Override
+    public StudentDashboard studentDashboard(LocalDate startDate, LocalDate endDate, Integer studentId) {
+        List<DataSet> surveyDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("survey", startDate, endDate, studentId)
+                .stream().map(this::mapToDataSet).toList();
 
+        SurveyStatic surveyStatic = SurveyStatic.builder()
+                .activeSurveys(0)
+                .dataSet(surveyDataSets)
+                .numberOfSkips(0)
+                .completedSurveys(0)
+                .build();
+
+        List<DataSet> appointmentDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("appointment", startDate, endDate, studentId)
+                .stream().map(this::mapToDataSet).toList();
+
+        AppointmentStatic appointmentStatic = AppointmentStatic.builder()
+                .activeAppointments(0)
+                .completedAppointments(0)
+                .numOfAbsent(0)
+                .dataSet(appointmentDataSets)
+                .build();
+
+        List<DataSet> programDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("program", startDate, endDate, studentId)
+                .stream().map(this::mapToDataSet).toList();
+
+        ProgramSupportStatic supportStatic = ProgramSupportStatic.builder()
+                .activePrograms(0)
+                .completedPrograms(0)
+                .numOfAbsent(0)
+                .dataSet(programDataSets)
+                .build();
+
+        OverviewStudent overview = OverviewStudent.builder()
+                .totalSurveys(surveyDataSets.size())
+                .totalAppointments(appointmentDataSets.size())
+                .totalPrograms(programDataSets.size())
+                .totalCases(caseRepository.countAllClosedCases(studentId))
+                .build();
+
+
+        MentalEvaluationStatic mentalEvaluationStatic = MentalEvaluationStatic.builder()
+                .program(supportStatic)
+                .appointment(appointmentStatic)
+                .survey(surveyStatic)
+                .build();
+
+        return StudentDashboard.builder()
+                .overview(overview)
+                .mentalStatistic(mentalEvaluationStatic)
+                .build();
+    }
+
+    private DataSet mapToDataSet(MentalEvaluation evaluation) {
+        if (evaluation == null) return null;
+
+        return DataSet.builder()
+                .score(evaluation.getWeightedScore())
+                .createdAt(evaluation.getLatestEvaluatedAt())
+                .build();
+    }
 }

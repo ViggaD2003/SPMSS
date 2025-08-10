@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.CounselorDashboard;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.ManagerDashboard;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.StudentDashboard;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.Teacher.TeacherDashboardResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.DashBoardService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.TeacherDashboardService;
@@ -10,7 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/dashboard")
@@ -38,5 +42,15 @@ public class DashboardController {
     @GetMapping("/counselor")
     public ResponseEntity<CounselorDashboard> getCounselorDashboard() {
         return ResponseEntity.ok(dashBoardService.counselorDashboard());
+    }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/student")
+    public ResponseEntity<StudentDashboard> getCounselorDashboard(
+            @RequestParam("from") LocalDate from,
+            @RequestParam("to") LocalDate to,
+            @RequestParam("studentId") Integer studentId
+            ) {
+        return ResponseEntity.ok(dashBoardService.studentDashboard(from, to, studentId));
     }
 }
