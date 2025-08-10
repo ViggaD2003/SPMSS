@@ -53,7 +53,7 @@ public class CaseController {
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<?> assignCaseToCounselor(
             @Parameter(description = "Counselor ID") @RequestParam Integer counselorId,
-            @Parameter(description = "Case ID") @RequestParam Integer caseId) {
+            @Parameter(description = "Case ID") @RequestParam List<Integer> caseId) {
         return ResponseEntity.ok(caseService.assignCounselor(counselorId, caseId));
     }
 

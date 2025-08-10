@@ -138,17 +138,19 @@ public class CaseServiceImpl implements CaseService {
 
 
     @Override
-    public Optional<?> assignCounselor(Integer counselorId, Integer caseId) {
+    public Optional<?> assignCounselor(Integer counselorId, List<Integer> caseId) {
         Account account = accountRepository.findById(counselorId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
-        Cases cases = caseRepository.findById(caseId)
-                .orElseThrow(() -> new IllegalArgumentException("Cases is not found"));
+        caseId.forEach(id -> {
+            Cases cases = caseRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Cases is not found"));
 
-        cases.setCounselor(account);
-        cases.setStatus(Status.IN_PROGRESS);
+            cases.setCounselor(account);
+            cases.setStatus(Status.IN_PROGRESS);
 
-        caseRepository.save(cases);
+            caseRepository.save(cases);
+        });
 
         return Optional.of("Case assigned successfully !");
     }

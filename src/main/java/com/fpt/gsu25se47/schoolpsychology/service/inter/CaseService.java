@@ -9,10 +9,9 @@ public interface CaseService {
 
     Optional<?> createCase(AddNewCaseDto dto);
 
-    Optional<?> assignCounselor(Integer counselorId, Integer caseId);
+    Optional<?> assignCounselor(Integer counselorId, List<Integer> caseId);
 
     Optional<?> getAllCases(List<String> statusCase, Integer categoryId, Integer surveyId);
-
 
     Optional<?> getDetailById(Integer caseId);
 
