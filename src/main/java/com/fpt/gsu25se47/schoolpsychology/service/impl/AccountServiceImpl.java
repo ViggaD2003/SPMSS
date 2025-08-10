@@ -157,14 +157,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<StudentDto> getStudentsWithoutClassOrInactiveClass(Grade grade, String schoolYear, String classCode) {
 
-        List<Student> students;
-
-        if (grade != null || schoolYear != null || classCode != null) {
-            students = studentRepository.findEligibleStudentsWithParams(grade, schoolYear, classCode, LocalDate.now().getYear());
-
-        } else {
-            students = studentRepository.findEligibleStudents(LocalDate.now().getYear());
-        }
+        List<Student> students = studentRepository.findEligibleStudents(grade, schoolYear, classCode);
 
         return students.stream()
                 .map(studentMapper::mapStudentDtoWithoutClass)

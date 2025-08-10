@@ -22,36 +22,19 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
             LEFT JOIN Enrollment e on e.student.id = s.id
             LEFT JOIN e.classes c
             WHERE a.status = true
-            AND (
-                  c.id IS NULL\s
-                  OR (
-                      c.isActive = false\s
-
-                  )
-                )
-            """)
-    List<Student> findEligibleStudents(@Param("currentYear") int currentYear);
-
-    @Query("""
-            SELECT s FROM Student s
-            JOIN s.account a
-            LEFT JOIN Enrollment e on e.student.id = s.id
-            LEFT JOIN e.classes c
-            WHERE a.status = true
-            AND (
-                  c.id IS NULL\s
-                  OR (
-                      c.isActive = false\s
-
-                  )
-                )
+            AND NOT EXISTS (
+                  SELECT 1
+                  FROM Enrollment e2
+                  JOIN e2.classes c2
+                  WHERE e2.student = s
+                    AND c2.isActive = true
+            )
             AND (:grade IS NULL OR c.grade = :grade)
             AND (:schoolYear IS NULL OR c.schoolYear = :schoolYear)
             AND (:classCode IS NULL OR c.codeClass = :classCode)
             """)
-    List<Student> findEligibleStudentsWithParams(
+    List<Student> findEligibleStudents(
             @Param("grade") Grade grade,
             @Param("schoolYear") String schoolYear,
-            @Param("classCode") String classCode,
-            @Param("currentYear") int currentYear);
+            @Param("classCode") String classCode);
 }
