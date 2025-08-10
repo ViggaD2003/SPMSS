@@ -26,7 +26,7 @@ public class ClassController {
     private final EnrollmentService enrollmentService;
     private final AccountService accountService;
 
-    @PreAuthorize("hasRole('MANAGER')")
+//    @PreAuthorize("hasRole('MANAGER')")
     @Operation(description = "schoolYear = 'startYear-endYear', ex: '2021-2024'")
     @PostMapping
     ResponseEntity<List<ClassResponse>> createClass(@RequestBody @Valid List<CreateClassRequest> requests) {
