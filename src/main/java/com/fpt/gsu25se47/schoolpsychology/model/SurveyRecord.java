@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,9 @@ public class SurveyRecord {
 
     @Enumerated(EnumType.STRING)
     private SurveyRecordType surveyRecordType;
+
+    @Enumerated(EnumType.STRING)
+    private SurveyRecordIdentify surveyRecordIdentify;
 
     private Integer round;
 

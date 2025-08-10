@@ -24,7 +24,7 @@ public class SurveyRecordController {
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> createSurveyRecord(@RequestBody CreateSurveyRecordDto createSurveyRecordDto) {
-        SurveyRecordDetailResponse response = surveyRecordService.createSurveyRecord(createSurveyRecordDto);
+        SurveyRecordDetailResponse response = surveyRecordService.createSurveyRecord(createSurveyRecordDto, null);
         return ResponseEntity.ok(response);
     }
 

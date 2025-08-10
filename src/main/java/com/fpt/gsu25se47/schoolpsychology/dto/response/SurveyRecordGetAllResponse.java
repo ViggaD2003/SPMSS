@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ public class SurveyRecordGetAllResponse {
     private Integer id;
     private Float totalScore;
     private Boolean isSkipped;
+    private SurveyRecordIdentify identify;
     private LevelResponse level;
     private LocalDate completedAt;
     private SurveyGetAllResponse survey;

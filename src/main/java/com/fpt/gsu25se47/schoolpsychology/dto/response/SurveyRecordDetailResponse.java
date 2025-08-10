@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import lombok.Builder;
 import lombok.Data;

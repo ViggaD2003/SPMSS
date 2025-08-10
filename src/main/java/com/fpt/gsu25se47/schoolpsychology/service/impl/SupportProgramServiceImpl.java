@@ -12,6 +12,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.*;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
@@ -51,6 +52,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final MentalEvaluationRepository mentalEvaluationRepository;
     private final NotificationService notificationService;
     private final AccountService accountService;
+
 
     @Override
     @Transactional
@@ -155,7 +157,8 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
-    public Optional<?> saveSurveySupportProgram(CreateSurveyRecordDto createSurveyRecordDto) {
+    @Transactional
+    public Optional<?> saveSurveySupportProgram(Integer programId, CreateSurveyRecordDto createSurveyRecordDto) {
         try {
             UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
             if (userDetails == null) {
@@ -163,14 +166,35 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             }
 
             Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
-            ProgramParticipants participant = programParticipantRepository.findByStudentId(currentAccount.getId());
-            surveyRecordService.createSurveyRecord(createSurveyRecordDto);
+
+            Survey survey = surveyRepository.findById(createSurveyRecordDto.getSurveyId())
+                    .orElseThrow(() -> new BadRequestException("Survey not found"));
+
+            ProgramParticipants participant = programParticipantRepository.findByStudentId(currentAccount.getId(), programId);
+
+            if (!survey.getId().equals(participant.getProgram().getSurvey().getId())) {
+                throw new BadRequestException("Survey does not belong to the program you're enrolled in");
+            }
+
+            if(!surveyRecordRepository.isExistEntrySurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())) {
+                surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
+            } else {
+                surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.EXIT);
+            }
 
             if (programParticipantRepository.hasParticipantCompletedSurveyTwice(participant.getId())) {
                 List<SurveyRecord> surveyRecords = surveyRecordRepository.findTwoSurveyRecordsByParticipant(participant.getId());
 
-                if (surveyRecords.size() == 2) {
-                    float weightScore = (surveyRecords.get(0).getTotalScore() + surveyRecords.get(1).getTotalScore()) / 2;
+                SurveyRecord entryRecord = surveyRecords.stream()
+                        .filter(sr -> sr.getSurveyRecordIdentify() == SurveyRecordIdentify.ENTRY)
+                        .findFirst().orElse(null);
+
+                SurveyRecord exitRecord = surveyRecords.stream()
+                        .filter(sr -> sr.getSurveyRecordIdentify() == SurveyRecordIdentify.EXIT)
+                        .findFirst().orElse(null);
+
+                if (surveyRecords.size() == 2 && entryRecord != null && exitRecord != null) {
+                    float weightScore = (entryRecord.getTotalScore() + exitRecord.getTotalScore()) / 2;
 
                     MentalEvaluation mentalEvaluation = mentalEvaluationService.createMentalEvaluationWithContext(null, null, participant);
                     mentalEvaluation.setWeightedScore(weightScore);
@@ -205,7 +229,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     "This support program status is not ACTIVE");
         }
 
-        if (programParticipantRepository.findByStudentId(student.getId()) != null) {
+        if (programParticipantRepository.findByStudentId(student.getId(), supportProgramId) != null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Student is already registered to this program for studentId: " + student.getId());
         }
@@ -265,6 +289,18 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         supportProgram.setProgramRegistrations(participants);
         supportProgramRepository.save(supportProgram);
         return "Successfully unregistered support program";
+    }
+
+    @Override
+    public SupportProgramStudentDetail getSupportProgramStudentDetailById(Integer supportProgramId, Integer studentId) {
+        SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
+                .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + supportProgramId));
+        ProgramParticipants programParticipants = programParticipantRepository.findByStudentId(studentId, supportProgramId);
+        SupportProgramStudent student = participantMapper.mapToSupportProgramStudent(programParticipants);
+        SupportProgramStudentDetail programStudentDetail = supportProgramMapper.mapSupportProgramStudentDetail(supportProgram);
+        programStudentDetail.setStudent(student);
+
+        return programStudentDetail;
     }
 
     @Override

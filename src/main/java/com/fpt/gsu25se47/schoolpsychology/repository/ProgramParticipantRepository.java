@@ -12,8 +12,8 @@ public interface ProgramParticipantRepository extends JpaRepository<ProgramParti
     @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.program.id = :programId")
     List<ProgramParticipants> findByProgramId(Integer programId);
 
-    @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.student.id =:studentId")
-    ProgramParticipants findByStudentId(Integer studentId);
+    @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.student.id =:studentId AND pp.program.id = :supportProgramId")
+    ProgramParticipants findByStudentId(Integer studentId, Integer supportProgramId);
 
     @Query(value = """
     SELECT 

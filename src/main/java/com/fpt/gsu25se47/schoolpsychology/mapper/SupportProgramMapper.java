@@ -47,6 +47,12 @@ public abstract class SupportProgramMapper {
     })
     public abstract SupportProgramDetail mapSupportProgramDetail(SupportProgram supportProgram);
 
+    @Mappings({
+            @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
+            @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
+            @Mapping(target = "student", ignore = true)
+    })
+    public abstract SupportProgramStudentDetail mapSupportProgramStudentDetail(SupportProgram supportProgram);
 
     protected CategoryResponse mapCategory(Category category) {
         if (category == null) return null;

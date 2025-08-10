@@ -71,4 +71,7 @@ public class Survey extends Auditable {
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SupportProgram> supportPrograms = new ArrayList<>();
 }

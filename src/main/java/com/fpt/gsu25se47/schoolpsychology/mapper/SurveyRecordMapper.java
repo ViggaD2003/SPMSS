@@ -17,6 +17,7 @@ public class SurveyRecordMapper {
         return SurveyRecordGetAllResponse.builder()
                 .id(surveyRecord.getId())
                 .totalScore(surveyRecord.getTotalScore())
+                .identify(surveyRecord.getSurveyRecordIdentify() == null ? null : surveyRecord.getSurveyRecordIdentify())
                 .isSkipped(surveyRecord.getIsSkipped())
                 .completedAt(surveyRecord.getCompletedAt())
                 .level(surveyRecord.getLevel() == null ? null : levelMapper.mapToLevelResponse(surveyRecord.getLevel()))

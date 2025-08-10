@@ -26,6 +26,9 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
     @Query("SELECT sr FROM SurveyRecord sr WHERE sr.survey.id =:surveyId")
     List<SurveyRecord> findAllBySurveyId(Integer surveyId);
 
+    @Query("SELECT sr FROM SurveyRecord sr WHERE sr.survey.id = :surveyId AND sr.student.id = :studentId")
+    List<SurveyRecord> findAllByStudentIdAndSurveyId(Integer studentId, Integer surveyId);
+
     @Query(value = """
             SELECT sr.* 
             FROM program_participants pp
@@ -55,4 +58,18 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
             LIMIT 1;
             """, nativeQuery = true)
     SurveyRecord findLatestSurveyRecordByStudentId(Integer studentId);
+
+    @Query(value = """
+        SELECT EXISTS(
+            SELECT 1
+            FROM survey_record sr
+            INNER JOIN program_participants pp ON sr.account_id = pp.student_id
+            WHERE sr.survey_record_type = 'PROGRAM'
+                AND sr.survey_record_identify = 'ENTRY'
+                AND pp.student_id = :studentId
+                AND pp.program_id = :supportProgramId
+        )
+        """, nativeQuery = true)
+    boolean isExistEntrySurveyRecordByStudentId(@Param("studentId") Integer studentId,
+                                                @Param("supportProgramId") Integer supportProgramId);
 }

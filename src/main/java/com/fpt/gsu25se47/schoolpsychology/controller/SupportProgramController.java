@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.RegisterProgramParticipantResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramStudentDetail;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SupportProgramService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,8 +62,8 @@ public class SupportProgramController {
     })
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/save-survey-record")
-    public ResponseEntity<?> saveWorking(@Valid @RequestBody CreateSurveyRecordDto dto) {
-        return ResponseEntity.ok(service.saveSurveySupportProgram(dto));
+    public ResponseEntity<?> saveWorking(@RequestParam("programId") Integer programId, @Valid @RequestBody CreateSurveyRecordDto dto) {
+        return ResponseEntity.ok(service.saveSurveySupportProgram(programId, dto));
     }
 
     @Operation(
@@ -106,6 +107,12 @@ public class SupportProgramController {
     @GetMapping("/{programId}")
     public ResponseEntity<?> getSupportProgram(@PathVariable Integer programId) {
         return ResponseEntity.ok(service.getSupportProgramById(programId));
+    }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/participant-program-detail")
+    public ResponseEntity<SupportProgramStudentDetail> getParticipantProgramDetail(@RequestParam("studentId") Integer studentId, @RequestParam("programId") Integer programId) {
+        return ResponseEntity.ok(service.getSupportProgramStudentDetailById(programId, studentId));
     }
 
     @Operation(

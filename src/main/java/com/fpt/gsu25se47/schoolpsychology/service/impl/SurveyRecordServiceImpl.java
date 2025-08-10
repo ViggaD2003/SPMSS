@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
@@ -41,7 +42,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
     @Override
     @Transactional
-    public SurveyRecordDetailResponse createSurveyRecord(CreateSurveyRecordDto dto) {
+    public SurveyRecordDetailResponse createSurveyRecord(CreateSurveyRecordDto dto, SurveyRecordIdentify identify) {
         try {
             Survey survey = surveyRepository.findById(dto.getSurveyId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -65,12 +66,15 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                         .surveyRecordType(SurveyRecordType.valueOf(dto.getSurveyRecordType()))
                         .student(account)
                         .build();
-                SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
-                if(saved.getSurvey().getSurveyType() != SurveyType.PROGRAM){
-                    MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved, null);
 
-                    saved.setMentalEvaluation(mentalEvaluationSaved);
+                if(surveyRecord.getSurvey().getSurveyType() != SurveyType.PROGRAM && identify == null){
+                    MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
+                    surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
+                    surveyRecord.setSurveyRecordIdentify(null);
+                } else {
+                    surveyRecord.setSurveyRecordIdentify(identify);
                 }
+                SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
                 return surveyRecordMapper.mapToSurveyRecordResponse(saved);
             }
@@ -89,37 +93,32 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Total Score do not match any levels"));
 
-
-
             SurveyRecord surveyRecord = SurveyRecord.builder()
                     .totalScore(dto.getTotalScore())
                     .completedAt(LocalDate.now())
                     .isSkipped(dto.getIsSkipped())
                     .answerRecords(answerRecords)
                     .round(survey.getRound())
+                    .surveyRecordType(SurveyRecordType.valueOf(dto.getSurveyRecordType()))
                     .survey(survey)
                     .student(account)
                     .level(matchLevel)
                     .build();
 
-            if(survey.getSurveyType() == SurveyType.PROGRAM && !dto.getSurveyRecordType().isEmpty()){
-                surveyRecord.setSurveyRecordType(SurveyRecordType.valueOf(dto.getSurveyRecordType()));
-            } else {
-                surveyRecord.setSurveyRecordType(SurveyRecordType.valueOf(survey.getSurveyType().name()));
-            }
-
-            if (!surveyRecord.getAnswerRecords().isEmpty()) {
+            if (surveyRecord.getAnswerRecords() != null && !surveyRecord.getAnswerRecords().isEmpty()) {
                 surveyRecord.getAnswerRecords()
                         .forEach(item -> item.setSurveyRecord(surveyRecord));
             }
 
-            SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
-
-           if(saved.getSurvey().getSurveyType() != SurveyType.PROGRAM){
-               MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, saved, null);
-
-               saved.setMentalEvaluation(mentalEvaluationSaved);
+           if(surveyRecord.getSurvey().getSurveyType() != SurveyType.PROGRAM){
+               MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
+               surveyRecord.setSurveyRecordIdentify(null);
+               surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
+           } else {
+               surveyRecord.setSurveyRecordIdentify(identify);
            }
+
+            SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
             return surveyRecordMapper.mapToSurveyRecordResponse(saved);
 
