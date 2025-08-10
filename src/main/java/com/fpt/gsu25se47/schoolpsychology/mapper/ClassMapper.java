@@ -12,7 +12,7 @@ public interface ClassMapper {
 
     Classes toClassEntity(CreateClassRequest request);
 
-    @Mapping(target = "totalStudents", expression = "java(classes.getEnrollments().size())")
+    @Mapping(target = "totalStudents", expression = "java(classes.getEnrollments() != null ? classes.getEnrollments().size() : 0)")
     ClassResponse toClassResponse(Classes classes);
 
     @BeanMapping(builder = @Builder(disableBuilder = true))

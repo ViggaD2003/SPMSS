@@ -9,7 +9,6 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.AccountMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.Enrollment;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
@@ -29,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +65,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<?> listAllAccounts(Role role, Integer classId, Grade grade) {
-        return accountRepository.findAccountsByRoleNative(role == null ? null :  role.name(), classId, grade == null ? null : grade.name()).stream()
+        return accountRepository.findAccountsByRoleNative(role == null ? null : role.name(), classId, grade == null ? null : grade.name()).stream()
                 .filter(account -> !"MANAGER".equals(account.getRole().name()))
                 .map(account -> Optional.of(accountMapper.toDto(account)))
                 .toList();
@@ -156,17 +156,17 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<StudentDto> getStudentsWithoutClassOrInactiveClass(Grade grade, String schoolYear, String classCode) {
-        return studentRepository.findStudentsWithoutClassOrInactiveClass()
-                .stream()
-                .filter(s -> grade == null || s.getTargetLevel() == grade)
-                .filter(s -> schoolYear == null || classCode == null ||
-                        s.getEnrollments().stream()
-                                .map(Enrollment::getClasses)
-                                .anyMatch(c ->
-                                        (schoolYear.isEmpty() || schoolYear.equals(c.getSchoolYear())) &&
-                                                (classCode.isEmpty() || c.getCodeClass().contains(classCode))
-                                )
-                )
+
+        List<Student> students;
+
+        if (grade != null || schoolYear != null || classCode != null) {
+            students = studentRepository.findEligibleStudentsWithParams(grade, schoolYear, classCode, LocalDate.now().getYear());
+
+        } else {
+            students = studentRepository.findEligibleStudents(LocalDate.now().getYear());
+        }
+
+        return students.stream()
                 .map(studentMapper::mapStudentDtoWithoutClass)
                 .toList();
     }
