@@ -16,7 +16,7 @@ services:
     image: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: spmss2025
       MYSQL_DATABASE: school_mental_health_support_db
     ports:
       - "3306:3306"
