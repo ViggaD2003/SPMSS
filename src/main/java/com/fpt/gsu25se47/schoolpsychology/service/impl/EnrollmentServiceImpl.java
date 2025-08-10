@@ -34,6 +34,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Class not found for ID: " + request.getClassId()));
 
+        if (!clazz.getIsActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "This class is inactive");
+        }
+
         List<Student> students = studentRepository.findAllById(request.getStudentIds());
 
         if (students.size() != request.getStudentIds().size()) {
@@ -54,15 +59,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private List<Enrollment> getEnrollmentsToSave(CreateEnrollmentRequest request, List<Student> students, Classes clazz) {
         // Filter out already enrolled students
-        List<Integer> existingStudentIds = enrollmentRepository
-                .findAllByClassesIdAndStudentIdIn(request.getClassId(), request.getStudentIds())
-                .stream()
-                .map(e -> e.getStudent().getId())
-                .toList();
 
         return students.stream()
-                .filter(student -> !existingStudentIds.contains(student.getId()))
-                .map(student -> enrollmentMapper.toEnrollment(request, student, clazz))
+                .map(student -> {
+                    student.setTargetLevel(clazz.getGrade());
+                    return enrollmentMapper.toEnrollment(request, student, clazz);
+                })
                 .toList();
     }
 
@@ -71,9 +73,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         List<Integer> conflictStudentIds = existingEnrollments.stream()
                 .filter(e -> e.getClasses().getIsActive())
-                .filter(e -> !e.getClasses().getId().equals(request.getClassId()))
                 .map(e -> e.getStudent().getId())
-                .distinct()
                 .toList();
 
         if (!conflictStudentIds.isEmpty()) {
