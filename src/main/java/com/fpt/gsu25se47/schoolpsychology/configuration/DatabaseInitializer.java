@@ -4,9 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.jobs.enums.QuartzJobDefinition;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.QuartzSchedulerService;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.Resource;
@@ -48,14 +46,30 @@ public class DatabaseInitializer implements CommandLineRunner {
         log.info("✅ Quartz Scheduler started manually");
         for (QuartzJobDefinition def : QuartzJobDefinition.values()) {
             try {
-
+                String defaultCron = "0 0 0 * * ?";
                 JobKey jobKey = new JobKey(def.getJobName(), def.getGroupName());
+
                 if (!scheduler.checkExists(jobKey)) {
-                    String defaultCron = "0 0 */12 * * ?";
                     quartzSchedulerService.scheduleJobs(def, defaultCron);
                     log.info("Scheduled job '{}' with default cron: {}", def.getJobName(), defaultCron);
                 } else {
-                    log.info("Job '{}' already exists. Skipping default scheduling.", def.getJobName());
+                    TriggerKey triggerKey = new TriggerKey(def.getTriggerName(), def.getGroupName());
+                    CronTrigger cronTrigger = (CronTrigger) scheduler.getTrigger(triggerKey);
+                    String existCron = cronTrigger.getCronExpression();
+
+                    if (existCron == null || existCron.isBlank()) {
+                        existCron = defaultCron;
+                    }
+
+                    if (!existCron.equals(defaultCron)) {
+                        Trigger newTrigger = TriggerBuilder.newTrigger()
+                                .withIdentity(triggerKey)
+                                .withSchedule(CronScheduleBuilder.cronSchedule(existCron))
+                                .build();
+
+                        scheduler.rescheduleJob(triggerKey, newTrigger);
+                        log.info("Rescheduled job '{}' with new cron: {}", def.getJobName(), existCron);
+                    }
                 }
             } catch (SchedulerException e) {
                 log.error("Failed to schedule job '{}': {}", def.getJobName(), e.getMessage());
