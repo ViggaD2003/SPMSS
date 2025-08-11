@@ -7,7 +7,6 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @Controller
@@ -23,7 +22,7 @@ public class NotificationBroker {
     }
 
     @MessageMapping("/noti-setting")
-    public void sendNotiSetting(@RequestBody NotiSettingRequest notiSettingRequest) {
+    public void sendNotiSetting(NotiSettingRequest notiSettingRequest) {
         notificationService.sendNotificationSetting(notiSettingRequest);
     }
 
