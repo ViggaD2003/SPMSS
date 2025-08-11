@@ -19,8 +19,6 @@ public class AppointmentResponse {
 
     private Integer id;
 
-//    private SlotResponse slot;
-
     private AccountDto bookedFor;
 
     private AccountDto bookedBy;
