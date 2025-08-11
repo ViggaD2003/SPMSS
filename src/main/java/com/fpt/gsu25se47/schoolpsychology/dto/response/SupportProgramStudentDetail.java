@@ -31,5 +31,7 @@ public class SupportProgramStudentDetail {
 
     private AccountDto hostedBy;
 
+    private int participants;
+
     private SupportProgramStudent student;
 }
