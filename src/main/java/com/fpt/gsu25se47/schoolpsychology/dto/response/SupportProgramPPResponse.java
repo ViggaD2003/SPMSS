@@ -1,10 +1,10 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 public class SupportProgramPPResponse {
@@ -33,5 +33,7 @@ public class SupportProgramPPResponse {
 
     private SurveyGetAllResponse programSurvey;
 
-    private List<ProgramPPParticipantResponse> participants;
+    private Integer participants;
+
+    private RegistrationStatus registrationStatus;
 }

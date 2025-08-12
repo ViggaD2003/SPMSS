@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -331,9 +332,20 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     @Override
     public List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId) {
 
-        return supportProgramRepository.findByStudentId(studentId)
+        List<SupportProgram> sps =  supportProgramRepository.findByStudentId(studentId);
+        return sps
                 .stream()
-                .map(supportProgramMapper::toSupportProgramPPResponse)
+                .map(s -> {
+                    SupportProgramPPResponse supportProgramPPResponse = supportProgramMapper.toSupportProgramPPResponse(s);
+
+                    s.getProgramRegistrations()
+                            .stream()
+                            .filter(pp -> Objects.equals(pp.getStudent().getId(), studentId))
+                            .findFirst()
+                            .ifPresent(student -> supportProgramPPResponse.setRegistrationStatus(student.getStatus()));
+
+                    return supportProgramPPResponse;
+                })
                 .toList();
     }
 
