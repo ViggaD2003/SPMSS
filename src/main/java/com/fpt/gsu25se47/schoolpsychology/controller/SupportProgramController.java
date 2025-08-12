@@ -177,6 +177,5 @@ public class SupportProgramController {
     @PatchMapping("/open-survey")
     public ResponseEntity<String> openSurvey(@RequestParam("supportProgramId") Integer supportProgramId) {
         return ResponseEntity.ok(service.openSurvey(supportProgramId));
-
     }
 }
