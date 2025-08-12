@@ -9,8 +9,12 @@ public class NotiSettingRequest {
 
     private int entityId;
 
-    private Boolean notifyTeacherOrCounselor;
+    private Boolean notifyTeacher;
 
     private Boolean notifyParent;
+
+    private Boolean notifyCounselor;
+
+    private Boolean notifyManager;
 
 }
