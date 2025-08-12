@@ -156,13 +156,8 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public Optional<?> getAllCases(List<String> statusCase, Integer categoryId, Integer surveyId) {
-        UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
-        if (userDetails == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-        }
-
-        Account account = accountRepository.findByEmail(userDetails.getUsername())
+    public Optional<?> getAllCases(List<String> statusCase, Integer categoryId, Integer surveyId, Integer accountId) {
+        Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
         List<Cases> filteredCases = caseRepository.findAllCasesByRoleAndAccountWithStatusSorted(account.getRole().name(), account.getId(), statusCase, statusCase.size(), categoryId);

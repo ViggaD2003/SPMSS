@@ -44,7 +44,7 @@ public class DashboardController {
         return ResponseEntity.ok(dashBoardService.counselorDashboard());
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping("/student")
     public ResponseEntity<StudentDashboard> getCounselorDashboard(
             @RequestParam("from") LocalDate from,

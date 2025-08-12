@@ -92,7 +92,7 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        if (request.getNotifyTeacherOrCounselor()) {
+        if (request.getNotifyTeacher() || request.getNotifyCounselor()) {
             if(appointment.getSlot().getHostedBy().getRole() == Role.TEACHER) {
                 NotiRequest notiRequest = NotiRequest
                         .builder()
@@ -114,6 +114,18 @@ public class NotificationServiceImpl implements NotificationService {
                         .build();
                 this.sendNotification(appointment.getSlot().getHostedBy().getEmail(),"/queue/notifications", this.saveNotification(notiRequest));
             }
+        }
+
+        if(request.getNotifyManager()){
+            NotiRequest notiRequest = NotiRequest
+                    .builder()
+                    .title("New Appointment Created !")
+                    .notificationType("APPOINTMENT")
+                    .relatedEntityId(request.getEntityId())
+                    .content("System have new appointment")
+                    .username("danhkvtse172932@fpt.edu.vn")
+                    .build();
+            this.sendNotification("danhkvtse172932@fpt.edu.vn","/queue/notifications", this.saveNotification(notiRequest));
         }
     }
 }

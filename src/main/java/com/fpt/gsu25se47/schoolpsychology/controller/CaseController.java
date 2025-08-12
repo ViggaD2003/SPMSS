@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -29,15 +28,16 @@ public class CaseController {
             @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
     })
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER') or hasRole('STUDENT')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('TEACHER') or hasRole('STUDENT') or hasRole('PARENTS')")
     public ResponseEntity<?> getAllCases(
             @Parameter(description = "List of status to filter cases")
             @RequestParam(required = false) List<String> statusCase,
             @Parameter(description = "Category ID to filter cases")
             @RequestParam(name = "categoryId", required = false) Integer categoryId,
-            @RequestParam(name = "surveyId", required = false) Integer surveyId
+            @RequestParam(name = "surveyId", required = false) Integer surveyId,
+            @RequestParam(name = "accountId") Integer accountId
     ) {
-        return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId, surveyId));
+        return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId, surveyId, accountId));
     }
 
     @Operation(summary = "Create new case", description = "Add a new case to the system")
