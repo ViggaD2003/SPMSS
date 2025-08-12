@@ -31,5 +31,5 @@ public interface SupportProgramService {
 
     Optional<?> getSuggestSupportProgram(Integer studentId);
 
-    List<SupportProgramResponse> getSupportProgramsByStudentId(Integer studentId);
+    List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId);
 }

@@ -329,11 +329,11 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
-    public List<SupportProgramResponse> getSupportProgramsByStudentId(Integer studentId) {
+    public List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId) {
 
         return supportProgramRepository.findByStudentId(studentId)
                 .stream()
-                .map(supportProgramMapper::mapSupportProgramResponse)
+                .map(supportProgramMapper::toSupportProgramPPResponse)
                 .toList();
     }
 

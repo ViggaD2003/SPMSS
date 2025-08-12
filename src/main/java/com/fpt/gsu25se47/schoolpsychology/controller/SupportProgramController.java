@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.RegisterProgramParticipantResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramPPResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramStudentDetail;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
@@ -167,7 +168,7 @@ public class SupportProgramController {
     }
 
     @GetMapping("/participants")
-    public ResponseEntity<List<SupportProgramResponse>> findByStudentId(@RequestParam("studentId") Integer studentId) {
+    public ResponseEntity<List<SupportProgramPPResponse>> findByStudentId(@RequestParam("studentId") Integer studentId) {
         return ResponseEntity.ok(service.getSupportProgramsByStudentId(studentId));
     }
 }
