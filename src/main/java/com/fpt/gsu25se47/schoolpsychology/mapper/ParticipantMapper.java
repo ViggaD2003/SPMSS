@@ -41,6 +41,10 @@ public abstract class ParticipantMapper {
     })
     public abstract SupportProgramStudent mapToSupportProgramStudent(ProgramParticipants programParticipants);
 
+    @Mapping(target = "registrationStatus", source = "status")
+    @Mapping(target = "studentId", source = "student.id")
+    public abstract ProgramPPParticipantResponse toProgramPPParticipantResponse(ProgramParticipants programParticipants);
+
     protected AccountDto mapStudent(Account student) {
         if (student == null) return null;
         return accountMapper.toDto(student);

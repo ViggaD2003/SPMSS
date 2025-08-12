@@ -5,7 +5,6 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -31,8 +30,8 @@ public interface SupportProgramService {
 
     Optional<?> getSuggestSupportProgram(Integer studentId);
 
+    List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId);
+
     String openSurvey(Integer supportProgramId);
 
 }
-
-

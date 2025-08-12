@@ -27,9 +27,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -52,6 +52,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final MentalEvaluationRepository mentalEvaluationRepository;
     private final NotificationService notificationService;
     private final AccountService accountService;
+
 
     @Override
     @Transactional
@@ -79,10 +80,10 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);
         supportProgram.setStatus(ProgramStatus.ACTIVE);
-        supportProgram.setIsActiveSurvey(false);
 
         return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
     }
+
 
     @Override
     public SupportProgramDetail getSupportProgramById(Integer id) {
@@ -329,18 +330,23 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
-    public String openSurvey(Integer supportProgramId) {
-        SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
-                .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + supportProgramId));
-        if(!supportProgram.getIsActiveSurvey()){
-            supportProgram.setIsActiveSurvey(true);
-            supportProgramRepository.save(supportProgram);
-            return "Successfully opened support program";
-        } else {
-            supportProgram.setIsActiveSurvey(false);
-            supportProgramRepository.save(supportProgram);
-            return "Successfully closed support program";
-        }
+    public List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId) {
+
+        List<SupportProgram> sps =  supportProgramRepository.findByStudentId(studentId);
+        return sps
+                .stream()
+                .map(s -> {
+                    SupportProgramPPResponse supportProgramPPResponse = supportProgramMapper.toSupportProgramPPResponse(s);
+
+                    s.getProgramRegistrations()
+                            .stream()
+                            .filter(pp -> Objects.equals(pp.getStudent().getId(), studentId))
+                            .findFirst()
+                            .ifPresent(student -> supportProgramPPResponse.setRegistrationStatus(student.getStatus()));
+
+                    return supportProgramPPResponse;
+                })
+                .toList();
     }
 
     @Override
@@ -359,5 +365,20 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                         HttpStatus.NOT_FOUND,
                         "Support program not found with ID: " + id
                 ));
+    }
+
+    @Override
+    public String openSurvey(Integer supportProgramId) {
+        SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
+                .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + supportProgramId));
+        if(!supportProgram.getIsActiveSurvey()){
+            supportProgram.setIsActiveSurvey(true);
+            supportProgramRepository.save(supportProgram);
+            return "Successfully opened support program";
+        } else {
+            supportProgram.setIsActiveSurvey(false);
+            supportProgramRepository.save(supportProgram);
+            return "Successfully closed support program";
+        }
     }
 }
