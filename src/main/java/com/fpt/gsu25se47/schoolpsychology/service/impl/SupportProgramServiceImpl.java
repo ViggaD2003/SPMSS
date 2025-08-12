@@ -80,6 +80,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);
         supportProgram.setStatus(ProgramStatus.ACTIVE);
+        supportProgram.setIsActiveSurvey(false);
 
         return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
     }
@@ -280,7 +281,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         List<ProgramParticipants> participants = supportProgram.getProgramRegistrations();
         participants.removeIf(p -> {
-            if (p.getStudent().getId().equals(studentId)) {
+            if (p.getStudent().getId().equals(studentId) ) {
                 p.setProgram(null);
                 return true;
             }
