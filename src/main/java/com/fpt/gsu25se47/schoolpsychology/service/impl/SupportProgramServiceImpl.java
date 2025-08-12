@@ -27,7 +27,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -327,6 +326,15 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         }
         return Optional.of(recommendSupportProgram);
+    }
+
+    @Override
+    public List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId) {
+
+        return supportProgramRepository.findByStudentId(studentId)
+                .stream()
+                .map(supportProgramMapper::toSupportProgramPPResponse)
+                .toList();
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.RegisterProgramParticipantResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramPPResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramStudentDetail;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
@@ -164,6 +165,11 @@ public class SupportProgramController {
     @PostMapping("/participants/unregister")
     public ResponseEntity<String> unregisterStudentFromSupportProgram(@RequestParam("supportProgramId") Integer supportProgramId, @RequestParam("studentId") Integer studentId) {
         return ResponseEntity.ok(service.unRegisterStudentFromSupportProgram(supportProgramId, studentId));
+    }
+
+    @GetMapping("/participants")
+    public ResponseEntity<List<SupportProgramPPResponse>> findByStudentId(@RequestParam("studentId") Integer studentId) {
+        return ResponseEntity.ok(service.getSupportProgramsByStudentId(studentId));
     }
 }
 

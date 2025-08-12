@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.repository;
 import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -39,4 +40,13 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
             WHERE sp.category.id = :categoryId AND sp.status = 'ACTIVE'
             """)
     List<SupportProgram> recommendSupportPrograms(Integer categoryId);
+
+    @Query("""
+                SELECT sp
+                FROM SupportProgram sp
+                JOIN ProgramParticipants pp ON sp.id = pp.program.id
+                WHERE pp.student.id = :studentId
+            """)
+    List<SupportProgram> findByStudentId(@Param("studentId") Integer studentId);
+
 }
