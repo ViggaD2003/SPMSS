@@ -165,5 +165,10 @@ public class SupportProgramController {
     public ResponseEntity<String> unregisterStudentFromSupportProgram(@RequestParam("supportProgramId") Integer supportProgramId, @RequestParam("studentId") Integer studentId) {
         return ResponseEntity.ok(service.unRegisterStudentFromSupportProgram(supportProgramId, studentId));
     }
+
+    @GetMapping("/participants")
+    public ResponseEntity<List<SupportProgramResponse>> findByStudentId(@RequestParam("studentId") Integer studentId) {
+        return ResponseEntity.ok(service.getSupportProgramsByStudentId(studentId));
+    }
 }
 
