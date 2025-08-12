@@ -126,7 +126,7 @@ public class JWTServiceImpl implements JWTService {
 
         Set<Integer> setCategory = new HashSet<>();
 
-        Optional<Cases> activeCase = counselor.getAccount().getCounselorCases()
+        List<Cases> activeCase = counselor.getAccount().getCounselorCases()
                 .stream()
                 .filter(t -> {
                     if (t.getStatus() != Status.CLOSED) {
@@ -134,8 +134,7 @@ public class JWTServiceImpl implements JWTService {
                         return true;
                     } else
                         return false;
-                })
-                .findFirst();
+                }).toList();
 
         extraClaims.put("cateAvailable", setCategory);
 
