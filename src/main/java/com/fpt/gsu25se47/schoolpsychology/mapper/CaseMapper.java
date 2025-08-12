@@ -17,6 +17,9 @@ public class CaseMapper {
     public CaseGetAllResponse mapToCaseGetAllResponse(Cases cases, Integer surveyId) {
         return CaseGetAllResponse.builder()
                 .id(cases.getId())
+                .categoryId(cases.getInitialLevel().getCategory().getId())
+                .categoryName(cases.getInitialLevel().getCategory().getName())
+                .codeCategory(cases.getInitialLevel().getCategory().getCode())
                 .title(cases.getTitle())
                 .description(cases.getDescription())
                 .priority(cases.getPriority())

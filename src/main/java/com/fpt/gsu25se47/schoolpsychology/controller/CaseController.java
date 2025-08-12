@@ -1,6 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateCaseRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/cases")
@@ -88,5 +91,13 @@ public class CaseController {
     public ResponseEntity<?> getCaseById(
             @Parameter(description = "ID of the case") @PathVariable Integer caseId) {
         return ResponseEntity.ok(caseService.getDetailById(caseId));
+    }
+
+    @Operation(summary = "Update Case", description = "Update attribute of case")
+    @PutMapping("/{caseId}")
+    @PreAuthorize("hasRole('COUNSELOR')")
+    public ResponseEntity<Optional<CaseGetAllResponse>> updateCaseById(
+            @Parameter(description = "ID of the case") @PathVariable Integer caseId, @Valid @RequestBody UpdateCaseRequest request) {
+        return ResponseEntity.ok(caseService.updateCase(caseId, request));
     }
 }

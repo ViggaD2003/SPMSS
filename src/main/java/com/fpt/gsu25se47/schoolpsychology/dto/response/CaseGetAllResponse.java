@@ -11,6 +11,12 @@ import lombok.Data;
 public class CaseGetAllResponse {
     private Integer id;
 
+    private Integer categoryId;
+
+    private String categoryName;
+
+    private String codeCategory;
+
     private String title;
 
     private Boolean isAddSurvey;

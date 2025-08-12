@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateCaseRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
@@ -343,6 +344,18 @@ public class CaseServiceImpl implements CaseService {
         });
 
         return Optional.of("Removed survey case link successfully !");
+    }
+
+    @Override
+    public Optional<CaseGetAllResponse> updateCase(Integer caseId, UpdateCaseRequest request) {
+        Cases cases = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        cases.setStatus(request.getStatus());
+        cases.setPriority(request.getPriority());
+        cases.setProgressTrend(request.getProgressTrend());
+        cases.setCurrentLevel(levelRepository.findById(request.getCurrentLevelId()).orElseThrow(() -> new IllegalArgumentException("Current level not found")));
+        return Optional.of(caseMapper.mapToCaseGetAllResponse(caseRepository.save(cases), null));
     }
 
     private DataSet mapToDataSet(MentalEvaluation evaluation) {
