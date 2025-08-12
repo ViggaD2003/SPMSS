@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentClaimDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
@@ -41,12 +42,27 @@ public interface StudentMapper {
     @Mapping(target = "dob", source = "account.dob")
     StudentSRCResponse toStudentSrcResponse(Student student, @Context Boolean hasActiveCases);
 
+    @BeanMapping(builder = @Builder(disableBuilder = true))
+    @Mapping(target = "email", source = "account.email")
+    @Mapping(target = "phoneNumber", source = "account.phoneNumber")
+    @Mapping(target = "roleName", source = "account.role")
+    @Mapping(target = "gender", source = "account.gender")
+    @Mapping(target = "fullName", source = "account.fullName")
+    @Mapping(target = "dob", expression = "java(student.getAccount().getDob() != null ? student.getAccount().getDob().toString() : null)")
+    StudentClaimDto toStudentClaimDto(Student student);
+
     // Hàm xử lý default để map classDto thủ công
     default StudentDto mapStudentDtoWithClass(Student student, Classes classes, ClassMapper classDtoMapper) {
         StudentDto dto = mapStudentDto(student, classes);
         dto.setClassDto(classDtoMapper.toDto(classes));
         return dto;
     }
+
+//    @AfterMapping
+//    default void setClassesToStudentClaimDto(@MappingTarget StudentClaimDto studentClaimDto,
+//                                             @Context ClassDto classes) {
+//        studentClaimDto.setClassDto(classes);
+//    }
 
     @AfterMapping
     default void setHasActiveCasesToStudentSRCResponse(@MappingTarget StudentSRCResponse studentSRCResponse,

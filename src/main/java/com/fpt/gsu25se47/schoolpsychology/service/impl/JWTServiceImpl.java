@@ -1,6 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentClaimDto;
+import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
@@ -46,6 +48,8 @@ public class JWTServiceImpl implements JWTService {
     private final CounselorRepository counselorRepository;
 
     private final RelationshipRepository relationshipRepo;
+
+    private final StudentMapper studentMapper;
 
     @Override
     public String extractUsernameFromJWT(String jwt) {
@@ -145,16 +149,27 @@ public class JWTServiceImpl implements JWTService {
     private void handleParentClaims(Map<String, Object> claims, Account parent) {
         List<Student> students = relationshipRepo.findChildrenByParentAccountId(parent.getId());
 
-        List<Map<String, Object>> childrenClaims = students.stream().map(child -> {
+        List<StudentClaimDto> childrenClaims = students.stream().map(child -> {
+
             Classes activeClass = classRepository.findActiveClassByStudentId(child.getId());
 
-            Map<String, Object> childMap = new HashMap<>();
-            childMap.put("userId", child.getId());
-            childMap.put("fullName", child.getAccount().getFullName());
-            childMap.put("isEnable", child.getIsEnableSurvey());
-            childMap.put("teacherId", activeClass != null && activeClass.getTeacher() != null
-                    ? activeClass.getTeacher().getId() : null);
-            return childMap;
+            StudentClaimDto studentClaimDto = studentMapper.toStudentClaimDto(child);
+
+            studentClaimDto.setTeacherId(
+                    (activeClass != null && activeClass.getTeacher() != null)
+                            ? activeClass.getTeacher().getId()
+                            : null
+            );
+//            Map<String, Object> childMap = new HashMap<>();
+//            StudentDto studentDto = studentMapper.mapStudentDto(child, activeClass);
+//            childMap.put("userId", child.getId());
+//            childMap.put("fullName", child.getAccount().getFullName());
+//            childMap.put("isEnable", child.getIsEnableSurvey());
+//
+//            childMap.put("teacherId", activeClass != null && activeClass.getTeacher() != null
+//                    ? activeClass.getTeacher().getId() : null);
+
+            return studentClaimDto;
         }).toList();
 
         claims.put("relationship_type", "PARENT");
