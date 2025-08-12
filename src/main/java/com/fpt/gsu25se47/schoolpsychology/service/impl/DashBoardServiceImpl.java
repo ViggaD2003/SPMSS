@@ -146,9 +146,9 @@ public class DashBoardServiceImpl implements DashBoardService {
         List<ProgramParticipants> participants = programParticipantRepository.findByStudentId(studentId);
 
         ProgramSupportStatic supportStatic = ProgramSupportStatic.builder()
-                .activePrograms(participants.stream().map(pp -> pp.getStatus() == RegistrationStatus.ENROLLED || pp.getStatus() == RegistrationStatus.ACTIVE).toList().size())
-                .completedPrograms(participants.stream().map(pp -> pp.getStatus() == RegistrationStatus.COMPLETED).toList().size())
-                .numOfAbsent(participants.stream().map(pp -> pp.getStatus() == RegistrationStatus.ABSENT).toList().size())
+                .activePrograms(participants.stream().filter(pp -> (pp.getStatus() == RegistrationStatus.ENROLLED || pp.getStatus() == RegistrationStatus.ACTIVE)).toList().size())
+                .completedPrograms(participants.stream().filter(pp -> pp.getStatus().equals(RegistrationStatus.COMPLETED)).toList().size())
+                .numOfAbsent(participants.stream().filter(pp -> pp.getStatus().equals(RegistrationStatus.ABSENT)).toList().size())
                 .dataSet(programDataSets)
                 .build();
 
