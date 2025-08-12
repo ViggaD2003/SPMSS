@@ -94,4 +94,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             ORDER BY a.startDateTime DESC
             """)
     List<Appointment> findMyHostedAppointmentsThisMonth(@Param("counselorId") Integer counselorId);
+
+
+    @Query("SELECT a FROM Appointment a WHERE a.bookedFor.id = :bookedForId")
+    List<Appointment> findAllByBookedFor(Integer bookedForId);
 }

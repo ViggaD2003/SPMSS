@@ -88,9 +88,9 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     @Query("""
             SELECT COUNT(s) FROM Survey s
              LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id
-             WHERE sr.isSkipped = true
+             WHERE sr.isSkipped = true and sr.student.id = :studentId
             """)
-    int countSurveySkip();
+    int countSurveySkip(Integer studentId);
 
     @Query("""
                 SELECT s FROM Survey s

@@ -7,6 +7,9 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Manager.DashBoardMapp
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
 import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
+import com.fpt.gsu25se47.schoolpsychology.model.ProgramParticipants;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.DashBoardService;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
@@ -42,6 +45,7 @@ public class DashBoardServiceImpl implements DashBoardService {
     private final CaseMapper caseMapper;
 
     private final MentalEvaluationRepository mentalEvaluationRepository;
+    private final ProgramParticipantRepository programParticipantRepository;
 
     @Override
     public ManagerDashboard managerDashboard() {
@@ -114,40 +118,42 @@ public class DashBoardServiceImpl implements DashBoardService {
         List<DataSet> surveyDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("survey", startDate, endDate, studentId)
                 .stream().map(this::mapToDataSet).toList();
 
+
+
         SurveyStatic surveyStatic = SurveyStatic.builder()
-                .activeSurveys(0)
+                .activeSurveys(surveyRepository.findUnansweredExpiredSurveysByAccountId(studentId).size())
                 .dataSet(surveyDataSets)
-                .numberOfSkips(0)
-                .completedSurveys(0)
+                .numberOfSkips(surveyRepository.countSurveySkip(studentId))
+                .completedSurveys(surveyDataSets.size())
                 .build();
 
         List<DataSet> appointmentDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("appointment", startDate, endDate, studentId)
                 .stream().map(this::mapToDataSet).toList();
-
         AppointmentStatic appointmentStatic = AppointmentStatic.builder()
-                .activeAppointments(0)
-                .completedAppointments(0)
-                .numOfAbsent(0)
+                .activeAppointments(appointmentRepository.findAllByStatus(AppointmentStatus.CONFIRMED).size())
+                .completedAppointments(appointmentRepository.findAllByStatus(AppointmentStatus.COMPLETED).size())
+                .numOfAbsent(appointmentRepository.findAllByStatus(AppointmentStatus.ABSENT).size())
                 .dataSet(appointmentDataSets)
                 .build();
 
         List<DataSet> programDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("program", startDate, endDate, studentId)
                 .stream().map(this::mapToDataSet).toList();
 
+        List<ProgramParticipants> participants = programParticipantRepository.findByStudentId(studentId);
+
         ProgramSupportStatic supportStatic = ProgramSupportStatic.builder()
-                .activePrograms(0)
-                .completedPrograms(0)
-                .numOfAbsent(0)
+                .activePrograms(participants.stream().map(pp -> pp.getStatus() == RegistrationStatus.ENROLLED || pp.getStatus() == RegistrationStatus.ACTIVE).toList().size())
+                .completedPrograms(participants.stream().map(pp -> pp.getStatus() == RegistrationStatus.COMPLETED).toList().size())
+                .numOfAbsent(participants.stream().map(pp -> pp.getStatus() == RegistrationStatus.ABSENT).toList().size())
                 .dataSet(programDataSets)
                 .build();
 
         OverviewStudent overview = OverviewStudent.builder()
-                .totalSurveys(surveyDataSets.size())
-                .totalAppointments(appointmentDataSets.size())
-                .totalPrograms(programDataSets.size())
+                .totalSurveys(surveyRepository.findUnansweredExpiredSurveysByAccountId(studentId).size() + surveyDataSets.size())
+                .totalAppointments(appointmentRepository.findAllByBookedFor(studentId).size())
+                .totalPrograms(supportProgramRepository.findByStudentId(studentId).size())
                 .totalCases(caseRepository.countAllClosedCases(studentId))
                 .build();
-
 
         MentalEvaluationStatic mentalEvaluationStatic = MentalEvaluationStatic.builder()
                 .program(supportStatic)

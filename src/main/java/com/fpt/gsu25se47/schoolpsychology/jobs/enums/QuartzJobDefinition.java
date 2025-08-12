@@ -39,6 +39,7 @@ public enum QuartzJobDefinition {
             ProcessRecurringSurveysJob.class
     );
 
+
     private final String jobName;
     private final String groupName;
     private final String triggerName;
