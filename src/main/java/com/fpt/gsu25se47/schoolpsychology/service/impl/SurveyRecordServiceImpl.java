@@ -82,11 +82,9 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             duplicateValidator.validateAnswerIds(dto.getAnswerRecordRequests());
 
             List<AnswerRecord> answerRecords = dto.getAnswerRecordRequests()
-                    .stream().map(item -> answerRecordMapper.mapToAnswerRecord(item, questRepository, answerRepository)).toList();
+                    .stream().map(item -> answerRecordMapper.mapToAnswerRecord(item, questRepository, answerRepository)).collect(Collectors.toList());
 
-            Category category = survey.getCategory();
-
-            List<Level> levels = category.getLevels();
+            List<Level> levels = survey.getCategory().getLevels();
 
             Level matchLevel = levels.stream()
                     .filter(level -> dto.getTotalScore() >= level.getMinScore() && dto.getTotalScore() <= level.getMaxScore())
@@ -111,13 +109,13 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             }
 
            if(surveyRecord.getSurvey().getSurveyType() != SurveyType.PROGRAM){
-               MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
                surveyRecord.setSurveyRecordIdentify(null);
-               surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
            } else {
                surveyRecord.setSurveyRecordIdentify(identify);
            }
 
+            MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
+            surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
             SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
             return surveyRecordMapper.mapToSurveyRecordResponse(saved);

@@ -109,7 +109,7 @@ public class SupportProgramController {
         return ResponseEntity.ok(service.getSupportProgramById(programId));
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping("/participant-program-detail")
     public ResponseEntity<SupportProgramStudentDetail> getParticipantProgramDetail(@RequestParam("studentId") Integer studentId, @RequestParam("programId") Integer programId) {
         return ResponseEntity.ok(service.getSupportProgramStudentDetailById(programId, studentId));
