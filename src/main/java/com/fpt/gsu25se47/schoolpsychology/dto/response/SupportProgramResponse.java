@@ -25,6 +25,8 @@ public class SupportProgramResponse {
 
     private ProgramStatus status;
 
+    private Boolean isActiveSurvey;
+
     private String thumbnail;
 
     private String location;

@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -164,6 +165,12 @@ public class SupportProgramController {
     @PostMapping("/participants/unregister")
     public ResponseEntity<String> unregisterStudentFromSupportProgram(@RequestParam("supportProgramId") Integer supportProgramId, @RequestParam("studentId") Integer studentId) {
         return ResponseEntity.ok(service.unRegisterStudentFromSupportProgram(supportProgramId, studentId));
+    }
+
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR')")
+    @PatchMapping("/open-survey")
+    public ResponseEntity<String> openSurvey(@RequestParam("supportProgramId") Integer supportProgramId) {
+        return ResponseEntity.ok(service.openSurvey(supportProgramId));
     }
 }
 

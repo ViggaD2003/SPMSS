@@ -41,6 +41,8 @@ public class SupportProgram extends Auditable {
 
     private String thumbnail;
 
+    private Boolean isActiveSurvey;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

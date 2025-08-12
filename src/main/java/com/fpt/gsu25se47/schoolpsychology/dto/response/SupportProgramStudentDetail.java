@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 public class SupportProgramStudentDetail {
     private Integer id;
 
+    private Integer surveyId;
+
     private String name;
 
     private String description;

@@ -29,4 +29,10 @@ public interface SupportProgramService {
 
     SupportProgramStudentDetail getSupportProgramStudentDetailById(Integer supportProgramId, Integer studentId);
 
-    Optional<?> getSuggestSupportProgram(Integer studentId);}
+    Optional<?> getSuggestSupportProgram(Integer studentId);
+
+    String openSurvey(Integer supportProgramId);
+
+}
+
+

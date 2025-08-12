@@ -53,7 +53,6 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final NotificationService notificationService;
     private final AccountService accountService;
 
-
     @Override
     @Transactional
     public SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request) throws IOException {
@@ -80,10 +79,10 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);
         supportProgram.setStatus(ProgramStatus.ACTIVE);
+        supportProgram.setIsActiveSurvey(false);
 
         return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
     }
-
 
     @Override
     public SupportProgramDetail getSupportProgramById(Integer id) {
@@ -330,22 +329,22 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
-    public SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus newStatus) {
+    public String openSurvey(Integer supportProgramId) {
+        SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
+                .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + supportProgramId));
+        if(!supportProgram.getIsActiveSurvey()){
+            supportProgram.setIsActiveSurvey(true);
+            supportProgramRepository.save(supportProgram);
+            return "Successfully opened support program";
+        } else {
+            supportProgram.setIsActiveSurvey(false);
+            supportProgramRepository.save(supportProgram);
+            return "Successfully closed support program";
+        }
+    }
 
-//        SupportProgram supportProgram = getSupportProgram(id);
-//
-//        if (!Objects.equals(request.getCategoryId(), supportProgram.getCategory().getId())) {
-//            Category category = categoryRepository.findById(request.getCategoryId())
-//                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-//                            "Category not found with ID: " + request.getCategoryId()));
-//            supportProgram.setCategory(category);
-//        }
-//
-//        supportProgramMapper.updateSupportProgramFromRequest(request, supportProgram);
-//
-//        SupportProgram supportProgramUpdated = supportProgramRepository.save(supportProgram);
-//
-//        return supportProgramMapper.toSupportProgramResponse(supportProgramUpdated);
+    @Override
+    public SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus newStatus) {
 
         SupportProgram supportProgram = getSupportProgram(id);
 

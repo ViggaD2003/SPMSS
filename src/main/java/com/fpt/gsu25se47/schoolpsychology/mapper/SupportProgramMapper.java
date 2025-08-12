@@ -51,6 +51,7 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations().size())"),
+            @Mapping(target = "surveyId", source = "supportProgram.survey.id"),
             @Mapping(target = "student", ignore = true)
     })
     public abstract SupportProgramStudentDetail mapSupportProgramStudentDetail(SupportProgram supportProgram);
