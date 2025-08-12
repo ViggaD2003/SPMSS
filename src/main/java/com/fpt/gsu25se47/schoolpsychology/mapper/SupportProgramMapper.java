@@ -59,7 +59,7 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "programSurvey", expression = "java(mapSurvey(supportProgram.getSurvey()))"),
-            @Mapping(target = "participants", expression = "java(mapToProgramPPParticipantResponses(supportProgram.getProgramRegistrations()))")
+            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? 0 : supportProgram.getProgramRegistrations().size())"),
     })
     public abstract SupportProgramPPResponse toSupportProgramPPResponse(SupportProgram supportProgram);
 
