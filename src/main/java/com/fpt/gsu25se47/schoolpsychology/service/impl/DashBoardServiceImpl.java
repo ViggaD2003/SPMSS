@@ -20,8 +20,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -130,9 +134,9 @@ public class DashBoardServiceImpl implements DashBoardService {
         List<DataSet> appointmentDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("appointment", startDate, endDate, studentId)
                 .stream().map(this::mapToDataSet).toList();
         AppointmentStatic appointmentStatic = AppointmentStatic.builder()
-                .activeAppointments(appointmentRepository.findAllByStatus(AppointmentStatus.CONFIRMED).size())
-                .completedAppointments(appointmentRepository.findAllByStatus(AppointmentStatus.COMPLETED).size())
-                .numOfAbsent(appointmentRepository.findAllByStatus(AppointmentStatus.ABSENT).size())
+                .activeAppointments(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.CONFIRMED)).size())
+                .completedAppointments(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.COMPLETED)).size())
+                .numOfAbsent(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.ABSENT)).size())
                 .dataSet(appointmentDataSets)
                 .build();
 
