@@ -70,6 +70,19 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
                 AND pp.program_id = :supportProgramId
         )
         """, nativeQuery = true)
-    boolean isExistEntrySurveyRecordByStudentId(@Param("studentId") Integer studentId,
+    boolean isEntrySurveyRecordByStudentId(@Param("studentId") Integer studentId,
+                                                @Param("supportProgramId") Integer supportProgramId);
+    @Query(value = """
+        SELECT EXISTS(
+            SELECT 1
+            FROM survey_record sr
+            INNER JOIN program_participants pp ON sr.account_id = pp.student_id
+            WHERE sr.survey_record_type = 'PROGRAM'
+                AND sr.survey_record_identify = 'EXIT'
+                AND pp.student_id = :studentId
+                AND pp.program_id = :supportProgramId
+        )
+        """, nativeQuery = true)
+    boolean isExistSurveyRecordByStudentId(@Param("studentId") Integer studentId,
                                                 @Param("supportProgramId") Integer supportProgramId);
 }

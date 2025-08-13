@@ -19,7 +19,7 @@ public interface SurveyService {
 
     Optional<?> getAllSurveyByCounselorId();
 
-    Optional<?> getAllSurveyWithPublished();
+    Optional<?> getAllSurveyWithPublished(Integer studentId);
 
     Optional<?> getAllSurveyStudentInCase(Integer caseId);
 }

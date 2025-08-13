@@ -119,7 +119,6 @@ public class JWTServiceImpl implements JWTService {
     }
 
     private void handleCounselorClaims(Map<String, Object> extraClaims, Account account) {
-
         Counselor counselor = counselorRepository.findById(account.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Counselor not found for ID: " + account.getId()));
@@ -159,14 +158,6 @@ public class JWTServiceImpl implements JWTService {
                             ? activeClass.getTeacher().getId()
                             : null
             );
-//            Map<String, Object> childMap = new HashMap<>();
-//            StudentDto studentDto = studentMapper.mapStudentDto(child, activeClass);
-//            childMap.put("userId", child.getId());
-//            childMap.put("fullName", child.getAccount().getFullName());
-//            childMap.put("isEnable", child.getIsEnableSurvey());
-//
-//            childMap.put("teacherId", activeClass != null && activeClass.getTeacher() != null
-//                    ? activeClass.getTeacher().getId() : null);
 
             return studentClaimDto;
         }).toList();

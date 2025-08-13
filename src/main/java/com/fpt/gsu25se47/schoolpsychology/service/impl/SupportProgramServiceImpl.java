@@ -177,9 +177,13 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                 throw new BadRequestException("Survey does not belong to the program you're enrolled in");
             }
 
-            if(!surveyRecordRepository.isExistEntrySurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())) {
+            if(!surveyRecordRepository.isEntrySurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())) {
                 surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
-            } else {
+            }
+
+            if (surveyRecordRepository.isEntrySurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())
+              && !surveyRecordRepository.isExistSurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())
+            ) {
                 surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.EXIT);
             }
 
@@ -199,9 +203,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
                     MentalEvaluation mentalEvaluation = mentalEvaluationService.createMentalEvaluationWithContext(null, null, participant);
                     mentalEvaluation.setWeightedScore(weightScore);
-
-                    participant.setMentalEvaluation(mentalEvaluation);
-                    mentalEvaluationRepository.save(mentalEvaluation);
+                    participant.setMentalEvaluation(mentalEvaluationRepository.save(mentalEvaluation));
                     programParticipantRepository.save(participant);
                 }
             }

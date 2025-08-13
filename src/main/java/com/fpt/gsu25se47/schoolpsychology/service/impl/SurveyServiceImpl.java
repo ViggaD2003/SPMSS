@@ -180,14 +180,9 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public Optional<?> getAllSurveyWithPublished() {
+    public Optional<?> getAllSurveyWithPublished(Integer studentId) {
         try {
-            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
-            if (userDetails == null) {
-                throw new BadRequestException("Unauthorized");
-            }
-
-            Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("Account not found"));
+            Account account = accountRepository.findById(studentId).orElseThrow(() -> new RuntimeException("Account not found"));
 
             List<Survey> surveys = surveyRepository.findUnansweredExpiredSurveysByAccountId(account.getId());
 

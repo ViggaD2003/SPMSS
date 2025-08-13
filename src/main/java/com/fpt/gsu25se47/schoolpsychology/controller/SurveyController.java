@@ -60,8 +60,8 @@ public class SurveyController {
     @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping("/published")
     @Operation(summary = "Lấy khảo sát đã xuất bản", description = "Dành cho Học sinh và Phụ huynh. Lấy danh sách khảo sát đang được xuất bản.")
-    public ResponseEntity<?> getAllSurveyWithPublished(){
-        return ResponseEntity.ok(surveyService.getAllSurveyWithPublished());
+    public ResponseEntity<?> getAllSurveyWithPublished(@RequestParam("studentId") Integer studentId) {
+        return ResponseEntity.ok(surveyService.getAllSurveyWithPublished(studentId));
     }
 
     @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('MANAGER') or hasRole('STUDENT') or hasRole('PARENTS')")
