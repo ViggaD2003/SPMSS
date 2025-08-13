@@ -28,5 +28,7 @@ public class StudentClaimDto {
 
     private Integer teacherId;
 
+    private Integer caseId;
+
 //    private ClassDto classDto;
 }

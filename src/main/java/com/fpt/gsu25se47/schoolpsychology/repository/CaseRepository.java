@@ -57,14 +57,12 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
     @Query("SELECT COUNT(c) = 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSE'")
     boolean isStudentFreeFromOpenCases(@Param("studentId") Integer studentId);
 
-    @Query(value = """
-            SELECT ca.*
-            FROM cases ca
-            LEFT JOIN levels l ON ca.current_level_id = l.id
-            WHERE l.category_id = :categoryId
-            """
-            , nativeQuery = true)
-    List<Cases> findAllByCategoryId(Integer categoryId);
+    @Query("""
+            SELECT ca 
+            FROM Cases ca
+            WHERE ca.student.id = :studentId and ca.status = 'IN_PROGRESS'
+            """)
+    Cases findActiveCaseByStudentId(Integer studentId);
 
     @Query("SELECT COUNT(c) > 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSED'")
     boolean existsByStudentId(@Param("studentId") Integer studentId);

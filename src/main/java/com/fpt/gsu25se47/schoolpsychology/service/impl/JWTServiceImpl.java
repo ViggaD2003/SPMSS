@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class JWTServiceImpl implements JWTService {
 
     private final ClassRepository classRepository;
+    private final CaseRepository caseRepository;
     @Value("${jwt.secret-key}")
     private String secretKey;
 
@@ -158,7 +159,7 @@ public class JWTServiceImpl implements JWTService {
                             ? activeClass.getTeacher().getId()
                             : null
             );
-
+            studentClaimDto.setCaseId(caseRepository.findActiveCaseByStudentId(child.getId()) == null ? null : caseRepository.findActiveCaseByStudentId(child.getId()).getId());
             return studentClaimDto;
         }).toList();
 
