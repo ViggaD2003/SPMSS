@@ -29,17 +29,17 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
     @Query("SELECT sr FROM SurveyRecord sr WHERE sr.survey.id = :surveyId AND sr.student.id = :studentId")
     List<SurveyRecord> findAllByStudentIdAndSurveyId(Integer studentId, Integer surveyId);
 
-    @Query(value = """
-            SELECT sr.* 
-            FROM program_participants pp
-            JOIN support_program sp ON pp.program_id = sp.id
-            JOIN survey s ON sp.survey_id = s.id
-            JOIN survey_record sr ON sr.survey_id = s.id AND sr.account_id = pp.student_id
-            WHERE pp.id = :participantId
-            ORDER BY sr.completed_at
-            LIMIT 2
-            """, nativeQuery = true)
+    @Query("""
+    SELECT sr
+    FROM ProgramParticipants pp
+    JOIN pp.program sp
+    JOIN sp.survey s
+    JOIN SurveyRecord sr ON sr.survey = s AND sr.student.id = pp.student.id
+    WHERE pp.id = :participantId
+    ORDER BY sr.completedAt
+    """)
     List<SurveyRecord> findTwoSurveyRecordsByParticipant(@Param("participantId") Integer participantId);
+
 
     @Query("""
                 SELECT sr FROM SurveyRecord sr
@@ -59,30 +59,15 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
             """, nativeQuery = true)
     SurveyRecord findLatestSurveyRecordByStudentId(Integer studentId);
 
-    @Query(value = """
-        SELECT EXISTS(
-            SELECT 1
-            FROM survey_record sr
-            INNER JOIN program_participants pp ON sr.account_id = pp.student_id
-            WHERE sr.survey_record_type = 'PROGRAM'
-                AND sr.survey_record_identify = 'ENTRY'
-                AND pp.student_id = :studentId
-                AND pp.program_id = :supportProgramId
-        )
-        """, nativeQuery = true)
-    boolean isEntrySurveyRecordByStudentId(@Param("studentId") Integer studentId,
-                                                @Param("supportProgramId") Integer supportProgramId);
-    @Query(value = """
-        SELECT EXISTS(
-            SELECT 1
-            FROM survey_record sr
-            INNER JOIN program_participants pp ON sr.account_id = pp.student_id
-            WHERE sr.survey_record_type = 'PROGRAM'
-                AND sr.survey_record_identify = 'EXIT'
-                AND pp.student_id = :studentId
-                AND pp.program_id = :supportProgramId
-        )
-        """, nativeQuery = true)
-    boolean isExistSurveyRecordByStudentId(@Param("studentId") Integer studentId,
-                                                @Param("supportProgramId") Integer supportProgramId);
+    @Query("""
+    SELECT CASE WHEN COUNT(sr) > 0 THEN true ELSE false END
+    FROM SurveyRecord sr
+    JOIN ProgramParticipants pp ON sr.student.id = pp.student.id
+    WHERE sr.surveyRecordType = 'PROGRAM'
+      AND sr.surveyRecordIdentify = 'ENTRY'
+      AND sr.student.id = :studentId
+      AND pp.program.id = :supportProgramId
+""")
+    Boolean isEntrySurveyRecordByStudentId(@Param("studentId") Integer studentId,
+                                           @Param("supportProgramId") Integer supportProgramId);
 }

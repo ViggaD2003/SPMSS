@@ -159,31 +159,21 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
     @Override
     @Transactional
-    public Optional<?> saveSurveySupportProgram(Integer programId, CreateSurveyRecordDto createSurveyRecordDto) {
+    public Optional<?> saveSurveySupportProgram(Integer programId, Integer studentId, CreateSurveyRecordDto createSurveyRecordDto) {
         try {
-            UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
-            if (userDetails == null) {
-                throw new BadRequestException("Unauthorized");
-            }
-
-            Account currentAccount = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
-
             Survey survey = surveyRepository.findById(createSurveyRecordDto.getSurveyId())
                     .orElseThrow(() -> new BadRequestException("Survey not found"));
 
-            ProgramParticipants participant = programParticipantRepository.findByStudentId(currentAccount.getId(), programId);
+            ProgramParticipants participant = programParticipantRepository.findByStudentId(studentId, programId);
 
             if (!survey.getId().equals(participant.getProgram().getSurvey().getId())) {
                 throw new BadRequestException("Survey does not belong to the program you're enrolled in");
             }
 
-            if(!surveyRecordRepository.isEntrySurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())) {
+            if (!surveyRecordRepository.isEntrySurveyRecordByStudentId(studentId, participant.getProgram().getId())) {
+                participant.setStatus(RegistrationStatus.ENROLLED);
                 surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
-            }
-
-            if (surveyRecordRepository.isEntrySurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())
-              && !surveyRecordRepository.isExistSurveyRecordByStudentId(currentAccount.getId(), participant.getProgram().getId())
-            ) {
+            } else {
                 surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.EXIT);
             }
 
@@ -283,7 +273,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         List<ProgramParticipants> participants = supportProgram.getProgramRegistrations();
         participants.removeIf(p -> {
-            if (p.getStudent().getId().equals(studentId) ) {
+            if (p.getStudent().getId().equals(studentId)) {
                 p.setProgram(null);
                 return true;
             }
@@ -335,7 +325,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     @Override
     public List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId) {
 
-        List<SupportProgram> sps =  supportProgramRepository.findByStudentId(studentId);
+        List<SupportProgram> sps = supportProgramRepository.findByStudentId(studentId);
         return sps
                 .stream()
                 .map(s -> {
@@ -374,7 +364,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     public String openSurvey(Integer supportProgramId) {
         SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId)
                 .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + supportProgramId));
-        if(!supportProgram.getIsActiveSurvey()){
+        if (!supportProgram.getIsActiveSurvey()) {
             supportProgram.setIsActiveSurvey(true);
             supportProgramRepository.save(supportProgram);
             return "Successfully opened support program";

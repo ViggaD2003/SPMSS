@@ -109,13 +109,14 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             }
 
            if(surveyRecord.getSurvey().getSurveyType() != SurveyType.PROGRAM){
+               MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
+               surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
                surveyRecord.setSurveyRecordIdentify(null);
            } else {
                surveyRecord.setSurveyRecordIdentify(identify);
            }
 
-            MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
-            surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
+
             SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
             return surveyRecordMapper.mapToSurveyRecordResponse(saved);

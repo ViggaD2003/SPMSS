@@ -20,7 +20,7 @@ public interface SupportProgramService {
 
     SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus status);
 
-    Optional<?> saveSurveySupportProgram(Integer programId, CreateSurveyRecordDto createSurveyRecordDto);
+    Optional<?> saveSurveySupportProgram(Integer programId, Integer studentId, CreateSurveyRecordDto createSurveyRecordDto);
 
     RegisterProgramParticipantResponse registerStudentToSupportProgram(Integer supportProgramId);
 

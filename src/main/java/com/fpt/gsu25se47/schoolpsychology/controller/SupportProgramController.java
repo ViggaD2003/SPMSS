@@ -63,8 +63,8 @@ public class SupportProgramController {
     })
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/save-survey-record")
-    public ResponseEntity<?> saveWorking(@RequestParam("programId") Integer programId, @Valid @RequestBody CreateSurveyRecordDto dto) {
-        return ResponseEntity.ok(service.saveSurveySupportProgram(programId, dto));
+    public ResponseEntity<?> saveWorking(@RequestParam("programId") Integer programId,@RequestParam("studentId") Integer studentId, @Valid @RequestBody CreateSurveyRecordDto dto) {
+        return ResponseEntity.ok(service.saveSurveySupportProgram(programId, studentId, dto));
     }
 
     @Operation(

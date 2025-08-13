@@ -18,19 +18,19 @@ public interface ProgramParticipantRepository extends JpaRepository<ProgramParti
     @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.student.id =:studentId AND pp.program.id = :supportProgramId")
     ProgramParticipants findByStudentId(Integer studentId, Integer supportProgramId);
 
-    @Query(value = """
-    SELECT 
-        CASE 
-            WHEN COUNT(sr.id) >= 2 THEN TRUE
-            ELSE FALSE
-        END
-    FROM program_participants pp
-    JOIN support_program sp ON pp.program_id = sp.id
-    JOIN survey s ON sp.survey_id = s.id
-    JOIN survey_record sr ON sr.survey_id = s.id AND sr.account_id = pp.student_id
+    @Query("""
+    SELECT CASE 
+               WHEN COUNT(sr.id) >= 2 THEN TRUE 
+               ELSE FALSE 
+           END
+    FROM ProgramParticipants pp
+    JOIN pp.program sp
+    JOIN sp.survey s
+    JOIN SurveyRecord sr ON sr.survey = s AND sr.student.id = pp.student.id
     WHERE pp.id = :participantId
-    """, nativeQuery = true)
-    boolean hasParticipantCompletedSurveyTwice(@Param("participantId") Integer participantId);
+    """)
+    Boolean hasParticipantCompletedSurveyTwice(@Param("participantId") Integer participantId);
+
 
     @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.cases.id = :caseId")
     List<ProgramParticipants> findAllByCaseId(Integer caseId);
