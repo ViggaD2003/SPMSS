@@ -17,6 +17,6 @@ public class NotificationController {
 
     @GetMapping("/{accountId}")
     public ResponseEntity<?> getNotifications(@PathVariable("accountId") Integer accountId) {
-        return ResponseEntity.ok(notificationService.getAllNotificationsByAccountId(accountId));
+        return ResponseEntity.ok(notificationService.getAllNotificationsByAccountId(accountId).reversed());
     }
 }

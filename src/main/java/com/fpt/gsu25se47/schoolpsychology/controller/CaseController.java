@@ -40,7 +40,7 @@ public class CaseController {
             @RequestParam(name = "surveyId", required = false) Integer surveyId,
             @RequestParam(name = "accountId") Integer accountId
     ) {
-        return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId, surveyId, accountId));
+        return ResponseEntity.ok(caseService.getAllCases(statusCase, categoryId, surveyId, accountId).reversed());
     }
 
     @Operation(summary = "Create new case", description = "Add a new case to the system")

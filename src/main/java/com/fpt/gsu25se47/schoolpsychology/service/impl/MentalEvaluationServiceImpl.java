@@ -3,12 +3,16 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateMentalEvaluationRequest;
 import com.fpt.gsu25se47.schoolpsychology.mapper.MentalEvaluationMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.MentalEvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.OptionalDouble;
 
 @Service
@@ -17,6 +21,7 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
 
     private final MentalEvaluationMapper mentalEvaluationMapper;
     private final MentalEvaluationRepository mentalEvaluationRepository;
+    private final SurveyRecordRepository surveyRecordRepository;
 
     @Override
     public MentalEvaluation createMentalEvaluationWithContext(Appointment appointment, SurveyRecord surveyRecord, ProgramParticipants participants) {
@@ -47,11 +52,22 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
         } else if (participants != null) {
             CreateMentalEvaluationRequest mentalEvaluationRequest = mentalEvaluationMapper.fromProgramParticipant(participants);
 
+            List<SurveyRecord> surveyRecords = surveyRecordRepository.findTwoSurveyRecordsByParticipant(participants.getId());
+
+            Float entryWeightScore = getWeightedScoreForSurveyRecord(Objects.requireNonNull(surveyRecords.stream()
+                    .filter(sr -> sr.getSurveyRecordIdentify() == SurveyRecordIdentify.ENTRY)
+                    .findFirst().orElse(null)));
+
+            Float exitWeightScore = getWeightedScoreForSurveyRecord(Objects.requireNonNull(surveyRecords.stream()
+                    .filter(sr -> sr.getSurveyRecordIdentify() == SurveyRecordIdentify.EXIT)
+                    .findFirst().orElse(null)));
+
             MentalEvaluation mappedMentalEvaluation = mentalEvaluationMapper.toMentalEvaluation(mentalEvaluationRequest);
             Account student = participants.getStudent();
             mappedMentalEvaluation.setStudent(student);
             mappedMentalEvaluation.setProgramParticipants(participants);
-            return mappedMentalEvaluation;
+            mappedMentalEvaluation.setWeightedScore(entryWeightScore + exitWeightScore);
+            return mentalEvaluationRepository.save(mappedMentalEvaluation);
         }
 
         return null;

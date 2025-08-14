@@ -54,6 +54,6 @@ public class SurveyRecordController {
 
     @GetMapping("/view-all-by-survey")
     public ResponseEntity<?> getAllSurveyRecordsBySurveyType(@RequestParam("surveyId") Integer surveyId) {
-        return ResponseEntity.ok(surveyRecordService.findAllSurveyRecordBySurveyId(surveyId));
+        return ResponseEntity.ok(surveyRecordService.findAllSurveyRecordBySurveyId(surveyId).reversed());
     }
 }

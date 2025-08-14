@@ -40,25 +40,25 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Optional<?> findAllCategories() {
+    public List<CategoryResponse> findAllCategories() {
         List<Category> categories = categoryRepository.findAll();
 
         List<CategoryResponse> responses = categories.stream()
                 .map(this::mapToCategoryGetAllResponse)
                 .toList();
 
-        return Optional.of(responses);
+        return responses;
     }
 
     @Override
-    public Optional<?> findAllLevelByCategoryId(Integer categoryId) {
+    public List<LevelResponse> findAllLevelByCategoryId(Integer categoryId) {
         List<Level> levels = levelRepository.findAllByCategoryId(categoryId);
 
         List<LevelResponse> responses = levels.stream()
                 .map(this::mapToLevelResponse)
                 .toList();
 
-        return Optional.of(responses);
+        return responses;
     }
 
 

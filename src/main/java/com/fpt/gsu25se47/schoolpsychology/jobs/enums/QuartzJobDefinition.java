@@ -37,11 +37,16 @@ public enum QuartzJobDefinition {
             "surveyJobs",
             "processRecurringSurveyStatusTrigger",
             ProcessRecurringSurveysJob.class
+    ),
+    ATTENDENCE_MEETING(
+            "attendenceMeetingJob",
+            "meetingJobs",
+            "attendenceMeetingTrigger",
+            AttendenceMeetingJob.class
     );
-
 
     private final String jobName;
     private final String groupName;
     private final String triggerName;
     private final Class<? extends Job> jobClass;
-    }
+}

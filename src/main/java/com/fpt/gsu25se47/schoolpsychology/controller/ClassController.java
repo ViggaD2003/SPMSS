@@ -24,13 +24,11 @@ public class ClassController {
 
     private final ClassService classService;
     private final EnrollmentService enrollmentService;
-    private final AccountService accountService;
 
-//    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(description = "schoolYear = 'startYear-endYear', ex: '2021-2024'")
     @PostMapping
     ResponseEntity<List<ClassResponse>> createClass(@RequestBody @Valid List<CreateClassRequest> requests) {
-
         return ResponseEntity.ok(classService.createClass(requests));
     }
 
@@ -42,8 +40,7 @@ public class ClassController {
 
     @GetMapping
     ResponseEntity<List<ClassResponse>> findAll() {
-
-        return ResponseEntity.ok(classService.getAllClasses());
+        return ResponseEntity.ok(classService.getAllClasses().reversed());
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER')")

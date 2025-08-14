@@ -94,7 +94,7 @@ public class SupportProgramController {
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @GetMapping
     public ResponseEntity<?> getAllSupportPrograms() {
-        return ResponseEntity.ok(service.getAllSupportPrograms());
+        return ResponseEntity.ok(service.getAllSupportPrograms().reversed());
     }
 
     @Operation(
@@ -158,7 +158,7 @@ public class SupportProgramController {
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/recommend")
     public ResponseEntity<?> viewRecommendSupportProgram(@RequestParam("studentId") Integer studentId) {
-        return ResponseEntity.ok(service.getSuggestSupportProgram(studentId));
+        return ResponseEntity.ok(service.getSuggestSupportProgram(studentId).reversed());
     }
 
     @PreAuthorize("hasRole('STUDENT')")
@@ -170,7 +170,7 @@ public class SupportProgramController {
     @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping("/participants")
     public ResponseEntity<List<SupportProgramPPResponse>> findByStudentId(@RequestParam("studentId") Integer studentId) {
-        return ResponseEntity.ok(service.getSupportProgramsByStudentId(studentId));
+        return ResponseEntity.ok(service.getSupportProgramsByStudentId(studentId).reversed());
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR')")

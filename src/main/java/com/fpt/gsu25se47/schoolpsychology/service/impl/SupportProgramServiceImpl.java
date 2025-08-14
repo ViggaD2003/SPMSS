@@ -49,7 +49,6 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final MentalEvaluationService mentalEvaluationService;
     private final FileUploadService fileUploadService;
     private final SurveyRecordRepository surveyRecordRepository;
-    private final MentalEvaluationRepository mentalEvaluationRepository;
     private final NotificationService notificationService;
     private final AccountService accountService;
 
@@ -170,39 +169,23 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                 throw new BadRequestException("Survey does not belong to the program you're enrolled in");
             }
 
+            SurveyRecordDetailResponse surveyRecordDetailResponse;
             if (!surveyRecordRepository.isEntrySurveyRecordByStudentId(studentId, participant.getProgram().getId())) {
                 participant.setStatus(RegistrationStatus.ENROLLED);
-                surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
+                surveyRecordDetailResponse = surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
             } else {
-                surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.EXIT);
+                surveyRecordDetailResponse = surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.EXIT);
             }
 
             if (programParticipantRepository.hasParticipantCompletedSurveyTwice(participant.getId())) {
-                List<SurveyRecord> surveyRecords = surveyRecordRepository.findTwoSurveyRecordsByParticipant(participant.getId());
-
-                SurveyRecord entryRecord = surveyRecords.stream()
-                        .filter(sr -> sr.getSurveyRecordIdentify() == SurveyRecordIdentify.ENTRY)
-                        .findFirst().orElse(null);
-
-                SurveyRecord exitRecord = surveyRecords.stream()
-                        .filter(sr -> sr.getSurveyRecordIdentify() == SurveyRecordIdentify.EXIT)
-                        .findFirst().orElse(null);
-
-                if (surveyRecords.size() == 2 && entryRecord != null && exitRecord != null) {
-                    float weightScore = (entryRecord.getTotalScore() + exitRecord.getTotalScore()) / 2;
-
                     MentalEvaluation mentalEvaluation = mentalEvaluationService.createMentalEvaluationWithContext(null, null, participant);
-                    mentalEvaluation.setWeightedScore(weightScore);
-                    participant.setMentalEvaluation(mentalEvaluationRepository.save(mentalEvaluation));
+                    participant.setMentalEvaluation(mentalEvaluation);
                     programParticipantRepository.save(participant);
-                }
             }
-
+            return Optional.of(surveyRecordDetailResponse);
         } catch (Exception e) {
             throw new RuntimeException("Error creating survey record", e);
         }
-
-        return Optional.of("Successfully created survey record");
     }
 
     @Transactional
@@ -297,10 +280,10 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
-    public Optional<?> getSuggestSupportProgram(Integer studentId) {
+    public List<SupportProgramResponse> getSuggestSupportProgram(Integer studentId) {
 
         if (caseRepository.existsByStudentId(studentId)) {
-            return Optional.of(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         SurveyRecord surveyRecordLatest = surveyRecordRepository.findLatestSurveyRecordByStudentId(studentId);
@@ -319,12 +302,11 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     .toList();
 
         }
-        return Optional.of(recommendSupportProgram);
+        return recommendSupportProgram;
     }
 
     @Override
     public List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId) {
-
         List<SupportProgram> sps = supportProgramRepository.findByStudentId(studentId);
         return sps
                 .stream()

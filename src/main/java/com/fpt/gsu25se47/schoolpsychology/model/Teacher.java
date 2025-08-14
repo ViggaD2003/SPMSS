@@ -31,6 +31,8 @@ public class Teacher {
 
     private String linkMeet;
 
+    private String eventId;
+
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL)
     private List<Classes> classes = new ArrayList<>();
 }
