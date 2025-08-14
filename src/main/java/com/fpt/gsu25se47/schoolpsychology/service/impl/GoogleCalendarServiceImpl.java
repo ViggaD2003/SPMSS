@@ -78,7 +78,8 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
         Event event = new Event()
                 .setSummary(roleName.equals("TEACHER") ? "Phòng họp giáo viên: " + teacherName : "Phòng họp chuyên viên " + teacherName)
                 .setStart(new EventDateTime().setDateTime(new DateTime(System.currentTimeMillis())))
-                .setEnd(new EventDateTime().setDateTime(new DateTime(System.currentTimeMillis() + 15 * 60 * 1000)))
+                .setEnd(new EventDateTime()
+                        .setDateTime(new DateTime(System.currentTimeMillis() + 365L * 24 * 60 * 60 * 1000)))
                 .setConferenceData(new ConferenceData().setCreateRequest(
                         new CreateConferenceRequest()
                                 .setRequestId(UUID.randomUUID().toString())
