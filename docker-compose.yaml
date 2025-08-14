@@ -34,7 +34,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3309/school_mental_health_support_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/school_mental_health_support_db?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: spmss
       SPRING_DATASOURCE_PASSWORD: spmss2025
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
