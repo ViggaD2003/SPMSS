@@ -48,14 +48,18 @@ public class AttendenceMeetingJob implements Job {
                     .collect(Collectors.toList());
 
             List<String> eventIds = accountRepository.findAll()
-                    .stream().filter(acc -> acc.getRole() == Role.COUNSELOR || acc.getRole() == Role.TEACHER)
+                    .stream()
+                    .filter(acc -> acc.getRole() == Role.COUNSELOR || acc.getRole() == Role.TEACHER)
                     .map(acc -> {
-                        if(acc.getRole() == Role.COUNSELOR){
+                        if (acc.getRole() == Role.COUNSELOR && acc.getCounselor() != null) {
                             return acc.getCounselor().getEventId();
-                        } else {
+                        } else if (acc.getRole() == Role.TEACHER && acc.getTeacher() != null) {
                             return acc.getTeacher().getEventId();
                         }
-                    }).collect(Collectors.toList());
+                        return null;
+                    })
+                    .filter(eventId -> eventId != null && !eventId.isBlank()) // ✅ bỏ null/blank
+                    .collect(Collectors.toList());
 
             for (String eventId : eventIds) {
                 log.info("Updating attendees for event {}", eventId);
