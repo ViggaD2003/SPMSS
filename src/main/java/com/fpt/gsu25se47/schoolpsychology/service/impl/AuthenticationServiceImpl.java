@@ -292,7 +292,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         switch (request.getRole()) {
             case TEACHER -> {
-                Event event = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+                Event event = googleCalendarService.createMeetLinkForTeacher(account.getEmail(), account.getFullName(), account.getRole().name());
                 String linkMeet = event.getConferenceData().getEntryPoints().stream()
                         .filter(p -> "video".equals(p.getEntryPointType()))
                         .findFirst()
@@ -311,7 +311,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 teacherRepository.save(teacher);
             }
             case COUNSELOR -> {
-                Event event = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+                Event event = googleCalendarService.createMeetLinkForTeacher(account.getEmail(), account.getFullName(), account.getRole().name());
                 String linkMeet = event.getConferenceData().getEntryPoints().stream()
                         .filter(p -> "video".equals(p.getEntryPointType()))
                         .findFirst()

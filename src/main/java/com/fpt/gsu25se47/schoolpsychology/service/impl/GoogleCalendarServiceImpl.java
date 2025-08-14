@@ -38,18 +38,18 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     private String clientSecret;
 
     @Override
-    public Event createMeetLinkForTeacher(String teacherName, String roleName) {
+    public Event createMeetLinkForTeacher(String staffEmail, String teacherName, String roleName) {
         String accessToken = tokenStore.getAccessToken();
 
         try {
-            return createEvent(teacherName,roleName, accessToken);
+            return createEvent(staffEmail, teacherName,roleName, accessToken);
         } catch (HttpResponseException e) {
             if (e.getStatusCode() == 401) {
                 // AccessToken hết hạn → dùng refresh_token để tạo mới
                 try {
                     String newToken = refreshAccessToken();
                     tokenStore.updateAccessToken(newToken);
-                    return createEvent(teacherName,roleName, newToken);
+                    return createEvent(staffEmail, teacherName,roleName, newToken);
                 } catch (Exception ex) {
                     throw new RuntimeException("Failed to refresh token", ex);
                 }
@@ -60,7 +60,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
         }
     }
 
-    private Event createEvent(String teacherName, String roleName, String accessToken) throws IOException, GeneralSecurityException {
+    private Event createEvent(String staffEmail, String teacherName, String roleName, String accessToken) throws IOException, GeneralSecurityException {
         Calendar calendar = new Calendar.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JacksonFactory.getDefaultInstance(),
@@ -69,9 +69,11 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
 
         // Lấy danh sách email và chuyển sang EventAttendee
         List<EventAttendee> attendees = accountRepository.findAll().stream()
-                .filter(e -> e.getRole() == Role.STUDENT && e.getEmail().contains("gmail.com"))
+                .filter(e -> e.getRole() == Role.STUDENT && e.getEmail().contains("@gmail.com"))
                 .map(account -> new EventAttendee().setEmail(account.getEmail()))
                 .collect(Collectors.toList());
+        EventAttendee staffAttendee = new EventAttendee().setEmail(staffEmail);
+        attendees.add(staffAttendee);
 
         Event event = new Event()
                 .setSummary(roleName.equals("TEACHER") ? "Phòng họp giáo viên: " + teacherName : "Phòng họp chuyên viên " + teacherName)
