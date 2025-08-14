@@ -33,7 +33,7 @@ public class SurveyController {
     @GetMapping
     @Operation(summary = "Lấy tất cả khảo sát", description = "Chỉ Quản lý có quyền xem toàn bộ khảo sát.")
     public ResponseEntity<?> getAllSurveys() {
-        return ResponseEntity.ok(surveyService.getAllSurveys());
+        return ResponseEntity.ok(surveyService.getAllSurveys().reversed());
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('STUDENT') or hasRole('PARENTS') or hasRole('COUNSELOR')")
@@ -54,20 +54,20 @@ public class SurveyController {
     @GetMapping("/get-by-account")
     @Operation(summary = "Lấy khảo sát theo tài khoản", description = "Lấy danh sách khảo sát mà Cố vấn đã tạo.")
     public ResponseEntity<?> getSurveysByAccount(){
-        return ResponseEntity.ok(surveyService.getAllSurveyByCounselorId());
+        return ResponseEntity.ok(surveyService.getAllSurveyByCounselorId().reversed());
     }
 
     @PreAuthorize("hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping("/published")
     @Operation(summary = "Lấy khảo sát đã xuất bản", description = "Dành cho Học sinh và Phụ huynh. Lấy danh sách khảo sát đang được xuất bản.")
     public ResponseEntity<?> getAllSurveyWithPublished(@RequestParam("studentId") Integer studentId) {
-        return ResponseEntity.ok(surveyService.getAllSurveyWithPublished(studentId));
+        return ResponseEntity.ok(surveyService.getAllSurveyWithPublished(studentId).reversed());
     }
 
     @PreAuthorize("hasRole('TEACHER') or hasRole('COUNSELOR') or hasRole('MANAGER') or hasRole('STUDENT') or hasRole('PARENTS')")
     @GetMapping("/in-case")
     @Operation(summary = "Lấy khảo sát liên quan đến Case", description = "Lấy tất cả khảo sát có liên quan đến Case cụ thể (nếu có).")
     public ResponseEntity<?> getAllSurveyStudentInCase(@RequestParam(name = "caseId", required = false) Integer caseId){
-        return ResponseEntity.ok(surveyService.getAllSurveyStudentInCase(caseId));
+        return ResponseEntity.ok(surveyService.getAllSurveyStudentInCase(caseId).reversed());
     }
 }

@@ -28,7 +28,7 @@ public interface SupportProgramService {
 
     SupportProgramStudentDetail getSupportProgramStudentDetailById(Integer supportProgramId, Integer studentId);
 
-    Optional<?> getSuggestSupportProgram(Integer studentId);
+    List<SupportProgramResponse> getSuggestSupportProgram(Integer studentId);
 
     List<SupportProgramPPResponse> getSupportProgramsByStudentId(Integer studentId);
 

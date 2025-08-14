@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.common.GoogleTokenStore;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.GoogleCalendarService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -16,7 +17,6 @@ import com.google.api.services.calendar.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -38,7 +38,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     private String clientSecret;
 
     @Override
-    public String createMeetLinkForTeacher(String teacherName, String roleName) {
+    public Event createMeetLinkForTeacher(String teacherName, String roleName) {
         String accessToken = tokenStore.getAccessToken();
 
         try {
@@ -60,7 +60,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
         }
     }
 
-    private String createEvent(String teacherName, String roleName, String accessToken) throws IOException, GeneralSecurityException {
+    private Event createEvent(String teacherName, String roleName, String accessToken) throws IOException, GeneralSecurityException {
         Calendar calendar = new Calendar.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JacksonFactory.getDefaultInstance(),
@@ -69,6 +69,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
 
         // Lấy danh sách email và chuyển sang EventAttendee
         List<EventAttendee> attendees = accountRepository.findAll().stream()
+                .filter(e -> e.getRole() == Role.STUDENT && e.getEmail().contains("gmail.com"))
                 .map(account -> new EventAttendee().setEmail(account.getEmail()))
                 .collect(Collectors.toList());
 
@@ -83,15 +84,9 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 ))
                 .setAttendees(attendees); // ✅ đúng kiểu rồi
 
-        Event created = calendar.events().insert("primary", event)
+        return calendar.events().insert("primary", event)
                 .setConferenceDataVersion(1)
                 .execute();
-
-        return created.getConferenceData().getEntryPoints().stream()
-                .filter(p -> "video".equals(p.getEntryPointType()))
-                .findFirst()
-                .map(EntryPoint::getUri)
-                .orElse(null);
     }
 
     private String refreshAccessToken() throws IOException, GeneralSecurityException {

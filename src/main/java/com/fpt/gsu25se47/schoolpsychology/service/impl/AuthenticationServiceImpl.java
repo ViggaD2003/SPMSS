@@ -17,6 +17,8 @@ import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import com.fpt.gsu25se47.schoolpsychology.utils.ResponseObject;
 import com.fpt.gsu25se47.schoolpsychology.utils.TokenUtil;
 import com.google.api.client.http.HttpTransport;
+import com.google.api.services.calendar.model.EntryPoint;
+import com.google.api.services.calendar.model.Event;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -290,24 +292,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         switch (request.getRole()) {
             case TEACHER -> {
-                String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+                Event event = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+                String linkMeet = event.getConferenceData().getEntryPoints().stream()
+                        .filter(p -> "video".equals(p.getEntryPointType()))
+                        .findFirst()
+                        .map(EntryPoint::getUri)
+                        .orElse(null);
+
 
                 Teacher teacher = Teacher.builder()
                         .id(account.getId())
                         .account(account)
                         .teacherCode(generateNextTeacherCode())
                         .linkMeet(linkMeet)
+                        .eventId(event.getId())
                         .build();
 
                 teacherRepository.save(teacher);
             }
             case COUNSELOR -> {
-                String linkMeet = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+                Event event = googleCalendarService.createMeetLinkForTeacher(account.getFullName(), account.getRole().name());
+                String linkMeet = event.getConferenceData().getEntryPoints().stream()
+                        .filter(p -> "video".equals(p.getEntryPointType()))
+                        .findFirst()
+                        .map(EntryPoint::getUri)
+                        .orElse(null);
 
                 Counselor counselor = Counselor.builder()
                         .id(account.getId())
                         .account(account)
                         .linkMeet(linkMeet)
+                        .eventId(event.getId())
                         .counselorCode(generateNextCounselorCode())
                         .build();
                 counselorRepository.save(counselor);

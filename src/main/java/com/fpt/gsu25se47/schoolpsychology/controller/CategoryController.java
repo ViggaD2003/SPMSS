@@ -23,12 +23,12 @@ public class CategoryController {
     @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('TEACHER')")
     @GetMapping
     public ResponseEntity<?> getAllCategories() {
-       return ResponseEntity.ok(categoryService.findAllCategories());
+       return ResponseEntity.ok(categoryService.findAllCategories().reversed());
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR') or hasRole('STUDENT') or hasRole('TEACHER')")
     @GetMapping("/level")
     public ResponseEntity<?> getLevelByCategoryId(@RequestParam(name = "categoryId") Integer categoryId) {
-        return ResponseEntity.ok(categoryService.findAllLevelByCategoryId(categoryId));
+        return ResponseEntity.ok(categoryService.findAllLevelByCategoryId(categoryId).reversed());
     }
 }

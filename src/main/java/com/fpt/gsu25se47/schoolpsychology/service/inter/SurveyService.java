@@ -3,23 +3,25 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyGetAllResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SurveyService {
 
     Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto);
 
-    Optional<?> getAllSurveys();
+    List<SurveyGetAllResponse> getAllSurveys();
 
     Optional<?> getSurveyById(Integer id);
 
     Optional<?> updateSurveyById(Integer id, UpdateSurveyRequest updateSurveyRequest);
 
-    Optional<?> getAllSurveyByCounselorId();
+    List<SurveyGetAllResponse> getAllSurveyByCounselorId();
 
-    Optional<?> getAllSurveyWithPublished(Integer studentId);
+    List<SurveyGetAllResponse> getAllSurveyWithPublished(Integer studentId);
 
-    Optional<?> getAllSurveyStudentInCase(Integer caseId);
+    List<SurveyGetAllResponse> getAllSurveyStudentInCase(Integer caseId);
 }

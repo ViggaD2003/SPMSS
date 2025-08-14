@@ -27,4 +27,6 @@ public class Counselor {
     private String counselorCode;
 
     private String linkMeet;
+
+    private String eventId;
 }

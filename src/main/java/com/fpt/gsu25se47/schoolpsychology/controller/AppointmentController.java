@@ -64,7 +64,7 @@ public class AppointmentController {
     @PreAuthorize("hasRole('MANAGER')")
     ResponseEntity<List<AppointmentResponse>> getAllByStatus(@RequestParam AppointmentStatus status) {
 
-        return ResponseEntity.ok(appointmentService.getAppointmentsByStatus(status));
+        return ResponseEntity.ok(appointmentService.getAppointmentsByStatus(status).reversed());
     }
 
     @Operation(summary = "Get appointment details by ID",
@@ -83,7 +83,7 @@ public class AppointmentController {
                 AppointmentStatus.IN_PROGRESS,
                 AppointmentStatus.CONFIRMED,
                 AppointmentStatus.PENDING
-        )));
+        )).reversed());
     }
 
     @Operation(summary = "Get all appointments by accountId with status : CANCELED, COMPLETED, ABSENT")
@@ -94,6 +94,6 @@ public class AppointmentController {
                 AppointmentStatus.ABSENT,
                 AppointmentStatus.CANCELED,
                 AppointmentStatus.COMPLETED
-        )));
+        )).reversed());
     }
 }
