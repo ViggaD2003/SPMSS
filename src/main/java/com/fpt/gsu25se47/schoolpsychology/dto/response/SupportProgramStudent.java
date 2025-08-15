@@ -23,4 +23,6 @@ public class SupportProgramStudent {
     private Float finalScore;
 
     private List<SurveyRecordGetAllResponse> surveyRecord;
+
+    private MentalEvaluationResponse mentalEvaluation;
 }

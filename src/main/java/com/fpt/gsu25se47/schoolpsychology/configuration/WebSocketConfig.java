@@ -28,7 +28,9 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -37,6 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Autowired
     private JWTService jwtService;
+
     @Autowired
     private AccountService userService;
 
@@ -51,7 +54,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("*")
-                .addInterceptors(new JwtHandshakeInterceptor()); // Thêm interceptor để xử lý JWT từ query param
+                .addInterceptors(new JwtHandshakeInterceptor());
     }
 
     @Override
@@ -61,48 +64,45 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-                if (accessor != null) {
-                    log.info("STOMP Command: {}", accessor.getCommand());
+                if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
+                    String token = null;
 
-                    if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-                        String token = null;
+                    // 1. Lấy từ header Authorization nếu có
+                    String authHeader = accessor.getFirstNativeHeader("Authorization");
+                    if (authHeader != null) {
+                        token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+                        log.info("JWT from Authorization header");
+                    }
 
-                        // 1. Thử lấy từ header Authorization trước (ưu tiên)
-                        String authHeader = accessor.getFirstNativeHeader("Authorization");
-                        if (authHeader != null) {
-                            token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-                            log.info("JWT from Authorization header");
+                    // 2. Nếu chưa có, lấy từ session attributes (HandshakeInterceptor)
+                    if (token == null) {
+                        Object jwtFromQuery = accessor.getSessionAttributes().get("jwt_token");
+                        if (jwtFromQuery != null) {
+                            token = jwtFromQuery.toString();
+                            log.info("JWT from query parameter");
                         }
+                    }
 
-                        // 2. Nếu không có trong header, lấy từ session attributes (được set từ HandshakeInterceptor)
-                        if (token == null) {
-                            Object jwtFromQuery = accessor.getSessionAttributes().get("jwt_token");
-                            if (jwtFromQuery != null) {
-                                token = jwtFromQuery.toString();
-                                log.info("JWT from query parameter");
-                            }
+                    // 3. Xác thực JWT
+                    if (token != null) {
+                        try {
+                            String username = jwtService.extractUsernameFromJWT(token);
+                            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username);
+
+                            UsernamePasswordAuthenticationToken authToken =
+                                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                            accessor.setUser(authToken);
+
+                            log.info("User authenticated for WebSocket: {}", username);
+                        } catch (Exception e) {
+                            log.error("WebSocket authentication failed", e);
+                            return null; // reject nếu xác thực thất bại
                         }
-
-                        // 3. Xác thực JWT token
-                        if (token != null) {
-                            try {
-                                String username = jwtService.extractUsernameFromJWT(token);
-                                UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username);
-
-                                UsernamePasswordAuthenticationToken authToken =
-                                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                                SecurityContextHolder.getContext().setAuthentication(authToken);
-                                accessor.setUser(authToken);
-                                log.info("User authenticated for WebSocket: {}", username);
-                            } catch (Exception e) {
-                                log.error("WebSocket authentication failed", e);
-                                return null; // Reject connection if authentication fails
-                            }
-                        } else {
-                            log.warn("No JWT token found in header or query parameter");
-                            return null; // Reject connection if no token
-                        }
+                    } else {
+                        log.warn("No JWT token found in header or query parameter");
+                        return null; // reject nếu không có token
                     }
                 }
                 return message;
@@ -110,42 +110,45 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         });
     }
 
-    // Inner class để xử lý JWT từ query parameter trong handshake
+    // Interceptor bắt JWT ngay khi handshake
     private class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
         @Override
         public boolean beforeHandshake(ServerHttpRequest request,
                                        ServerHttpResponse response,
                                        WebSocketHandler wsHandler,
-                                       Map<String, Object> attributes) throws Exception {
+                                       Map<String, Object> attributes) {
 
             try {
                 URI uri = request.getURI();
                 String query = uri.getQuery();
 
-                log.info("WebSocket handshake - URI: {}", uri.toString());
+                log.info("WebSocket handshake - URI: {}", uri);
                 log.info("WebSocket handshake - Query: {}", query);
 
-                // Parse query parameters để lấy JWT token
-                if (query != null && query.contains("token=")) {
-                    String[] params = query.split("&");
-                    for (String param : params) {
-                        if (param.startsWith("token=")) {
-                            String token = URLDecoder.decode(param.substring(6), StandardCharsets.UTF_8);
-                            // Lưu token vào session attributes để dùng trong ChannelInterceptor
-                            attributes.put("jwt_token", token);
-                            log.info("JWT token extracted from query parameter");
-                            break;
-                        }
+                if (query != null) {
+                    Map<String, String> params = Arrays.stream(query.split("&"))
+                            .map(s -> s.split("=", 2)) // chỉ tách làm 2 phần
+                            .filter(arr -> arr.length == 2)
+                            .collect(Collectors.toMap(
+                                    arr -> URLDecoder.decode(arr[0], StandardCharsets.UTF_8),
+                                    arr -> URLDecoder.decode(arr[1], StandardCharsets.UTF_8)
+                            ));
+
+                    String token = params.get("token");
+                    if (token != null && !token.isBlank()) {
+                        attributes.put("jwt_token", token);
+                        log.info("JWT token extracted from query parameter");
+                        return true; // tiếp tục handshake
                     }
                 }
 
-                // Cho phép handshake tiếp tục (authentication sẽ được xử lý trong ChannelInterceptor)
-                return true;
+                log.warn("Missing JWT token in query parameters, handshake rejected");
+                return false; // reject nếu không có token
 
             } catch (Exception e) {
                 log.error("Error during WebSocket handshake", e);
-                return false;
+                return false; // reject nếu lỗi parse
             }
         }
 

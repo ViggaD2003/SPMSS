@@ -3,7 +3,9 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
+import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import com.fpt.gsu25se47.schoolpsychology.model.ProgramParticipants;
+import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,6 +26,10 @@ public abstract class ParticipantMapper {
     protected SurveyRecordMapper surveyRecordMapper;
     @Autowired
     private SurveyRecordRepository surveyRecordRepository;
+    @Autowired
+    private MentalEvaluationMapper mentalEvaluationMapper;
+    @Autowired
+    private MentalEvaluationRepository mentalEvaluationRepository;
 
     @Mappings({
             @Mapping(target = "student", expression = "java(mapStudent(programParticipants.getStudent()))"),
@@ -37,7 +43,8 @@ public abstract class ParticipantMapper {
             @Mapping(target = "studentId", source = "programParticipants.student.id"),
             @Mapping(target = "caseId", source = "programParticipants.cases.id"),
             @Mapping(target = "status", expression = "java(programParticipants.getStatus().name())"),
-            @Mapping(target = "surveyRecord", expression = "java(mapToSurveyRecordGetAllResponse(programParticipants.getStudent().getId(), programParticipants.getProgram().getSurvey().getId()))")
+            @Mapping(target = "surveyRecord", expression = "java(mapToSurveyRecordGetAllResponse(programParticipants.getStudent().getId(), programParticipants.getProgram().getSurvey().getId()))"),
+            @Mapping(target = "mentalEvaluation", expression = "java(mapToMentalEvaluationResponse(programParticipants.getId()))")
     })
     public abstract SupportProgramStudent mapToSupportProgramStudent(ProgramParticipants programParticipants);
 
@@ -58,5 +65,10 @@ public abstract class ParticipantMapper {
     protected CaseGetAllResponse mapToCase(Cases cases) {
         if(cases == null) return null;
         return caseMapper.mapToCaseGetAllResponse(cases, null);
+    }
+
+    protected MentalEvaluationResponse mapToMentalEvaluationResponse(Integer participantId) {
+        return mentalEvaluationMapper.toMentalEvaluationResponse(mentalEvaluationRepository
+                .findMentalEvaluationByProgramParticipantsId(participantId));
     }
 }
