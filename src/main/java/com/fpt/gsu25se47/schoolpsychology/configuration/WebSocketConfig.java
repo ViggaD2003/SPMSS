@@ -104,6 +104,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                        Map<String, Object> attributes) {
             try {
                 URI uri = request.getURI();
+                log.info(request.getURI().toString());
                 String query = uri.getQuery();
                 if (query != null) {
                     Map<String, String> params = Arrays.stream(query.split("&"))
