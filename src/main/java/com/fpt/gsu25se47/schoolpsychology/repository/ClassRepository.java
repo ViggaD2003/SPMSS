@@ -16,7 +16,7 @@ public interface ClassRepository extends JpaRepository<Classes,Integer> {
     @Query("SELECT e.classes FROM Enrollment e " +
             "JOIN e.student s " +
             "WHERE e.classes.isActive = true AND s.id = :studentId")
-    Classes findActiveClassByStudentId(@Param("studentId") Integer studentId);
+    List<Classes> findActiveClassByStudentId(@Param("studentId") Integer studentId);
 
     Optional<Classes> findByCodeClass(String codeClass);
 

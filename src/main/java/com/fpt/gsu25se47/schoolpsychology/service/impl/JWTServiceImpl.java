@@ -150,13 +150,13 @@ public class JWTServiceImpl implements JWTService {
 
         List<StudentClaimDto> childrenClaims = students.stream().map(child -> {
 
-            Classes activeClass = classRepository.findActiveClassByStudentId(child.getId());
+            List<Classes> activeClass = classRepository.findActiveClassByStudentId(child.getId());
 
             StudentClaimDto studentClaimDto = studentMapper.toStudentClaimDto(child);
 
             studentClaimDto.setTeacherId(
-                    (activeClass != null && activeClass.getTeacher() != null)
-                            ? activeClass.getTeacher().getId()
+                    (!activeClass.isEmpty() && activeClass.get(0).getTeacher() != null)
+                            ? activeClass.get(0).getTeacher().getId()
                             : null
             );
             studentClaimDto.setCaseId(caseRepository.findActiveCaseByStudentId(child.getId()) == null ? null : caseRepository.findActiveCaseByStudentId(child.getId()).getId());
@@ -170,7 +170,7 @@ public class JWTServiceImpl implements JWTService {
     private void handleStudentClaims(Map<String, Object> claims, Account studentAcc) {
         Student student = studentRepo.findById(studentAcc.getId())
                 .orElseThrow(() -> new RuntimeException("Unauthorized"));
-        Classes activeClass = classRepository.findActiveClassByStudentId(student.getId());
+        List<Classes> activeClasses = classRepository.findActiveClassByStudentId(student.getId());
         Optional<Integer> caseId = student.getAccount()
                 .getStudentCases()
                 .stream()
@@ -179,8 +179,8 @@ public class JWTServiceImpl implements JWTService {
                 .findFirst();
 
         claims.put("isEnableSurvey", student.getIsEnableSurvey());
-        claims.put("teacherId", activeClass != null && activeClass.getTeacher() != null
-                ? activeClass.getTeacher().getId() : null);
+        claims.put("teacherId", !activeClasses.isEmpty() && activeClasses.get(0).getTeacher() != null
+                ? activeClasses.get(0).getTeacher().getId() : null);
         claims.put("caseId", caseId.orElse(null));
     }
 
