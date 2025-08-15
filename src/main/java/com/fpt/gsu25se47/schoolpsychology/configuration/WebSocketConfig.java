@@ -67,19 +67,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String token = null;
 
-                    // Ưu tiên lấy từ header Authorization
+                    // Ưu tiên lấy từ STOMP header Authorization
                     String authHeader = accessor.getFirstNativeHeader("Authorization");
                     if (authHeader != null && !authHeader.isBlank()) {
                         token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-                        log.info("JWT from Authorization header");
+                        log.info("JWT from STOMP Authorization header");
                     }
 
-                    // Nếu chưa có thì lấy từ handshake attributes (query param)
+                    // Nếu chưa có thì lấy từ handshake attributes (query hoặc HTTP header)
                     if (token == null) {
-                        Object jwtFromQuery = accessor.getSessionAttributes().get("jwt_token");
-                        if (jwtFromQuery != null) {
-                            token = jwtFromQuery.toString();
-                            log.info("JWT from query parameter");
+                        Object jwtFromHandshake = accessor.getSessionAttributes().get("jwt_token");
+                        if (jwtFromHandshake != null) {
+                            token = jwtFromHandshake.toString();
+                            log.info("JWT from handshake attributes");
                         }
                     }
 
@@ -101,7 +101,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             return null;
                         }
                     } else {
-                        log.warn("No JWT token found in header or query parameter");
+                        log.warn("No JWT token found in STOMP header or handshake");
                         return null;
                     }
                 }
@@ -118,16 +118,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                        Map<String, Object> attributes) {
 
             try {
-                // Ưu tiên header
+                // Ưu tiên token từ HTTP Authorization header
                 String authHeader = request.getHeaders().getFirst("Authorization");
                 if (authHeader != null && !authHeader.isBlank()) {
                     String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-                    attributes.put("jwt_token", token); // lưu để preSend lấy
-                    log.info("JWT token extracted from Authorization header");
+                    attributes.put("jwt_token", token); // Lưu vào session attributes
+                    log.info("JWT token extracted from HTTP Authorization header");
                     return true;
                 }
 
-                // Nếu không có header → lấy từ query
+                // Nếu không có header → lấy token từ query param
                 URI uri = request.getURI();
                 String query = uri.getQuery();
                 if (query != null) {
@@ -147,7 +147,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     }
                 }
 
-                log.warn("Missing JWT token in both header and query parameters, handshake rejected");
+                log.warn("Missing JWT token in both HTTP header and query parameter, handshake rejected");
                 return false;
 
             } catch (Exception e) {
