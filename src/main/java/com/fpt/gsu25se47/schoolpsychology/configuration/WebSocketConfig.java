@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
     private static final Logger log = LoggerFactory.getLogger(WebSocketConfig.class);
 
     @Autowired
@@ -51,93 +52,94 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     @Override
-public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/ws")
-            .setAllowedOrigins("*")
-            .addInterceptors(new JwtHandshakeInterceptor());
-}
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("*")
+                .addInterceptors(new JwtHandshakeInterceptor());
+    }
 
-private class JwtHandshakeInterceptor implements HandshakeInterceptor {
-    @Override
-    public boolean beforeHandshake(ServerHttpRequest request,
+    private class JwtHandshakeInterceptor implements HandshakeInterceptor {
+        @Override
+        public boolean beforeHandshake(ServerHttpRequest request,
+                                       ServerHttpResponse response,
+                                       WebSocketHandler wsHandler,
+                                       Map<String, Object> attributes) {
+
+            try {
+                URI uri = request.getURI();
+                String query = uri.getQuery();
+                if (query != null) {
+                    Map<String, String> params = Arrays.stream(query.split("&"))
+                            .map(s -> s.split("=", 2))
+                            .filter(arr -> arr.length == 2)
+                            .collect(Collectors.toMap(
+                                    arr -> URLDecoder.decode(arr[0], StandardCharsets.UTF_8),
+                                    arr -> URLDecoder.decode(arr[1], StandardCharsets.UTF_8)
+                            ));
+
+                    String token = params.get("token");
+                    if (token != null && !token.isBlank()) {
+                        attributes.put("jwt_token", token);
+                        log.info("✅ JWT token extracted from query parameter");
+                        return true;
+                    }
+                }
+
+                log.warn("⚠ Missing JWT token in query parameter, handshake rejected");
+                return false;
+
+            } catch (Exception e) {
+                log.error("❌ Error during WebSocket handshake", e);
+                return false;
+            }
+        }
+
+        @Override
+        public void afterHandshake(ServerHttpRequest request,
                                    ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
-                                   Map<String, Object> attributes) {
-
-        try {
-            URI uri = request.getURI();
-            String query = uri.getQuery();
-            if (query != null) {
-                Map<String, String> params = Arrays.stream(query.split("&"))
-                        .map(s -> s.split("=", 2))
-                        .filter(arr -> arr.length == 2)
-                        .collect(Collectors.toMap(
-                                arr -> URLDecoder.decode(arr[0], StandardCharsets.UTF_8),
-                                arr -> URLDecoder.decode(arr[1], StandardCharsets.UTF_8)
-                        ));
-
-                String token = params.get("token");
-                if (token != null && !token.isBlank()) {
-                    attributes.put("jwt_token", token);
-                    log.info("JWT token extracted from query parameter");
-                    return true;
-                }
+                                   Exception exception) {
+            if (exception != null) {
+                log.error("❌ WebSocket handshake failed", exception);
+            } else {
+                log.info("✅ WebSocket handshake completed successfully");
             }
-
-            log.warn("Missing JWT token in query parameter, handshake rejected");
-            return false;
-
-        } catch (Exception e) {
-            log.error("Error during WebSocket handshake", e);
-            return false;
         }
     }
 
     @Override
-    public void afterHandshake(ServerHttpRequest request,
-                               ServerHttpResponse response,
-                               WebSocketHandler wsHandler,
-                               Exception exception) {
-        if (exception != null) {
-            log.error("WebSocket handshake failed", exception);
-        } else {
-            log.info("WebSocket handshake completed successfully");
-        }
-    }
-}
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(new ChannelInterceptor() {
+            @Override
+            public Message<?> preSend(Message<?> message, MessageChannel channel) {
+                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-@Override
-public void configureClientInboundChannel(ChannelRegistration registration) {
-    registration.interceptors(new ChannelInterceptor() {
-        @Override
-        public Message<?> preSend(Message<?> message, MessageChannel channel) {
-            StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                if (accessor != null && accessor.getCommand() == StompCommand.CONNECT) {
+                    String token = (String) accessor.getSessionAttributes().get("jwt_token");
 
-            if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                String token = (String) accessor.getSessionAttributes().get("jwt_token");
+                    if (token != null && !token.isBlank()) {
+                        try {
+                            String username = jwtService.extractUsernameFromJWT(token);
+                            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username);
 
-                if (token != null) {
-                    try {
-                        String username = jwtService.extractUsernameFromJWT(token);
-                        UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username);
+                            UsernamePasswordAuthenticationToken authToken =
+                                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                            accessor.setUser(authToken);
 
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                        accessor.setUser(authToken);
-
-                        log.info("User authenticated for WebSocket: {}", username);
-                    } catch (Exception e) {
-                        log.error("WebSocket authentication failed", e);
+                            log.info("✅ User authenticated for WebSocket: {}", username);
+                        } catch (Exception e) {
+                            log.error("❌ WebSocket authentication failed", e);
+                            return null;
+                        }
+                    } else {
+                        log.warn("⚠ No JWT token found in query parameter");
                         return null;
                     }
-                } else {
-                    log.warn("No JWT token found in query parameter");
-                    return null;
                 }
+                return message;
             }
-            return message;
-        }
-    });
+        });
+    }
 }
