@@ -10,24 +10,21 @@ import java.time.LocalDateTime;
 @Data
 public class UpdateClassRequest {
 
-    @NotNull
+    @NotNull(message = "Grade must not be null")
     private Grade grade;
 
-    @NotNull
+    @NotNull(message = "Teacher ID is required")
     private Integer teacherId;
 
-    @NotBlank
+    @NotBlank(message = "Class code must not be blank")
     private String codeClass;
 
-    @NotBlank
-    private String schoolYear;
+    private Integer schoolYearId;
 
-    @NotNull
     private LocalDateTime startTime;
 
-    @NotNull
     private LocalDateTime endTime;
 
-    @NotNull
-    private Boolean isActive;
+    private boolean isActive;
+
 }

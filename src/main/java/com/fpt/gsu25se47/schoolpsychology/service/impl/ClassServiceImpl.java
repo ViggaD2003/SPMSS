@@ -1,24 +1,29 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateClassRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponseSRC;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateClassRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponseSRC;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
-import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
+import com.fpt.gsu25se47.schoolpsychology.mapper.SchoolYearMapper;
+import com.fpt.gsu25se47.schoolpsychology.mapper.TermMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Classes;
+import com.fpt.gsu25se47.schoolpsychology.model.ClassesTerm;
+import com.fpt.gsu25se47.schoolpsychology.model.Teacher;
+import com.fpt.gsu25se47.schoolpsychology.model.Term;
 import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.EnrollmentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.SchoolYearRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.TeacherRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.TermService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,11 +33,13 @@ public class ClassServiceImpl implements ClassService {
 
     private final ClassRepository classRepository;
     private final TeacherRepository teacherRepository;
-    private final EnrollmentRepository enrollmentRepository;
+    private final SchoolYearRepository schoolYearRepository;
 
     private final AccountService accountService;
+    private final TermService termService;
 
-    private final StudentMapper studentMapper;
+    private final SchoolYearMapper schoolYearMapper;
+    private final TermMapper termMapper;
     private final ClassMapper classMapper;
 
     @Override
@@ -41,27 +48,92 @@ public class ClassServiceImpl implements ClassService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request list cannot be empty");
         }
 
-        // Validate all teacher IDs are the same (or you can adapt if mixed teachers allowed)
         Teacher teacher = getTeacher(requests);
 
         // Validate each request
         validateCodeClasses(requests);
 
-        requests.forEach(this::validateSchoolYear);
+        List<Classes> classEntities = new ArrayList<>();
+
+        List<Integer> missingSchoolYearIds = new ArrayList<>();
 
         // Map and assign teacher
-        List<Classes> classEntities = requests.stream()
-                .map(req -> {
-                    Classes cls = classMapper.toClassEntity(req);
-                    cls.setTeacher(teacher);
-                    return cls;
-                }).collect(Collectors.toList());
+        for (CreateClassRequest req : requests) {
+
+            Integer schoolYearId = req.getSchoolYearId();
+            boolean exists = schoolYearRepository.existsById(schoolYearId);
+            if (!exists) {
+                missingSchoolYearIds.add(schoolYearId);
+            }
+
+            List<Term> terms = termService.getTermsByYearId(req.getSchoolYearId());
+
+            Classes cls = classMapper.toClassEntity(req);
+            cls.setTeacher(teacher);
+
+            List<ClassesTerm> classTerms = terms.stream()
+                    .map(term -> {
+                        ClassesTerm ct = new ClassesTerm();
+                        ct.setClazz(cls);
+                        ct.setTerm(term);
+                        return ct;
+                    })
+                    .toList();
+
+            cls.setClassesTerm(classTerms);
+
+            classEntities.add(cls);
+        }
+
+        if (!missingSchoolYearIds.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "School year(s) not found: " + missingSchoolYearIds
+            );
+        }
 
         List<Classes> savedClasses = classRepository.saveAll(classEntities);
 
         return savedClasses.stream()
-                .map(classMapper::toClassResponse)
+                .map(cl -> classMapper.toClassResponse(cl, termMapper, schoolYearMapper))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ClassResponse updateClass(Integer classId, UpdateClassRequest request) {
+
+        Classes classes = classRepository.findById(classId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Class not found for ID: " + classId));
+        classMapper.updateClassFromRequest(classes, request);
+
+        if (request.getSchoolYearId() != null) {
+            List<Term> terms = termService.getTermsByYearId(request.getSchoolYearId());
+
+            // Existing list JPA is tracking
+            List<ClassesTerm> existingClassTerms = classes.getClassesTerm();
+
+            // Remove terms no longer present
+            existingClassTerms.removeIf(ct -> terms.stream()
+                    .noneMatch(t -> t.getId().equals(ct.getTerm().getId()))
+            );
+
+            // Add missing terms
+            for (Term term : terms) {
+                boolean alreadyExists = existingClassTerms.stream()
+                        .anyMatch(ct -> ct.getTerm().getId().equals(term.getId()));
+                if (!alreadyExists) {
+                    ClassesTerm newCt = new ClassesTerm();
+                    newCt.setClazz(classes);
+                    newCt.setTerm(term);
+                    existingClassTerms.add(newCt);
+                }
+            }
+        }
+
+        Classes saved = classRepository.save(classes);
+
+        return classMapper.toClassResponse(saved, termMapper, schoolYearMapper);
     }
 
     @Override
@@ -73,7 +145,7 @@ public class ClassServiceImpl implements ClassService {
 
         List<StudentSRCResponse> students = accountService.getStudentsByClassWithLSR(classes.getId());
 
-        return classMapper.toClassDetailResponseSRC(classes, students);
+        return classMapper.toClassDetailResponseSRC(classes, termMapper, schoolYearMapper, students);
     }
 
     @Override
@@ -84,7 +156,7 @@ public class ClassServiceImpl implements ClassService {
 
         List<StudentSRCResponse> students = accountService.getStudentsByClassWithLSR(classId);
 
-        return classMapper.toClassDetailResponseSRC(classes, students);
+        return classMapper.toClassDetailResponseSRC(classes, termMapper, schoolYearMapper, students);
     }
 
     @Override
@@ -92,25 +164,9 @@ public class ClassServiceImpl implements ClassService {
 
         return classRepository.findAll()
                 .stream()
-                .map(classMapper::toClassResponse)
+                .map(cl -> classMapper.toClassResponse(cl, termMapper, schoolYearMapper))
                 .toList();
     }
-
-//    private List<ClassResponse> getClassResponsesForTeacher(Account account) {
-//
-//        List<Classes> classes = classRepository.findAllByTeacherId(account.getId());
-//
-//        List<StudentDto> studentDtos = classes.stream()
-//                .flatMap(c -> c.getEnrollments()
-//                        .stream()
-//                        .map(Enrollment::getStudent)
-//                        .map(studentMapper::mapStudentDtoWithoutClass))
-//                .toList();
-//
-//        return classes.stream()
-//                .map(s -> classMapper.toClassDetailResponse(s, studentDtos))
-//                .toList();
-//    }
 
     private Teacher getTeacher(List<CreateClassRequest> requests) {
 
@@ -135,22 +191,6 @@ public class ClassServiceImpl implements ClassService {
                     .collect(Collectors.joining(", "));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Classes with code(s): " + existingCodes + " already exist");
-        }
-    }
-
-    private void validateSchoolYear(CreateClassRequest request) {
-
-        String[] schoolYear = request.getSchoolYear().split("-");
-        int firstYear = Integer.parseInt(schoolYear[0]);
-        int lastYear = Integer.parseInt(schoolYear[1]);
-        int duration = lastYear - firstYear;
-
-        int startYear = request.getStartTime().getYear();
-        int endYear = request.getEndTime().getYear();
-        int durationTime = endYear - startYear;
-        if (durationTime != duration) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Start time and End time not valid");
         }
     }
 }
