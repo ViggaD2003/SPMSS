@@ -1,17 +1,12 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AccountDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AccountMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
-import com.fpt.gsu25se47.schoolpsychology.model.Account;
-import com.fpt.gsu25se47.schoolpsychology.model.Classes;
-import com.fpt.gsu25se47.schoolpsychology.model.Student;
-import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
+import com.fpt.gsu25se47.schoolpsychology.mapper.TeacherMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
@@ -42,9 +37,11 @@ public class AccountServiceImpl implements AccountService {
     private final EnrollmentRepository enrollmentRepository;
     private final CaseRepository caseRepository;
     private final ClassRepository classRepository;
+    private final TeacherRepository teacherRepository;
     private final StudentMapper studentMapper;
     private final SurveyRecordMapper surveyRecordMapper;
     private final AccountMapper accountMapper;
+    private final TeacherMapper teacherMapper;
 
     @Override
     public UserDetailsService userDetailsService() {
@@ -166,6 +163,20 @@ public class AccountServiceImpl implements AccountService {
         return students
                 .stream()
                 .map(studentMapper::mapStudentDtoWithoutClass)
+                .toList();
+    }
+
+    @Override
+    public List<TeacherDto> getEligibleTeachers(Integer classId) {
+        Classes classes = classRepository.findById(classId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Class not found for ID: " + classId));
+
+        List<Teacher> teachers = teacherRepository.findEligibleStudents(classes.getId());
+
+        return teachers
+                .stream()
+                .map(teacherMapper::toTeacherOfClassDto)
                 .toList();
     }
 
