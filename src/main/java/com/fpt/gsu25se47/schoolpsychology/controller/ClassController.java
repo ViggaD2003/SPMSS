@@ -1,14 +1,13 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateEnrollmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateClassRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassResponseSRC;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateEnrollmentRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateClassRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponseSRC;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.EnrollmentResponse;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ClassService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EnrollmentService;
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +24,7 @@ public class ClassController {
     private final ClassService classService;
     private final EnrollmentService enrollmentService;
 
-    @PreAuthorize("hasRole('MANAGER')")
-    @Operation(description = "schoolYear = 'startYear-endYear', ex: '2021-2024'")
+//    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping
     ResponseEntity<List<ClassResponse>> createClass(@RequestBody @Valid List<CreateClassRequest> requests) {
         return ResponseEntity.ok(classService.createClass(requests));
@@ -54,5 +52,13 @@ public class ClassController {
     ResponseEntity<ClassResponseSRC> findByCode(@PathVariable String code) {
 
         return ResponseEntity.ok(classService.getClassByCode(code));
+    }
+
+    @PutMapping
+    ResponseEntity<ClassResponse> updateClass(
+            @RequestParam Integer classId,
+            @RequestBody UpdateClassRequest request) {
+
+        return ResponseEntity.ok(classService.updateClass(classId, request));
     }
 }

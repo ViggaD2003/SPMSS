@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +36,12 @@ public class Classes {
     @Column(unique = true)
     private String codeClass;
 
-    private String schoolYear;
-
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
 
     private Boolean isActive;
+
+    @OneToMany(mappedBy = "clazz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ClassesTerm> classesTerm = new ArrayList<>();
 }

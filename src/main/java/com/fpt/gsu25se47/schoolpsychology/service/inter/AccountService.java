@@ -33,5 +33,5 @@ public interface AccountService {
 
     List<StudentSRCResponse> getStudentsByClassWithLSR(Integer classId);
 
-    List<StudentDto> getStudentsWithoutClassOrInactiveClass(Grade grade, String schoolYear, String classCode);
+    List<StudentDto> getEligibleStudents(Integer classId);
 }

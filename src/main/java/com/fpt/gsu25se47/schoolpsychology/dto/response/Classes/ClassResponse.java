@@ -1,6 +1,9 @@
-package com.fpt.gsu25se47.schoolpsychology.dto.response;
+package com.fpt.gsu25se47.schoolpsychology.dto.response.Classes;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SchoolYear.SchoolYearResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Term.TermResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import lombok.Data;
 
@@ -9,7 +12,7 @@ import java.util.List;
 
 @Data
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class ClassResponseSRC {
+public class ClassResponse {
 
     private Integer id;
 
@@ -19,7 +22,9 @@ public class ClassResponseSRC {
 
     private String codeClass;
 
-    private String schoolYear;
+    private SchoolYearResponse schoolYear;
+
+    private List<TermResponse> terms;
 
     private LocalDateTime startTime;
 
@@ -27,5 +32,5 @@ public class ClassResponseSRC {
 
     private Boolean isActive;
 
-    private List<StudentSRCResponse> students;
+    private Integer totalStudents;
 }
