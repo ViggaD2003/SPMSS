@@ -7,6 +7,8 @@ import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import org.mapstruct.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public abstract class AccountMapper {
 
@@ -32,7 +34,8 @@ public abstract class AccountMapper {
         if (account != null) {
             return switch (account.getRole()) {
                 case STUDENT -> {
-                    Classes activeClass = classRepository.findActiveClassByStudentId(account.getId());
+                    List<Classes> activeClasses = classRepository.findActiveClassByStudentId(account.getId());
+                    Classes activeClass = !activeClasses.isEmpty() ? activeClasses.get(0) : null;
                     yield studentMapper.mapStudentDtoWithClass(account.getStudent(), activeClass, classMapper);
                 }
                 case TEACHER -> teacherMapper.toTeacherOfClassDto(account.getTeacher());

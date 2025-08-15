@@ -12,6 +12,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", uses = {StudentMapper.class})
 public abstract class ParentMapper {
 
@@ -42,7 +44,8 @@ public abstract class ParentMapper {
                     parent.getRelationships().stream()
                             .map(Relationship::getStudent)
                             .map(st -> {
-                                Classes activeClass = classRepository.findActiveClassByStudentId(st.getId());
+                                List<Classes> activeClasses = classRepository.findActiveClassByStudentId(st.getId());
+                                Classes activeClass = !activeClasses.isEmpty() ? activeClasses.get(0) : null;
                                 return studentMapper.mapStudentDtoWithClass(st, activeClass, classMapper);
                             }) // hoặc toAccountDto nếu bạn có
                             .toList()
