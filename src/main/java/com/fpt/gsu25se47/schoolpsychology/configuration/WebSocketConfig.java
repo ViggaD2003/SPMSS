@@ -67,14 +67,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String token = null;
 
-                    // 1. Lấy từ header Authorization
+                    // Ưu tiên lấy từ header Authorization
                     String authHeader = accessor.getFirstNativeHeader("Authorization");
-                    if (authHeader != null) {
+                    if (authHeader != null && !authHeader.isBlank()) {
                         token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
                         log.info("JWT from Authorization header");
                     }
 
-                    // 2. Nếu chưa có thì lấy từ handshake attributes
+                    // Nếu chưa có thì lấy từ handshake attributes (query param)
                     if (token == null) {
                         Object jwtFromQuery = accessor.getSessionAttributes().get("jwt_token");
                         if (jwtFromQuery != null) {
@@ -83,7 +83,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         }
                     }
 
-                    // 3. Xác thực JWT
+                    // Xác thực
                     if (token != null) {
                         try {
                             String username = jwtService.extractUsernameFromJWT(token);
@@ -98,11 +98,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             log.info("User authenticated for WebSocket: {}", username);
                         } catch (Exception e) {
                             log.error("WebSocket authentication failed", e);
-                            return null; // reject nếu xác thực thất bại
+                            return null;
                         }
                     } else {
                         log.warn("No JWT token found in header or query parameter");
-                        return null; // reject nếu không có token
+                        return null;
                     }
                 }
                 return message;
@@ -110,7 +110,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         });
     }
 
-    // Interceptor: Chỉ parse query nếu header không có token
     private class JwtHandshakeInterceptor implements HandshakeInterceptor {
         @Override
         public boolean beforeHandshake(ServerHttpRequest request,
@@ -119,20 +118,18 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                        Map<String, Object> attributes) {
 
             try {
-                // 1. Kiểm tra Authorization header
+                // Ưu tiên header
                 String authHeader = request.getHeaders().getFirst("Authorization");
                 if (authHeader != null && !authHeader.isBlank()) {
-                    log.info("Authorization header found, skipping query token check");
-                    return true; // Cho phép handshake, token sẽ xử lý ở preSend
+                    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+                    attributes.put("jwt_token", token); // lưu để preSend lấy
+                    log.info("JWT token extracted from Authorization header");
+                    return true;
                 }
 
-                // 2. Nếu không có header → lấy token từ query
+                // Nếu không có header → lấy từ query
                 URI uri = request.getURI();
                 String query = uri.getQuery();
-
-                log.info("WebSocket handshake - URI: {}", uri);
-                log.info("WebSocket handshake - Query: {}", query);
-
                 if (query != null) {
                     Map<String, String> params = Arrays.stream(query.split("&"))
                             .map(s -> s.split("=", 2))
