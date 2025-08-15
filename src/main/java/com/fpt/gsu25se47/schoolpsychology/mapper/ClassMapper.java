@@ -29,6 +29,7 @@ public interface ClassMapper {
                                   @Context TermMapper termMapper,
                                   @Context SchoolYearMapper schoolYearMapper);
 
+    @Mapping(target = "codeClass", source = "codeClass")
     @Mapping(target = "terms", expression = "java(mapClassTermsToTermResponses(classes.getClassesTerm(), termMapper))")
     @Mapping(target = "schoolYear", expression = "java(mapSchoolYearFromClassTerms(classes.getClassesTerm(), schoolYearMapper))")
     @BeanMapping(builder = @Builder(disableBuilder = true))

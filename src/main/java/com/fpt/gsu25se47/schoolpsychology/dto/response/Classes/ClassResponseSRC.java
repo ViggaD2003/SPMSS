@@ -17,6 +17,8 @@ public class ClassResponseSRC {
 
     private Integer id;
 
+    private String codeClass;
+
     private Grade grade;
 
     private TeacherDto teacher;
