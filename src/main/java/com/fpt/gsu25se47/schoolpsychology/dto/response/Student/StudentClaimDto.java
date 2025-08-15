@@ -1,4 +1,4 @@
-package com.fpt.gsu25se47.schoolpsychology.dto.response;
+package com.fpt.gsu25se47.schoolpsychology.dto.response.Student;
 
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import lombok.Data;

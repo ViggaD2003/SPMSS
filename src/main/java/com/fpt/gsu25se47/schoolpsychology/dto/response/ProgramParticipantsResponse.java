@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

@@ -1,6 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Appointment.AppointmentStatic;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.Dashboard.Manager.DashBoardMapper;
@@ -20,12 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

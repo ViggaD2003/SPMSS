@@ -2,8 +2,9 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
@@ -37,4 +38,6 @@ public interface AccountService {
     List<StudentDto> getEligibleStudents(Integer classId);
 
     List<TeacherDto> getEligibleTeachers(Integer classId);
+
+    StudentDetailResponse getStudentDetails(Integer studentId);
 }

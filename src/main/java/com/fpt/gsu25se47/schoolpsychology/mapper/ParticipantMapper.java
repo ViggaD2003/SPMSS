@@ -1,9 +1,9 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
-import com.fpt.gsu25se47.schoolpsychology.model.MentalEvaluation;
 import com.fpt.gsu25se47.schoolpsychology.model.ProgramParticipants;
 import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;

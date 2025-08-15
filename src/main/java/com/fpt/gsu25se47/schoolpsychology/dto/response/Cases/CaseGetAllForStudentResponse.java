@@ -1,5 +1,7 @@
-package com.fpt.gsu25se47.schoolpsychology.dto.response;
+package com.fpt.gsu25se47.schoolpsychology.dto.response.Cases;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.AccountDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.LevelResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Priority;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgressTrend;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
@@ -8,7 +10,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CaseGetAllResponse {
+public class CaseGetAllForStudentResponse {
     private Integer id;
 
     private Integer categoryId;
@@ -28,8 +30,6 @@ public class CaseGetAllResponse {
     private Status status;
 
     private ProgressTrend progressTrend;
-
-    private AccountDto student;
 
     private AccountDto createBy;
 

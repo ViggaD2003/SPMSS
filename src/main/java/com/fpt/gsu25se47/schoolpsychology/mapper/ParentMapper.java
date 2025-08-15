@@ -1,6 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ParentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Parent.ParentDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.RelationshipDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Guardian;

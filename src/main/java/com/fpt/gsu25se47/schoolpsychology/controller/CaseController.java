@@ -2,7 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateCaseRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

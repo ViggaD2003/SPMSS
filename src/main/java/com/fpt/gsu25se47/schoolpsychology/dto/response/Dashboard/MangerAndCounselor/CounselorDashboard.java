@@ -1,6 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response.Dashboard.MangerAndCounselor;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import lombok.Builder;
 import lombok.Data;
 

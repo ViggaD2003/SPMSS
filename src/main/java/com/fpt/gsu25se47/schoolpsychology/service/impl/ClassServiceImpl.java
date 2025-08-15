@@ -4,7 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateClassRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateClassRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponseSRC;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ClassMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SchoolYearMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.TermMapper;

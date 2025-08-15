@@ -2,7 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.dto.response.Classes;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SchoolYear.SchoolYearResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Term.TermResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
