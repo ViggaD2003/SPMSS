@@ -9,26 +9,25 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.AccountMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
+import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
 import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
-import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.CaseRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.EnrollmentRepository;
-import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +41,7 @@ public class AccountServiceImpl implements AccountService {
     private final StudentRepository studentRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final CaseRepository caseRepository;
+    private final ClassRepository classRepository;
     private final StudentMapper studentMapper;
     private final SurveyRecordMapper surveyRecordMapper;
     private final AccountMapper accountMapper;
@@ -155,12 +155,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<StudentDto> getStudentsWithoutClassOrInactiveClass(Grade grade, String schoolYear, String classCode) {
+    public List<StudentDto> getEligibleStudents(Integer classId) {
 
-        List<Student> students = studentRepository.findEligibleStudents(grade, schoolYear, classCode);
+        Classes classes = classRepository.findById(classId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Class not found for ID: " + classId));
 
-        return students.stream()
+        List<Student> students = studentRepository.findEligibleStudents(classes.getId());
+
+        return students
+                .stream()
                 .map(studentMapper::mapStudentDtoWithoutClass)
                 .toList();
     }
+
 }

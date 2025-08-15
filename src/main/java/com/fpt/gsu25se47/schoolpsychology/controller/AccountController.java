@@ -97,13 +97,9 @@ public class AccountController {
         return ResponseEntity.ok(accountService.updateIsAbleSurvey(accountId, isAbleSurvey));
     }
 
-    @GetMapping("/students-without-or-inactive-class")
-    ResponseEntity<List<StudentDto>> getAllStudentsInactiveClass(
-            @RequestParam(required = false) Grade grade,
-            @RequestParam(required = false) String schoolYear,
-            @RequestParam(required = false) String classCode
-    ) {
+    @GetMapping("/students/eligible")
+    ResponseEntity<List<StudentDto>> getEligibleStudents(@RequestParam Integer classId) {
 
-        return ResponseEntity.ok(accountService.getStudentsWithoutClassOrInactiveClass(grade, schoolYear, classCode));
+        return ResponseEntity.ok(accountService.getEligibleStudents(classId));
     }
 }
