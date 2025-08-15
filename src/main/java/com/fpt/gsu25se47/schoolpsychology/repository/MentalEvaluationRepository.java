@@ -42,4 +42,8 @@ public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluati
             @Param("studentId") Integer studentId
     );
 
+
+
+    @Query("SELECT m FROM MentalEvaluation m WHERE m.programParticipants.id = :id")
+    MentalEvaluation findMentalEvaluationByProgramParticipantsId(Integer id);
 }
