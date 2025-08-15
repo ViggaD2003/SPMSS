@@ -67,6 +67,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String token = (String) accessor.getSessionAttributes().get("jwt_token");
 
+                    if (token == null) {
+                        token = accessor.getFirstNativeHeader("token"); // lấy từ header
+                    }
+
                     if (token != null) {
                         try {
                             String username = jwtService.extractUsernameFromJWT(token);
@@ -104,7 +108,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                        Map<String, Object> attributes) {
             try {
                 URI uri = request.getURI();
-                log.info(request.getURI().toString());
                 String query = uri.getQuery();
                 if (query != null) {
                     Map<String, String> params = Arrays.stream(query.split("&"))
