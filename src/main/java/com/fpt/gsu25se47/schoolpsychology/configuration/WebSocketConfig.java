@@ -65,10 +65,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String token = (String) accessor.getSessionAttributes().get("jwt_token");
-
+                    String token = accessor.getFirstNativeHeader("token");
                     if (token == null) {
-                        token = accessor.getFirstNativeHeader("token"); // lấy từ header
+                        token = (String) accessor.getSessionAttributes().get("jwt_token");
                     }
 
                     if (token != null) {
