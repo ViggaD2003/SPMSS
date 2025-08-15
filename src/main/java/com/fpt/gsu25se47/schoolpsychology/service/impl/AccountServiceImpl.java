@@ -1,11 +1,15 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
-import com.fpt.gsu25se47.schoolpsychology.mapper.AccountMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyRecordMapper;
-import com.fpt.gsu25se47.schoolpsychology.mapper.TeacherMapper;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.AccountDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllForStudentResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Parent.ParentBaseResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyRecordGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
+import com.fpt.gsu25se47.schoolpsychology.mapper.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
@@ -23,6 +27,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +47,8 @@ public class AccountServiceImpl implements AccountService {
     private final SurveyRecordMapper surveyRecordMapper;
     private final AccountMapper accountMapper;
     private final TeacherMapper teacherMapper;
+    private final ParentMapperInf parentMapperInf;
+    private final CaseMapper caseMapper;
 
     @Override
     public UserDetailsService userDetailsService() {
@@ -137,9 +144,9 @@ public class AccountServiceImpl implements AccountService {
                             .stream()
                             .max(Comparator.comparing(SurveyRecord::getCompletedAt));
 
-                    boolean hasActiveCases = caseRepository.existsByStudentId(student.getId());
-
-                    StudentSRCResponse studentSRCResponse = studentMapper.toStudentSrcResponse(student, hasActiveCases);
+                    List<Cases> cases = caseRepository.findAllCasesByRoleAndAccountWithStatusSorted(Role.STUDENT.name(), student.getId(), Collections.emptyList(), 0, null);
+                    List<Integer> caseIds = cases.stream().map(Cases::getId).toList();
+                    StudentSRCResponse studentSRCResponse = studentMapper.toStudentSrcResponse(student, caseIds);
 
                     latestRecord.ifPresent(sr -> {
                         SurveyRecordGetAllResponse sre = surveyRecordMapper.mapToSurveyRecordGetAllResponse(sr);
@@ -180,4 +187,29 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
     }
 
+    @Override
+    public StudentDetailResponse getStudentDetails(Integer studentId) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Student not found for ID: " + studentId));
+
+        List<Cases> caseGetAllForStudentResponses = caseRepository.findAllCasesByRoleAndAccountWithStatusSorted(Role.STUDENT.name(), studentId, Collections.emptyList(), 0, null);
+        List<CaseGetAllForStudentResponse> cases =  caseGetAllForStudentResponses.stream()
+                .map(c -> caseMapper.mapToCaseGetAllForStudentResponse(c, null))
+                .toList();
+
+        List<Guardian> parents = student.getRelationships()
+                .stream()
+                .filter(s -> s.getStudent().getId().equals(studentId))
+                .map(Relationship::getGuardian)
+                .toList();
+
+        List<ParentBaseResponse> parentBaseResponses = parents
+                .stream()
+                .map(parentMapperInf::toParentBaseResponse)
+                .toList();
+
+        return studentMapper.toStudentDetailResponse(student, cases, parentBaseResponses);
+    }
 }

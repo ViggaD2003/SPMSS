@@ -2,7 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AppointmentResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Appointment.AppointmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 
 import java.util.List;

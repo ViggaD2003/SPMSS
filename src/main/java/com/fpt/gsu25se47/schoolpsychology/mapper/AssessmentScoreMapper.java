@@ -1,7 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAssessmentScoreRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.AssessmentScoreResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Appointment.AssessmentScoreResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.AssessmentScores;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

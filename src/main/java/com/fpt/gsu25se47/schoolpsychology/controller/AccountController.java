@@ -1,7 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateProfileDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
@@ -111,7 +112,7 @@ public class AccountController {
     }
 
     @GetMapping("/students/details")
-    public ResponseEntity<?> getStudentDetails(@RequestParam("accountId") Integer accountId) throws BadRequestException {
-        return ResponseEntity.ok(accountService.getAccountById(accountId));
+    public ResponseEntity<StudentDetailResponse> getStudentDetails(@RequestParam("accountId") Integer accountId) throws BadRequestException {
+        return ResponseEntity.ok(accountService.getStudentDetails(accountId));
     }
 }

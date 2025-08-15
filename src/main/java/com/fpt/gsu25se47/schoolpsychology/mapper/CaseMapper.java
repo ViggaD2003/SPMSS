@@ -1,7 +1,8 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllForStudentResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.MentalEvaluationStatic;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,25 @@ public class CaseMapper {
                 .isAddSurvey(surveyId == null ? null : cases.getSurveyCaseLinks().stream().anyMatch(item -> item.getSurvey().getId() == surveyId))
                 .counselor(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCounselor()))
                 .student(cases.getStudent() == null ? null : accountMapper.toDto(cases.getStudent()))
+                .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
+                .currentLevel(levelMapper.mapToLevelResponse(cases.getCurrentLevel()))
+                .build();
+    }
+
+    public CaseGetAllForStudentResponse mapToCaseGetAllForStudentResponse(Cases cases, Integer surveyId) {
+        return CaseGetAllForStudentResponse.builder()
+                .id(cases.getId())
+                .categoryId(cases.getInitialLevel().getCategory().getId())
+                .categoryName(cases.getInitialLevel().getCategory().getName())
+                .codeCategory(cases.getInitialLevel().getCategory().getCode())
+                .title(cases.getTitle())
+                .description(cases.getDescription())
+                .priority(cases.getPriority())
+                .status(cases.getStatus())
+                .progressTrend(cases.getProgressTrend())
+                .createBy(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCreateBy()))
+                .isAddSurvey(surveyId == null ? null : cases.getSurveyCaseLinks().stream().anyMatch(item -> item.getSurvey().getId() == surveyId))
+                .counselor(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCounselor()))
                 .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
                 .currentLevel(levelMapper.mapToLevelResponse(cases.getCurrentLevel()))
                 .build();

@@ -1,7 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentClaimDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentClaimDto;
 import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;

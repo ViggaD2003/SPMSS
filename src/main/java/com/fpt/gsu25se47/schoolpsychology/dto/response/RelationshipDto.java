@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

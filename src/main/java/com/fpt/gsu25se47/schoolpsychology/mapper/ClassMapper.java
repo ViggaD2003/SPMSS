@@ -2,11 +2,11 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateClassRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateClassRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.ClassDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Classes.ClassResponseSRC;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SchoolYear.SchoolYearResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentSRCResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Term.TermResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.ClassesTerm;

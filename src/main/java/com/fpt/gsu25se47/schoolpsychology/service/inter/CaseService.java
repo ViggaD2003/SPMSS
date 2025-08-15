@@ -2,8 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewCaseDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateCaseRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetAllResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.CaseGetDetailResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 
 import java.util.List;
 import java.util.Optional;
