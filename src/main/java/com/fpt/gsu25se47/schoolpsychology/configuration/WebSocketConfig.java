@@ -24,7 +24,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.HandshakeInterceptor;
-
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -63,12 +62,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                log.info("📩 Incoming frame: {}", accessor != null ? accessor.getCommand() : "null");
+
 
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String token = accessor.getFirstNativeHeader("token");
-                    if (token == null) {
-                        token = (String) accessor.getSessionAttributes().get("jwt_token");
-                    }
+                    String token = (String) accessor.getSessionAttributes().get("jwt_token");
+                    System.out.printf(token );
+
+                    log.info("🔍 Token from CONNECT: {}", token);
 
                     if (token != null) {
                         try {
@@ -91,6 +92,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         return null;
                     }
                 }
+//                System.out.println(message.getHeaders());
                 return message;
             }
         });
