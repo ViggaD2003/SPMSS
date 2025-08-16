@@ -3,7 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
-import jakarta.servlet.http.HttpServletRequest;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
