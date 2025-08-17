@@ -43,7 +43,7 @@ public class AttendenceMeetingJob implements Job {
             ).setApplicationName("School App").build();
 
             List<EventAttendee> attendees = accountRepository.findAll().stream()
-                    .filter(e -> e.getRole() == Role.STUDENT && e.getEmail().contains("gmail.com"))
+                    .filter(e -> (e.getRole() == Role.STUDENT || e.getRole() == Role.TEACHER || e.getRole() == Role.COUNSELOR) && e.getEmail().contains("gmail.com"))
                     .map(acc -> new EventAttendee().setEmail(acc.getEmail()))
                     .collect(Collectors.toList());
 

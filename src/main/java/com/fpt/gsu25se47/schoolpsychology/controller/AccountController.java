@@ -101,13 +101,11 @@ public class AccountController {
 
     @GetMapping("/students/eligible")
     ResponseEntity<List<StudentDto>> getEligibleStudents(@RequestParam Integer classId) {
-
         return ResponseEntity.ok(accountService.getEligibleStudents(classId));
     }
 
     @GetMapping("/teachers/eligible")
     ResponseEntity<List<TeacherDto>> getEligibleTeachers(@RequestParam Integer classId) {
-
         return ResponseEntity.ok(accountService.getEligibleTeachers(classId));
     }
 
