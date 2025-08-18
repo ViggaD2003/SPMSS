@@ -24,7 +24,7 @@ public abstract class AccountMapper {
         if (account != null) {
             return switch (account.getRole()) {
                 case STUDENT -> studentMapper.mapStudentDtoWithClass(account.getStudent());
-                case TEACHER -> teacherMapper.toTeacherDto(account.getTeacher());
+                case TEACHER -> teacherMapper.toTeacherOfClassDto(account.getTeacher());
                 case COUNSELOR -> counselorMapper.mapToCounselorDto(account.getCounselor());
                 case PARENTS -> parentMapper.toParentWithRelationshipDto(account.getGuardian());
                 default -> null;
