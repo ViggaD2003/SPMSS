@@ -2,19 +2,27 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllForStudentResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Parent.ParentBaseResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentClaimDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentSRCResponse;
+import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.repository.CaseRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import org.mapstruct.*;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = ClassMapper.class)
-public interface StudentMapper {
+@Mapper(componentModel = "spring")
+public abstract class StudentMapper {
 
+    @Autowired
+    private ClassRepository classRepository;
+    @Autowired
+    private CaseRepository caseRepository;
+
+    @Named("mapStudentDto")
     @Mapping(target = "roleName", source = "account.role")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")
@@ -22,9 +30,9 @@ public interface StudentMapper {
     @Mapping(target = "fullName", source = "account.fullName")
     @Mapping(target = "email", source = "account.email")
     @Mapping(target = "dob", source = "account.dob")
-    @Mapping(target = "mentalEvaluations", ignore = true)
-    @Mapping(target = "classDto", ignore = true) // Tạm ignore để tự xử lý sau
-    StudentDto mapStudentDto(Student student, @Context Classes classes);
+    @Mapping(target = "teacherId", ignore = true)
+    @Mapping(target = "caseId", ignore = true)
+    public abstract StudentDto mapStudentDto(Student student);
 
     @Mapping(target = "email", source = "account.email")
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")
@@ -33,9 +41,7 @@ public interface StudentMapper {
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "fullName", source = "account.fullName")
     @Mapping(target = "dob", source = "account.dob")
-    @Mapping(target = "mentalEvaluations", ignore = true)
-    @Mapping(target = "classDto", ignore = true)
-    StudentDto mapStudentDtoWithoutClass(Student student);
+    public abstract StudentDto mapStudentDtoWithoutClass(Student student);
 
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")
     @Mapping(target = "email", source = "account.email")
@@ -45,16 +51,7 @@ public interface StudentMapper {
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "fullName", source = "account.fullName")
     @Mapping(target = "dob", source = "account.dob")
-    StudentSRCResponse toStudentSrcResponse(Student student, @Context List<Integer> caseIds);
-
-    @BeanMapping(builder = @Builder(disableBuilder = true))
-    @Mapping(target = "email", source = "account.email")
-    @Mapping(target = "phoneNumber", source = "account.phoneNumber")
-    @Mapping(target = "roleName", source = "account.role")
-    @Mapping(target = "gender", source = "account.gender")
-    @Mapping(target = "fullName", source = "account.fullName")
-    @Mapping(target = "dob", expression = "java(student.getAccount().getDob() != null ? student.getAccount().getDob().toString() : null)")
-    StudentClaimDto toStudentClaimDto(Student student);
+    public abstract StudentSRCResponse toStudentSrcResponse(Student student, @Context List<Integer> caseIds);
 
     @Mapping(target = "email", source = "account.email")
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")
@@ -62,28 +59,32 @@ public interface StudentMapper {
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "fullName", source = "account.fullName")
     @BeanMapping(builder = @Builder(disableBuilder = true))
-    StudentDetailResponse toStudentDetailResponse(Student student,
-                                                  @Context List<CaseGetAllForStudentResponse> cases,
-                                                  @Context List<ParentBaseResponse> parentBaseResponses);
+    public abstract StudentDetailResponse toStudentDetailResponse(Student student,
+                                                                  @Context List<CaseGetAllForStudentResponse> caseResponses,
+                                                                  @Context List<ParentBaseResponse> parentBaseResponses);
 
-    // Hàm xử lý default để map classDto thủ công
-    default StudentDto mapStudentDtoWithClass(Student student, Classes classes, ClassMapper classDtoMapper) {
-        StudentDto dto = mapStudentDto(student, classes);
-        dto.setClassDto(classDtoMapper.toDto(classes));
+    public StudentDto mapStudentDtoWithClass(Student student) {
+        StudentDto dto = mapStudentDto(student);
+
+        Classes activeClass = classRepository.findActiveClassByStudentId(student.getId());
+        dto.setTeacherId(activeClass == null ? null : activeClass.getTeacher().getId());
+        Cases activeCase = caseRepository.findActiveCaseByStudentId(student.getId());
+        dto.setCaseId(activeCase == null ? null : activeCase.getId());
+
         return dto;
     }
 
     @AfterMapping
-    default void setHasActiveCasesToStudentSRCResponse(@MappingTarget StudentSRCResponse studentSRCResponse,
-                                                       @Context List<Integer> caseIds) {
+    public void setHasActiveCasesToStudentSRCResponse(@MappingTarget StudentSRCResponse studentSRCResponse,
+                                                      @Context List<Integer> caseIds) {
         studentSRCResponse.setCaseIds(caseIds);
     }
 
     @AfterMapping
-    default void setToStudentDetailResponse(@MappingTarget StudentDetailResponse res,
-                                            @Context List<CaseGetAllForStudentResponse> cases,
-                                            @Context List<ParentBaseResponse> parentBaseResponses) {
-        res.setCases(cases);
+    public void setToStudentDetailResponse(@MappingTarget StudentDetailResponse res,
+                                           @Context List<CaseGetAllForStudentResponse> caseResponses,
+                                           @Context List<ParentBaseResponse> parentBaseResponses) {
+        res.setCases(caseResponses);
         res.setParents(parentBaseResponses);
     }
 }

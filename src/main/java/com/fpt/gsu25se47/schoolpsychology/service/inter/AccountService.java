@@ -11,7 +11,6 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.userdetails.UserDetailsService;
-
 import java.util.List;
 import java.util.Optional;
 
