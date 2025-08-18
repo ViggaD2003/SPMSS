@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +51,15 @@ public class NotificationServiceImpl implements NotificationService {
         return notifications.stream()
                 .map(notificationMapper::mapToResponse)
                 .toList();
+    }
+
+    @Override
+    public void readMessage(UUID notificationId) {
+        Notifications notifications = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Not found notification !"));
+
+        notifications.setIsRead(true);
+        notificationRepository.save(notifications);
     }
 
     @Override

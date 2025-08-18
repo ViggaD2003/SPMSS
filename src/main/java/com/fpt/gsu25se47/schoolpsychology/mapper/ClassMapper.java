@@ -25,7 +25,6 @@ public interface ClassMapper {
     @Mapping(target = "schoolYear", expression = "java(mapSchoolYearFromClassTerms(classes.getClassesTerm(), schoolYearMapper))")
     @Mapping(target = "terms", expression = "java(mapClassTermsToTermResponses(classes.getClassesTerm(), termMapper))")
     @Mapping(target = "totalStudents", expression = "java(classes.getEnrollments() != null ? classes.getEnrollments().size() : 0)")
-    @Mapping(target = "teacher", source = "classes.teacher", qualifiedByName = "toTeacherOfClassDto")
     ClassResponse toClassResponse(Classes classes,
                                   @Context TermMapper termMapper,
                                   @Context SchoolYearMapper schoolYearMapper);

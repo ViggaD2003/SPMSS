@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,9 +16,5 @@ public class TeacherDto extends AccountDto{
     private String teacherCode;
 
     private String linkMeet;
-
-    private Integer classId;
-
-    private Boolean isActive;
-
 }
+
