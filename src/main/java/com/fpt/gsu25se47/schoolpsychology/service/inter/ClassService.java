@@ -13,5 +13,6 @@ public interface ClassService {
     ClassResponseSRC getClassByCode(String code);
     ClassResponseSRC getClassById(Integer classId);
     List<ClassResponse> getAllClasses();
+    List<ClassResponse> getClassesByTeacherId(Integer teacherId);
 //    void deleteClassByCode(String code);
 }

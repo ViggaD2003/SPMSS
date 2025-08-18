@@ -22,4 +22,5 @@ public interface ClassRepository extends JpaRepository<Classes,Integer> {
 
     @Query("SELECT c FROM Classes c WHERE c.isActive = true AND c.endTime < :now")
     List<Classes> findAllExpiredClasses(@Param("now") LocalDateTime now);
+
 }

@@ -168,6 +168,15 @@ public class ClassServiceImpl implements ClassService {
                 .toList();
     }
 
+    @Override
+    public List<ClassResponse> getClassesByTeacherId(Integer teacherId) {
+
+        return classRepository.findAllByTeacherId(teacherId)
+                .stream()
+                .map(cl -> classMapper.toClassResponse(cl, termMapper, schoolYearMapper))
+                .toList();
+    }
+
     private Teacher getTeacher(List<CreateClassRequest> requests) {
 
         Integer teacherId = requests.getFirst().getTeacherId();
