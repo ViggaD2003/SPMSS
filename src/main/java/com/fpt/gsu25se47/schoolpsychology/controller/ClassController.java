@@ -61,4 +61,10 @@ public class ClassController {
 
         return ResponseEntity.ok(classService.updateClass(classId, request));
     }
+
+    @GetMapping("/teacher/{teacherId}")
+    ResponseEntity<List<ClassResponse>> getAllByTeacherId(@PathVariable Integer teacherId) {
+
+        return ResponseEntity.ok(classService.getClassesByTeacherId(teacherId));
+    }
 }
