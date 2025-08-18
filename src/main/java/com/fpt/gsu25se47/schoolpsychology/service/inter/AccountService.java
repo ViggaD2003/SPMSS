@@ -34,7 +34,7 @@ public interface AccountService {
 
     List<StudentSRCResponse> getStudentsByClassWithLSR(Integer classId);
 
-    List<StudentDto> getEligibleStudents(Integer classId);
+    List<StudentDto> getEligibleStudents(Integer classId, Grade grade, Boolean gender);
 
     List<TeacherDto> getEligibleTeachers(Integer classId);
 

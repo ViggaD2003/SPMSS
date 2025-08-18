@@ -100,8 +100,10 @@ public class AccountController {
     }
 
     @GetMapping("/students/eligible")
-    ResponseEntity<List<StudentDto>> getEligibleStudents(@RequestParam Integer classId) {
-        return ResponseEntity.ok(accountService.getEligibleStudents(classId));
+    ResponseEntity<List<StudentDto>> getEligibleStudents(@RequestParam Integer classId,
+                                                         @RequestParam(required = false) Grade grade,
+                                                         @RequestParam(required = false) Boolean gender) {
+        return ResponseEntity.ok(accountService.getEligibleStudents(classId, grade, gender));
     }
 
     @GetMapping("/teachers/eligible")

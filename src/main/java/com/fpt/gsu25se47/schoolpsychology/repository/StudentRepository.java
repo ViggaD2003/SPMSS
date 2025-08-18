@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,33 +16,17 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     Optional<Student> findByStudentCode(String studentCode);
 
-//    @Query("""
-//            SELECT s FROM Student s
-//            JOIN s.account a
-//            LEFT JOIN Enrollment e on e.student.id = s.id
-//            LEFT JOIN e.classes c
-//            WHERE a.status = true
-//            AND NOT EXISTS (
-//                  SELECT 1
-//                  FROM Enrollment e2
-//                  JOIN e2.classes c2
-//                  WHERE e2.student = s
-//                    AND c2.isActive = true
-//            )
-//            AND (:grade IS NULL OR c.grade = :grade)
-//            AND (:schoolYear IS NULL OR c.schoolYear = :schoolYear)
-//            AND (:classCode IS NULL OR c.codeClass = :classCode)
-//            """)
-//    List<Student> findEligibleStudents(
-//            @Param("grade") Grade grade,
-//            @Param("schoolYearId") Integer schoolYearId,
-//            @Param("classCode") String classCode);
-
     @Query("""
             SELECT s
             FROM Student s
             JOIN Account a ON a.id = s.id
             WHERE a.status = true
+            AND s.targetLevel = COALESCE(:grade, (
+                                             SELECT c.grade\s
+                                             FROM Classes c\s
+                                             WHERE c.id = :classId
+                                            ))
+            AND (:gender IS NULL OR a.gender = :gender)
             AND NOT EXISTS (
                 SELECT 1
                 FROM Enrollment e
@@ -60,7 +45,10 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
                       WHERE c2.id = :classId
                   )
             )
+            ORDER BY a.fullName
             """)
-    List<Student> findEligibleStudents(@Param("classId") Integer classId);
+    List<Student> findEligibleStudents(@Param("classId") Integer classId,
+                                       @Param("grade") Grade grade,
+                                       @Param("gender") Boolean gender);
 
 }
