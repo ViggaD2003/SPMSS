@@ -158,13 +158,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<StudentDto> getEligibleStudents(Integer classId) {
+    public List<StudentDto> getEligibleStudents(Integer classId, Grade grade, Boolean gender) {
 
         Classes classes = classRepository.findById(classId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Class not found for ID: " + classId));
 
-        List<Student> students = studentRepository.findEligibleStudents(classes.getId());
+        List<Student> students = studentRepository.findEligibleStudents(classes.getId(),
+                grade, gender);
 
         return students
                 .stream()
