@@ -1,10 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 
-import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentClaimDto;
-import com.fpt.gsu25se47.schoolpsychology.mapper.StudentMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import io.jsonwebtoken.Claims;
@@ -14,12 +11,9 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
@@ -29,8 +23,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JWTServiceImpl implements JWTService {
 
-    private final ClassRepository classRepository;
-    private final CaseRepository caseRepository;
     @Value("${jwt.secret-key}")
     private String secretKey;
 
@@ -41,16 +33,6 @@ public class JWTServiceImpl implements JWTService {
     private long refreshExpiration;
 
     private final AccountRepository accountRepo;
-
-    private final StudentRepository studentRepo;
-
-    private final TeacherRepository teacherRepository;
-
-    private final CounselorRepository counselorRepository;
-
-    private final RelationshipRepository relationshipRepo;
-
-    private final StudentMapper studentMapper;
 
     @Override
     public String extractUsernameFromJWT(String jwt) {
@@ -101,15 +83,6 @@ public class JWTServiceImpl implements JWTService {
         extraClaims.put("fullname", account.getFullName());
         extraClaims.put("user-id", account.getId());
 
-        switch (account.getRole()) {
-            case PARENTS -> handleParentClaims(extraClaims, account);
-            case STUDENT -> handleStudentClaims(extraClaims, account);
-            case TEACHER -> handleTeacherClaims(extraClaims, account);
-            case COUNSELOR -> handleCounselorClaims(extraClaims, account);
-            default -> {
-            }
-        }
-
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(user.getUsername())
@@ -117,85 +90,6 @@ public class JWTServiceImpl implements JWTService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiredTime))
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512)
                 .compact();
-    }
-
-    private void handleCounselorClaims(Map<String, Object> extraClaims, Account account) {
-        Counselor counselor = counselorRepository.findById(account.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Counselor not found for ID: " + account.getId()));
-
-        Set<Integer> setCategory = new HashSet<>();
-
-        List<Cases> activeCase = counselor.getAccount().getCounselorCases()
-                .stream()
-                .filter(t -> {
-                    if (t.getStatus() != Status.CLOSED) {
-                        setCategory.add(t.getInitialLevel().getCategory().getId());
-                        return true;
-                    } else
-                        return false;
-                }).toList();
-
-        extraClaims.put("cateAvailable", setCategory);
-
-        if (activeCase.isEmpty()) {
-            extraClaims.put("hasActiveCases", false);
-        } else {
-            extraClaims.put("hasActiveCases", true);
-        }
-    }
-
-    private void handleParentClaims(Map<String, Object> claims, Account parent) {
-        List<Student> students = relationshipRepo.findChildrenByParentAccountId(parent.getId());
-
-        List<StudentClaimDto> childrenClaims = students.stream().map(child -> {
-
-            List<Classes> activeClass = classRepository.findActiveClassByStudentId(child.getId());
-
-            StudentClaimDto studentClaimDto = studentMapper.toStudentClaimDto(child);
-
-            studentClaimDto.setTeacherId(
-                    (!activeClass.isEmpty() && activeClass.get(0).getTeacher() != null)
-                            ? activeClass.get(0).getTeacher().getId()
-                            : null
-            );
-            studentClaimDto.setCaseId(caseRepository.findActiveCaseByStudentId(child.getId()) == null ? null : caseRepository.findActiveCaseByStudentId(child.getId()).getId());
-            return studentClaimDto;
-        }).toList();
-
-        claims.put("relationship_type", "PARENT");
-        claims.put("children", childrenClaims);
-    }
-
-    private void handleStudentClaims(Map<String, Object> claims, Account studentAcc) {
-        Student student = studentRepo.findById(studentAcc.getId())
-                .orElseThrow(() -> new RuntimeException("Unauthorized"));
-        List<Classes> activeClasses = classRepository.findActiveClassByStudentId(student.getId());
-        Optional<Integer> caseId = student.getAccount()
-                .getStudentCases()
-                .stream()
-                .filter(c -> c.getStatus() != Status.CLOSED)
-                .map(Cases::getId)
-                .findFirst();
-
-        claims.put("isEnableSurvey", student.getIsEnableSurvey());
-        claims.put("teacherId", !activeClasses.isEmpty() && activeClasses.get(0).getTeacher() != null
-                ? activeClasses.get(0).getTeacher().getId() : null);
-        claims.put("caseId", caseId.orElse(null));
-    }
-
-    private void handleTeacherClaims(Map<String, Object> claims, Account teacherAcc) {
-        Teacher teacher = teacherRepository.findById(teacherAcc.getId())
-                .orElseThrow(() -> new RuntimeException("Unauthorized"));
-        Optional<Classes> classes = teacher.getClasses().stream()
-                .filter(Classes::getIsActive)
-                .findFirst();
-
-        claims.put("teacherId", teacher.getId());
-        classes.ifPresent(value -> {
-            claims.put("classId", value.getId());
-            claims.put("isActive", value.getIsActive());
-        });
     }
 
     private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {

@@ -13,6 +13,7 @@ public interface EnrollmentMapper {
     @BeanMapping(builder = @Builder(disableBuilder = true))
     Enrollment toEnrollment(CreateEnrollmentRequest request, @Context Student student, @Context Classes classes);
 
+    @Mapping(target = "student", source = "student", qualifiedByName = "mapStudentDto")
     EnrollmentResponse toEnrollmentResponse(Enrollment enrollment);
 
     @AfterMapping

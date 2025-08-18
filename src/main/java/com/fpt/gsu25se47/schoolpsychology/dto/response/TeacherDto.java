@@ -15,4 +15,8 @@ public class TeacherDto extends AccountDto{
 
     private String linkMeet;
 
+    private Integer classId;
+
+    private Boolean isActive;
+
 }
