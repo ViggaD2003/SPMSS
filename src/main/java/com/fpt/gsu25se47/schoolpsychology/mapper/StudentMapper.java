@@ -51,7 +51,7 @@ public abstract class StudentMapper {
     @Mapping(target = "gender", source = "account.gender")
     @Mapping(target = "fullName", source = "account.fullName")
     @Mapping(target = "dob", source = "account.dob")
-    public abstract StudentSRCResponse toStudentSrcResponse(Student student, @Context List<Integer> caseIds);
+    public abstract StudentSRCResponse toStudentSrcResponse(Student student, @Context Integer caseId);
 
     @Mapping(target = "email", source = "account.email")
     @Mapping(target = "phoneNumber", source = "account.phoneNumber")
@@ -76,8 +76,8 @@ public abstract class StudentMapper {
 
     @AfterMapping
     public void setHasActiveCasesToStudentSRCResponse(@MappingTarget StudentSRCResponse studentSRCResponse,
-                                                      @Context List<Integer> caseIds) {
-        studentSRCResponse.setCaseIds(caseIds);
+                                                      @Context Integer caseId) {
+        studentSRCResponse.setCaseId(caseId);
     }
 
     @AfterMapping

@@ -15,7 +15,7 @@ public class StudentSRCResponse extends AccountDto {
 
     private Boolean isEnableSurvey;
 
-    private List<Integer> caseIds;
+    private Integer caseId;
 
     private SurveyRecordGetAllResponse latestSurveyRecord;
 }

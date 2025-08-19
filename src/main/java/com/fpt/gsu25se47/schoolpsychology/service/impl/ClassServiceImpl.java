@@ -148,16 +148,16 @@ public class ClassServiceImpl implements ClassService {
         return classMapper.toClassDetailResponseSRC(classes, termMapper, schoolYearMapper, students);
     }
 
-    @Override
-    public ClassResponseSRC getClassById(Integer classId) {
-        Classes classes = classRepository.findById(classId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Class not found for ID: " + classId));
-
-        List<StudentSRCResponse> students = accountService.getStudentsByClassWithLSR(classId);
-
-        return classMapper.toClassDetailResponseSRC(classes, termMapper, schoolYearMapper, students);
-    }
+//    @Override
+//    public ClassResponseSRC getClassById(Integer classId) {
+//        Classes classes = classRepository.findById(classId)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+//                        "Class not found for ID: " + classId));
+//
+//        List<StudentSRCResponse> students = accountService.getStudentsByClassWithLSR(classId);
+//
+//        return classMapper.toClassDetailResponseSRC(classes, termMapper, schoolYearMapper, students);
+//    }
 
     @Override
     public List<ClassResponse> getAllClasses() {

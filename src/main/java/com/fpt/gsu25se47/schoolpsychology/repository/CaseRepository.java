@@ -30,7 +30,7 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
                     :categoryId IS NULL OR l.category_id = :categoryId
                 )
             ORDER BY 
-                FIELD(c.status, 'IN_PROGRESS', 'NEW', 'CLOSED')
+                FIELD(c.status,'CONFIRMED', 'IN_PROGRESS', 'NEW', 'CLOSED')
             """, nativeQuery = true)
     List<Cases> findAllCasesByRoleAndAccountWithStatusSorted(
             @Param("role") String role,
@@ -58,11 +58,13 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
     boolean isStudentFreeFromOpenCases(@Param("studentId") Integer studentId);
 
     @Query("""
-            SELECT ca 
-            FROM Cases ca
-            WHERE ca.student.id = :studentId and ca.status = 'IN_PROGRESS'
-            """)
+        SELECT ca
+        FROM Cases ca
+        WHERE ca.student.id = :studentId 
+          AND (ca.status = 'NEW' OR ca.status = 'CONFIRMED' OR ca.status = 'IN_PROGRESS')
+        """)
     Cases findActiveCaseByStudentId(Integer studentId);
+
 
     @Query("SELECT COUNT(c) > 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSED'")
     boolean existsByStudentId(@Param("studentId") Integer studentId);

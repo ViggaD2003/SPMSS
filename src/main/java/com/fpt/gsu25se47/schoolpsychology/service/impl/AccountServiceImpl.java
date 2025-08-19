@@ -143,10 +143,8 @@ public class AccountServiceImpl implements AccountService {
                             .stream()
                             .max(Comparator.comparing(SurveyRecord::getCompletedAt));
 
-                    List<Cases> cases = caseRepository.findAllCasesByRoleAndAccountWithStatusSorted(Role.STUDENT.name(), student.getId(), Collections.emptyList(), 0, null);
-                    List<Integer> caseIds = cases.stream().map(Cases::getId).toList();
-                    StudentSRCResponse studentSRCResponse = studentMapper.toStudentSrcResponse(student, caseIds);
-
+                    Cases cases = caseRepository.findActiveCaseByStudentId(student.getId());
+                    StudentSRCResponse studentSRCResponse = studentMapper.toStudentSrcResponse(student, cases == null ? null : cases.getId());
                     latestRecord.ifPresent(sr -> {
                         SurveyRecordGetAllResponse sre = surveyRecordMapper.mapToSurveyRecordGetAllResponse(sr);
                         studentSRCResponse.setLatestSurveyRecord(sre);

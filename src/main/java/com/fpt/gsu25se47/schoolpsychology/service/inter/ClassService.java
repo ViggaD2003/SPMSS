@@ -11,7 +11,7 @@ public interface ClassService {
     List<ClassResponse> createClass(List<CreateClassRequest> request);
     ClassResponse updateClass(Integer classId, UpdateClassRequest request);
     ClassResponseSRC getClassByCode(String code);
-    ClassResponseSRC getClassById(Integer classId);
+//    ClassResponseSRC getClassById(Integer classId);
     List<ClassResponse> getAllClasses();
     List<ClassResponse> getClassesByTeacherId(Integer teacherId);
 //    void deleteClassByCode(String code);

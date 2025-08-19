@@ -12,10 +12,10 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     @Query("SELECT s FROM Survey s WHERE s.createBy.id = :accountId")
     List<Survey> findByAccountId(int accountId);
 
-    @Query("SELECT s FROM Survey s WHERE s.startDate >= :date AND s.status = 'DRAFT'")
+    @Query("SELECT s FROM Survey s WHERE s.startDate = :date AND s.status = 'DRAFT'")
     List<Survey> findByStartDateAndStatusDraft(LocalDate date);
 
-    @Query("SELECT s FROM Survey s WHERE s.endDate <= :date AND s.status = 'PUBLISHED'")
+    @Query("SELECT s FROM Survey s WHERE s.endDate = :date AND s.status = 'PUBLISHED'")
     List<Survey> findByEndDateAndStatusPublished(LocalDate date);
 
     @Query(value = """

@@ -41,16 +41,15 @@ public class ClassController {
         return ResponseEntity.ok(classService.getAllClasses().reversed());
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER')")
-    @GetMapping("/{classId}")
-    ResponseEntity<ClassResponseSRC> findById(@PathVariable Integer classId) {
-
-        return ResponseEntity.ok(classService.getClassById(classId));
-    }
+//    @PreAuthorize("hasRole('MANAGER') or hasRole('TEACHER')")
+//    @GetMapping("/{classId}")
+//    ResponseEntity<ClassResponseSRC> findById(@PathVariable Integer classId) {
+//
+//        return ResponseEntity.ok(classService.getClassById(classId));
+//    }
 
     @GetMapping("/code/{code}")
     ResponseEntity<ClassResponseSRC> findByCode(@PathVariable String code) {
-
         return ResponseEntity.ok(classService.getClassByCode(code));
     }
 
