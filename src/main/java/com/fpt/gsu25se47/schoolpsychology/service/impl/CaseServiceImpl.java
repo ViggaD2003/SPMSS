@@ -129,7 +129,7 @@ public class CaseServiceImpl implements CaseService {
                 NotiRequest.builder()
                         .title("Teacher " + createdBy.getEmail() + " mới tạo 1 case mới")
                         .content("Case " + cases.getTitle())
-                        .username("danhkvtse172932@fpt.edu.vn")
+                        .username("namcaonguyen41@gmail.com")
                         .notificationType("CASE")
                         .relatedEntityId(cases.getId())
                         .build()
