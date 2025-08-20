@@ -23,7 +23,7 @@ public abstract class MentalEvaluationMapper {
     public abstract MentalEvaluationResponse toMentalEvaluationResponse(MentalEvaluation mentalEvaluation);
 
     @Mapping(target = "source", constant = "APPOINTMENT")
-    @Mapping(target = "latestEvaluatedAt", expression = "java(appointment.getUpdatedDate().toLocalDate())")
+    @Mapping(target = "latestEvaluatedAt", expression = "java(appointment.getUpdatedDate())")
     @Mapping(target = "studentId",
             expression = "java(appointment.getBookedFor().getStudent() != null ? appointment.getBookedFor().getStudent().getId() : appointment.getBookedBy().getStudent().getId())")
     @Mapping(target = "appointmentId", source = "appointment.id")
@@ -44,7 +44,7 @@ public abstract class MentalEvaluationMapper {
     public abstract CreateMentalEvaluationRequest fromSurveyRecord(SurveyRecord surveyRecord);
 
     @Mapping(target = "source", constant = "PROGRAM")
-    @Mapping(target = "latestEvaluatedAt", expression = "java(java.time.LocalDate.now())")
+    @Mapping(target = "latestEvaluatedAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "studentId",
             expression = "java(participant.getStudent().getId())")
     @Mapping(target = "programParticipantId", source = "participant.id")

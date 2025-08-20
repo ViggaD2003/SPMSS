@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,7 +58,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
             if (dto.getIsSkipped() && !survey.getIsRequired()) {
                 SurveyRecord surveyRecord = SurveyRecord.builder()
                         .totalScore(0f)
-                        .completedAt(LocalDate.now())
+                        .completedAt(LocalDateTime.now())
                         .answerRecords(null)
                         .level(null)
                         .round(survey.getRound())
@@ -93,7 +94,7 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
 
             SurveyRecord surveyRecord = SurveyRecord.builder()
                     .totalScore(dto.getTotalScore())
-                    .completedAt(LocalDate.now())
+                    .completedAt(LocalDateTime.now())
                     .isSkipped(dto.getIsSkipped())
                     .answerRecords(answerRecords)
                     .round(survey.getRound())

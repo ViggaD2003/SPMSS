@@ -70,4 +70,17 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
 """)
     Boolean isEntrySurveyRecordByStudentId(@Param("studentId") Integer studentId,
                                            @Param("supportProgramId") Integer supportProgramId);
+
+
+    @Query("""
+    SELECT CASE WHEN COUNT(sr) > 0 THEN true ELSE false END
+    FROM SurveyRecord sr
+    JOIN ProgramParticipants pp ON sr.student.id = pp.student.id
+    WHERE sr.surveyRecordType = 'PROGRAM'
+      AND sr.surveyRecordIdentify = 'EXIT'
+      AND sr.student.id = :studentId
+      AND pp.program.id = :supportProgramId
+""")
+    Boolean isExitSurveyRecordByStudentId(@Param("studentId") Integer studentId,
+                                           @Param("supportProgramId") Integer supportProgramId);
 }

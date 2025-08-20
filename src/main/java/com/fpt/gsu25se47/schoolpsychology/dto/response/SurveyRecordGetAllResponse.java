@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -14,6 +15,6 @@ public class SurveyRecordGetAllResponse {
     private Boolean isSkipped;
     private SurveyRecordIdentify identify;
     private LevelResponse level;
-    private LocalDate completedAt;
+    private LocalDateTime completedAt;
     private SurveyGetAllResponse survey;
 }

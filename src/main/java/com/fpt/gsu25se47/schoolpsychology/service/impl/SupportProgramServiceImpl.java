@@ -173,8 +173,11 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             if (!surveyRecordRepository.isEntrySurveyRecordByStudentId(studentId, participant.getProgram().getId())) {
                 participant.setStatus(RegistrationStatus.ENROLLED);
                 surveyRecordDetailResponse = surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
+                participant.setFinalScore(surveyRecordDetailResponse.getTotalScore());
             } else {
+                participant.setStatus(RegistrationStatus.COMPLETED);
                 surveyRecordDetailResponse = surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.EXIT);
+                participant.setFinalScore(surveyRecordDetailResponse.getTotalScore() - participant.getFinalScore());
             }
 
             if (programParticipantRepository.hasParticipantCompletedSurveyTwice(participant.getId())) {

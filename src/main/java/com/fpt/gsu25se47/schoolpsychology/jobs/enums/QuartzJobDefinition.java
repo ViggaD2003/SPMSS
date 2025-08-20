@@ -43,6 +43,12 @@ public enum QuartzJobDefinition {
             "meetingJobs",
             "attendenceMeetingTrigger",
             AttendenceMeetingJob.class
+    ),
+    PARTICIPANT_STATUS(
+            "participantStatusJob",
+            "participantJobs",
+            "participantStatusTrigger",
+            ParticipantStatusJob.class
     );
 
     private final String jobName;

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class SurveyRecord {
 
     private Float totalScore;
 
-    private LocalDate completedAt;
+    private LocalDateTime completedAt;
 
     private Boolean isSkipped;
 

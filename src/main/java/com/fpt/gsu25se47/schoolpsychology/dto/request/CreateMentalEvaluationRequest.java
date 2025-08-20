@@ -4,6 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.Source;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class CreateMentalEvaluationRequest {
@@ -12,7 +13,7 @@ public class CreateMentalEvaluationRequest {
 
     private Float weightedScore;
 
-    private LocalDate latestEvaluatedAt;
+    private LocalDateTime latestEvaluatedAt;
 
     private Integer studentId;
 
