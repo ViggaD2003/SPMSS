@@ -98,7 +98,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<?> updateIsAbleSurvey(Integer accountId, Boolean isAbleSurvey) throws BadRequestException {
+    public Optional<?> updateIsAbleSurvey(Integer accountId, Boolean isAbleSurvey) {
         Student student = studentRepository.findById(accountId)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found student"));
         student.setIsEnableSurvey(isAbleSurvey);
@@ -122,7 +122,7 @@ public class AccountServiceImpl implements AccountService {
         try {
             List<Account> accounts = accountRepository.findCounselorsWithSlots();
             List<AccountDto> infoCounselors = accounts.stream()
-                    .map(acc -> accountMapper.toDto(acc))
+                    .map(accountMapper::toDto)
                     .toList();
             return Optional.of(infoCounselors);
         } catch (UsernameNotFoundException e) {

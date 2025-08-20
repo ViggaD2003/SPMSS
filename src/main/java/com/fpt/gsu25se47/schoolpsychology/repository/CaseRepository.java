@@ -30,7 +30,7 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
                     :categoryId IS NULL OR l.category_id = :categoryId
                 )
             ORDER BY 
-                FIELD(c.status,'CONFIRMED', 'IN_PROGRESS', 'NEW', 'CLOSED')
+                FIELD(c.status, 'CONFIRMED', 'IN_PROGRESS', 'NEW', 'CLOSED')
             """, nativeQuery = true)
     List<Cases> findAllCasesByRoleAndAccountWithStatusSorted(
             @Param("role") String role,
