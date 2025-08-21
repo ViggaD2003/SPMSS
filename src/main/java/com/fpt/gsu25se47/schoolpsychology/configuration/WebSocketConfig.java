@@ -92,7 +92,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         return null;
                     }
                 }
-//                System.out.println(message.getHeaders());
                 return message;
             }
         });
