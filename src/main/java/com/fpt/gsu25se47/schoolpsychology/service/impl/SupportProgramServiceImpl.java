@@ -173,6 +173,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             if (!surveyRecordRepository.isEntrySurveyRecordByStudentId(studentId, participant.getProgram().getId())) {
                 participant.setStatus(RegistrationStatus.ACTIVE);
                 surveyRecordDetailResponse = surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
+
                 participant.setFinalScore(surveyRecordDetailResponse.getTotalScore());
             } else {
                 participant.setStatus(RegistrationStatus.COMPLETED);

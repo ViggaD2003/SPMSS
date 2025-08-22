@@ -24,7 +24,7 @@ public class StudentDto extends AccountDto {
 
     private Grade targetLevel;
 
-    private Integer teacherId;
-
     private Integer caseId;
+
+    private ClassDto classDto;
 }

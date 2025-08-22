@@ -39,7 +39,8 @@ public interface ClassMapper {
                                               @Context List<StudentSRCResponse> students);
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
-    ClassDto toDto(Classes classes);
+    @Mapping(target = "schoolYear", expression = "java(mapSchoolYearFromClassTerms(classes.getClassesTerm(), schoolYearMapper))")
+    ClassDto toDto(Classes classes, @Context SchoolYearMapper schoolYearMapper);
 
     void updateClassFromRequest(@MappingTarget Classes classes, UpdateClassRequest request);
 
