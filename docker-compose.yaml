@@ -13,7 +13,7 @@ services:
       
   mysql:
     container_name: spmss_mysql
-    image: mysql
+    image: mariadb:11.4
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: spmss2025
