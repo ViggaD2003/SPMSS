@@ -424,7 +424,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new IllegalStateException("Failed to generate access token");
         }
 
-        response.sendRedirect("http://localhost:5173/login-success?token=" + newAccess.getValue());
+        response.sendRedirect("https://spmss.vercel.app/login-success?token=" + newAccess.getValue());
     }
 
 

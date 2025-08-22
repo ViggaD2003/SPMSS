@@ -153,7 +153,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         });
 
-        return participants.stream().map(participantMapper::mapToDto).toList();
+        return participants.stream().map(participantMapper::mapToProgramParticipantsResponse).toList();
     }
 
     @Override

@@ -24,4 +24,8 @@ public class ProgramParticipantsResponse {
     private RegistrationStatus status;
 
     private Float finalScore;
+
+    private Float surveyIn;
+
+    private Float surveyOut;
 }
