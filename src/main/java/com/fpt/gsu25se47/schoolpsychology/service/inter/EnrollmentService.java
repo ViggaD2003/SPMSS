@@ -8,4 +8,6 @@ import java.util.List;
 public interface EnrollmentService {
 
     List<EnrollmentResponse> createBulkEnrollment(CreateEnrollmentRequest request);
+
+//    List<String> getConnectionUser(String email);
 }

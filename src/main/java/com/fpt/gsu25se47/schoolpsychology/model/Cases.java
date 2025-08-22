@@ -65,4 +65,7 @@ public class Cases extends Auditable {
 
     @OneToMany(mappedBy = "cases", cascade = CascadeType.ALL)
     private List<Appointment> appointments;
+
+    @OneToMany(mappedBy = "cases", cascade = CascadeType.ALL)
+    private List<ChatRoom> chatRooms;
 }

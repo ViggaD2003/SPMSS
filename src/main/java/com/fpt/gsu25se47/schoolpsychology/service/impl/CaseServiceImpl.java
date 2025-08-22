@@ -16,6 +16,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.ChatService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
 import jakarta.transaction.Transactional;
@@ -46,6 +47,8 @@ public class CaseServiceImpl implements CaseService {
     private final SurveyCaseLinkRepository surveyCaseLinkRepository;
 
     private final SurveyRepository surveyRepository;
+
+    private final ChatService chatService;
 
     private final CaseMapper caseMapper;
     private final AppointmentRepository appointmentRepository;
@@ -93,8 +96,8 @@ public class CaseServiceImpl implements CaseService {
                 .currentLevel(currentLevel)
                 .build();
 
-        // Lưu case trước khi gửi notification (nếu notification cần caseId)
-        caseRepository.save(cases);
+
+        chatService.createChatRoom(caseRepository.save(cases).getId());
 
         // Gửi notification cho student
         NotiResponse studentRes = notificationService.saveNotification(
