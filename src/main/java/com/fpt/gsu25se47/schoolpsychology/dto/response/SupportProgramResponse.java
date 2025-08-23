@@ -23,6 +23,10 @@ public class SupportProgramResponse {
 
     private LocalDateTime endTime;
 
+    private LocalDateTime createdDate;
+
+    private LocalDateTime updatedDate;
+
     private ProgramStatus status;
 
     private Boolean isActiveSurvey;
