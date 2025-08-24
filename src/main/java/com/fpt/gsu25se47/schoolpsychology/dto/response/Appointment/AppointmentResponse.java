@@ -55,4 +55,8 @@ public class AppointmentResponse {
     private List<AssessmentScoreResponse> assessmentScores;
 
     private List<SystemConfig> systemConfigs;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

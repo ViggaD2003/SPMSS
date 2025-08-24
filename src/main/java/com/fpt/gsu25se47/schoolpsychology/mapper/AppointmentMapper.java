@@ -15,9 +15,13 @@ public interface AppointmentMapper {
     @Mapping(target = "id", ignore = true)
     Appointment toAppointment(CreateAppointmentRequest request);
 
+    @Mapping(target = "updatedAt", source = "updatedDate")
+    @Mapping(target = "createdAt", source = "createdDate")
     @Mapping(target = "hostedBy", source = "slot.hostedBy")
     AppointmentResponse toAppointmentResponse(Appointment appointment);
 
+    @Mapping(target = "updatedAt", source = "updatedDate")
+    @Mapping(target = "createdAt", source = "createdDate")
     @Mapping(target = "hostedBy", source = "slot.hostedBy")
     @Mapping(target = "assessmentScores", ignore = true)
     AppointmentResponse toAppointmentResponseWithoutAS(Appointment appointment);
