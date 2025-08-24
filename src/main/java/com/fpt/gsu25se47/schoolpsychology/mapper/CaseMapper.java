@@ -32,6 +32,8 @@ public class CaseMapper {
                 .student(cases.getStudent() == null ? null : accountMapper.toDto(cases.getStudent()))
                 .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
                 .currentLevel(levelMapper.mapToLevelResponse(cases.getCurrentLevel()))
+                .createdAt(cases.getCreatedDate())
+                .updatedAt(cases.getUpdatedDate())
                 .build();
     }
 
@@ -51,6 +53,8 @@ public class CaseMapper {
                 .counselor(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCounselor()))
                 .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
                 .currentLevel(levelMapper.mapToLevelResponse(cases.getCurrentLevel()))
+                .createdAt(cases.getCreatedDate())
+                .updatedAt(cases.getUpdatedDate())
                 .build();
     }
 
