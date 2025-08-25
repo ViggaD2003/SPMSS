@@ -16,5 +16,7 @@ public class AppointmentStatic {
 
     private int numOfAbsent;
 
+    private int numOfCancel;
+
     private List<DataSet> dataSet;
 }

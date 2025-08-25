@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SurveyRepository extends JpaRepository<Survey, Integer> {
@@ -86,11 +87,16 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     List<Survey> findAllRecurringSurveys();
 
     @Query("""
-            SELECT COUNT(s) FROM Survey s
-             LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id
-             WHERE sr.isSkipped = true and sr.student.id = :studentId
+                SELECT COUNT(s) 
+                FROM Survey s
+                LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id
+                WHERE sr.isSkipped = true 
+                  AND sr.student.id = :studentId
+                  AND s.startDate >= :startDate 
+                  AND s.endDate <= :endDate
             """)
-    int countSurveySkip(Integer studentId);
+    int countSurveySkip(Integer studentId, LocalDate startDate, LocalDate endDate);
+
 
     @Query("""
                 SELECT s FROM Survey s

@@ -39,12 +39,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     List<Appointment> findAllByCaseId(Integer caseId);
 
     @Query("""
-                SELECT a FROM Appointment a
-                WHERE a.bookedFor.id = :bookedForId
-                AND a.status IN (:statuses)
-                ORDER BY a.startDateTime DESC
-            """)
-    List<Appointment> findByBookedForAndStatus(Integer bookedForId, List<AppointmentStatus> statuses);
+    SELECT a FROM Appointment a
+    WHERE a.bookedFor.id = :bookedForId
+      AND a.status IN (:statuses)
+      AND (:startDateTime IS NULL OR a.startDateTime >= :startDateTime)
+      AND (:endDateTime IS NULL OR a.endDateTime <= :endDateTime)
+    ORDER BY a.startDateTime ASC, a.endDateTime ASC
+""")
+    List<Appointment> findByBookedForAndStatus(
+            Integer bookedForId,
+            List<AppointmentStatus> statuses,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime
+    );
+
 
     @Query("""
                 SELECT a FROM Appointment a

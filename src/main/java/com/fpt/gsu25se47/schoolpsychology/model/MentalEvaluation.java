@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "mental_evaluation")
@@ -27,7 +28,7 @@ public class MentalEvaluation {
 
     private Float weightedScore;
 
-    private LocalDate latestEvaluatedAt;
+    private LocalDateTime latestEvaluatedAt;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "appointment_id", referencedColumnName = "id")

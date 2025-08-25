@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluation, Integer> {
@@ -37,8 +38,8 @@ public interface MentalEvaluationRepository extends JpaRepository<MentalEvaluati
 """)
     List<MentalEvaluation> findEvaluationsByTypeAndDate(
             @Param("type") String type,
-            @Param("from") LocalDate from,
-            @Param("to") LocalDate to,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
             @Param("studentId") Integer studentId
     );
 

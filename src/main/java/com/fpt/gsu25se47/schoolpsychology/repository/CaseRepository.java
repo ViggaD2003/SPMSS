@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CaseRepository extends JpaRepository<Cases, Integer> {
@@ -51,8 +52,9 @@ public interface CaseRepository extends JpaRepository<Cases, Integer> {
                 SELECT COUNT(c) FROM Cases c
                 WHERE c.status = 'CLOSED'
                 AND c.student.id = :studentId
+                AND (c.createdDate >= :startTime AND c.updatedDate <= :endTime) 
             """)
-    int countAllClosedCases(@Param("studentId") Integer studentId);
+    int countAllClosedCases(@Param("studentId") Integer studentId, LocalDateTime startTime, LocalDateTime endTime);
 
     @Query("SELECT COUNT(c) = 0 FROM Cases c WHERE c.student.id = :studentId AND c.status <> 'CLOSE'")
     boolean isStudentFreeFromOpenCases(@Param("studentId") Integer studentId);

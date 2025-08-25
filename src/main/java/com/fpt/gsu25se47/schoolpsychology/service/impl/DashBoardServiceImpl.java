@@ -108,7 +108,7 @@ public class DashBoardServiceImpl implements DashBoardService {
                     .acitveCaseList(activeCasesList)
                     .build();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to view counselor dashboard: {}", e.getMessage(), e);
             throw new RuntimeException("Could not view counselor dashboard");
         }
@@ -116,31 +116,37 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     public StudentDashboard studentDashboard(LocalDate startDate, LocalDate endDate, Integer studentId) {
-        List<DataSet> surveyDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("survey", startDate, endDate, studentId)
+        List<DataSet> surveyDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("survey", startDate.atStartOfDay(), endDate.atStartOfDay(), studentId)
                 .stream().map(this::mapToDataSet).toList();
 
-
+        int surveyCount = (int) surveyRepository
+                .findUnansweredExpiredSurveysByAccountId(studentId).stream().filter(item ->
+                        !item.getStartDate().isBefore(startDate) &&
+                                !item.getEndDate().isAfter(endDate)).count();
 
         SurveyStatic surveyStatic = SurveyStatic.builder()
-                .activeSurveys(surveyRepository.findUnansweredExpiredSurveysByAccountId(studentId).size())
+                .activeSurveys(surveyCount)
                 .dataSet(surveyDataSets)
-                .numberOfSkips(surveyRepository.countSurveySkip(studentId))
+                .numberOfSkips(surveyRepository.countSurveySkip(studentId, startDate, endDate))
                 .completedSurveys(surveyDataSets.size())
                 .build();
 
-        List<DataSet> appointmentDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("appointment", startDate, endDate, studentId)
+
+        List<DataSet> appointmentDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("appointment", startDate.atStartOfDay(), endDate.atStartOfDay(), studentId)
                 .stream().map(this::mapToDataSet).toList();
+
         AppointmentStatic appointmentStatic = AppointmentStatic.builder()
-                .activeAppointments(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.CONFIRMED)).size())
-                .completedAppointments(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.COMPLETED)).size())
-                .numOfAbsent(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.ABSENT)).size())
+                .activeAppointments(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.CONFIRMED), startDate.atStartOfDay(), endDate.atStartOfDay()).size())
+                .completedAppointments(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.COMPLETED), startDate.atStartOfDay(), endDate.atStartOfDay()).size())
+                .numOfAbsent(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.ABSENT), startDate.atStartOfDay(), endDate.atStartOfDay()).size())
+                .numOfCancel(appointmentRepository.findByBookedForAndStatus(studentId, List.of(AppointmentStatus.CANCELED), startDate.atStartOfDay(), endDate.atStartOfDay()).size())
                 .dataSet(appointmentDataSets)
                 .build();
 
-        List<DataSet> programDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("program", startDate, endDate, studentId)
+        List<DataSet> programDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("program", startDate.atStartOfDay(), endDate.atStartOfDay(), studentId)
                 .stream().map(this::mapToDataSet).toList();
 
-        List<ProgramParticipants> participants = programParticipantRepository.findByStudentId(studentId);
+        List<ProgramParticipants> participants = programParticipantRepository.findByStudentIdAndJoinAtBetween(studentId, startDate.atStartOfDay(), endDate.atStartOfDay());
 
         ProgramSupportStatic supportStatic = ProgramSupportStatic.builder()
                 .activePrograms(participants.stream().filter(pp -> (pp.getStatus() == RegistrationStatus.ENROLLED || pp.getStatus() == RegistrationStatus.ACTIVE)).toList().size())
@@ -150,10 +156,15 @@ public class DashBoardServiceImpl implements DashBoardService {
                 .build();
 
         OverviewStudent overview = OverviewStudent.builder()
-                .totalSurveys(surveyRepository.findUnansweredExpiredSurveysByAccountId(studentId).size() + surveyDataSets.size())
-                .totalAppointments(appointmentRepository.findAllByBookedFor(studentId).size())
-                .totalPrograms(supportProgramRepository.findByStudentId(studentId).size())
-                .totalCases(caseRepository.countAllClosedCases(studentId))
+                .totalSurveys(surveyCount + surveyDataSets.size())
+                .totalAppointments((int) appointmentRepository.findAllByBookedFor(studentId).stream().filter(item ->
+                        !item.getCreatedDate().isBefore(startDate.atStartOfDay())
+                                && !item.getCreatedDate().isAfter(endDate.atStartOfDay())).count()
+                )
+                .totalPrograms((int) supportProgramRepository.findByStudentId(studentId).stream().filter(item ->
+                        !item.getStartTime().isBefore(startDate.atStartOfDay()) &&
+                                !item.getEndTime().isAfter(endDate.atStartOfDay())).count())
+                .totalCases(caseRepository.countAllClosedCases(studentId, startDate.atStartOfDay(), endDate.atStartOfDay()))
                 .build();
 
         MentalEvaluationStatic mentalEvaluationStatic = MentalEvaluationStatic.builder()
