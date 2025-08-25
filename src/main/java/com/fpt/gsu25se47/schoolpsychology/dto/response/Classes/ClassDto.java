@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response.Classes;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SchoolYear.SchoolYearResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,5 +17,5 @@ public class ClassDto {
 
     private String codeClass;
 
-    private String schoolYear;
+    private SchoolYearResponse schoolYear;
 }

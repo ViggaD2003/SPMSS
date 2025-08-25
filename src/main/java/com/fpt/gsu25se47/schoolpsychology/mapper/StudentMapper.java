@@ -21,6 +21,11 @@ public abstract class StudentMapper {
     private ClassRepository classRepository;
     @Autowired
     private CaseRepository caseRepository;
+    @Autowired
+    private ClassMapper classMapper;
+    @Autowired
+    private SchoolYearMapper schoolYearMapper;
+
 
     @Named("mapStudentDto")
     @Mapping(target = "roleName", source = "account.role")
@@ -30,7 +35,6 @@ public abstract class StudentMapper {
     @Mapping(target = "fullName", source = "account.fullName")
     @Mapping(target = "email", source = "account.email")
     @Mapping(target = "dob", source = "account.dob")
-    @Mapping(target = "teacherId", ignore = true)
     @Mapping(target = "caseId", ignore = true)
     public abstract StudentDto mapStudentDto(Student student);
 
@@ -67,7 +71,7 @@ public abstract class StudentMapper {
         StudentDto dto = mapStudentDto(student);
 
         Classes activeClass = classRepository.findActiveClassByStudentId(student.getId());
-        dto.setTeacherId(activeClass == null ? null : activeClass.getTeacher().getId());
+        dto.setClassDto(classMapper.toDto(activeClass, schoolYearMapper));
         Cases activeCase = caseRepository.findActiveCaseByStudentId(student.getId());
         dto.setCaseId(activeCase == null ? null : activeCase.getId());
 

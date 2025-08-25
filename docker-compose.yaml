@@ -10,10 +10,10 @@ services:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
       - spmss-network
-      
+
   mysql:
     container_name: spmss_mysql
-    image: mysql
+    image: mysql:8.0-oraclelinux8
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: spmss2025

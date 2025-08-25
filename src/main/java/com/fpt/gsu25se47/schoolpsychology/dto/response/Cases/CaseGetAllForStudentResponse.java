@@ -8,6 +8,8 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class CaseGetAllForStudentResponse {
@@ -38,5 +40,10 @@ public class CaseGetAllForStudentResponse {
     private LevelResponse currentLevel;
 
     private LevelResponse initialLevel;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
 }
 

@@ -5,12 +5,16 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import com.fpt.gsu25se47.schoolpsychology.model.ProgramParticipants;
+import com.fpt.gsu25se47.schoolpsychology.model.SurveyRecord;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import com.fpt.gsu25se47.schoolpsychology.repository.MentalEvaluationRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 @Mapper(componentModel = "spring")
@@ -63,12 +67,27 @@ public abstract class ParticipantMapper {
     }
 
     protected CaseGetAllResponse mapToCase(Cases cases) {
-        if(cases == null) return null;
+        if (cases == null) return null;
         return caseMapper.mapToCaseGetAllResponse(cases, null);
     }
 
     protected MentalEvaluationResponse mapToMentalEvaluationResponse(Integer participantId) {
         return mentalEvaluationMapper.toMentalEvaluationResponse(mentalEvaluationRepository
                 .findMentalEvaluationByProgramParticipantsId(participantId));
+    }
+
+    public ProgramParticipantsResponse mapToProgramParticipantsResponse(ProgramParticipants programParticipants) {
+        ProgramParticipantsResponse response = mapToDto(programParticipants);
+
+        List<SurveyRecord> surveyRecords = surveyRecordRepository.findTwoSurveyRecordsByParticipant(programParticipants.getId());
+
+        surveyRecords.forEach(surveyRecord -> {
+            if (surveyRecord.getSurveyRecordIdentify() == SurveyRecordIdentify.ENTRY && surveyRecord.getSurveyRecordType() == SurveyRecordType.PROGRAM) {
+                response.setSurveyIn(surveyRecord.getTotalScore());
+            } else {
+                response.setSurveyOut(surveyRecord.getTotalScore());
+            }
+        });
+        return response;
     }
 }

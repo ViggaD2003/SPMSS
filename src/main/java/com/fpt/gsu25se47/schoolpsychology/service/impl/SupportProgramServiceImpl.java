@@ -153,7 +153,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         });
 
-        return participants.stream().map(participantMapper::mapToDto).toList();
+        return participants.stream().map(participantMapper::mapToProgramParticipantsResponse).toList();
     }
 
     @Override
@@ -171,8 +171,9 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
             SurveyRecordDetailResponse surveyRecordDetailResponse;
             if (!surveyRecordRepository.isEntrySurveyRecordByStudentId(studentId, participant.getProgram().getId())) {
-                participant.setStatus(RegistrationStatus.ENROLLED);
+                participant.setStatus(RegistrationStatus.ACTIVE);
                 surveyRecordDetailResponse = surveyRecordService.createSurveyRecord(createSurveyRecordDto, SurveyRecordIdentify.ENTRY);
+
                 participant.setFinalScore(surveyRecordDetailResponse.getTotalScore());
             } else {
                 participant.setStatus(RegistrationStatus.COMPLETED);

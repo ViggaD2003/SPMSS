@@ -3,6 +3,9 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
+import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
@@ -21,6 +24,9 @@ public abstract class SupportProgramMapper {
 
     @Autowired
     protected ParticipantMapper participantMapper;
+
+    @Autowired
+    private SurveyRecordRepository surveyRecordRepository;
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "category", ignore = true)
@@ -82,7 +88,7 @@ public abstract class SupportProgramMapper {
 
     protected List<ProgramParticipantsResponse> mapToDto(List<ProgramParticipants> participants) {
         if (participants == null) return null;
-        return participants.stream().map(participantMapper::mapToDto).toList();
+        return participants.stream().map(participantMapper::mapToProgramParticipantsResponse).toList();
     }
 
     protected List<ProgramPPParticipantResponse> mapToProgramPPParticipantResponses(List<ProgramParticipants> participants) {
