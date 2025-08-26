@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 
@@ -20,6 +21,9 @@ public class NotificationBroker {
     private final NotificationService notificationService;
 
     private final ChatService chatService;
+
+    private final SimpMessagingTemplate messagingTemplate;
+
 
     @MessageMapping("/send")
     public void sendMessage(NotiRequest notiRequest) {
@@ -33,8 +37,13 @@ public class NotificationBroker {
     }
 
     @MessageMapping("/chat/{roomId}")
-    @SendTo("/topic/chat/{roomId}")
-    public ChatMessageDto sendMessage(ChatMessageDto chatMessage, @DestinationVariable Integer roomId) {
-        return chatService.saveMessage(chatMessage, roomId);
+    public void sendMessage(@DestinationVariable Integer roomId, ChatMessageDto chatMessage) {
+        System.out.println("----------------------------------ĐÃ VÀO------------------------------------------");
+
+        chatService.saveMessage(chatMessage, roomId);
+
+        // rồi gửi thủ công đến topic tương ứng
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId, chatMessage);
     }
+
 }

@@ -1,17 +1,17 @@
 package com.fpt.gsu25se47.schoolpsychology.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "counselors")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+//@ToString(exclude = {"account"}) // 👈 thêm dòng này
 public class Counselor {
 
     @Id

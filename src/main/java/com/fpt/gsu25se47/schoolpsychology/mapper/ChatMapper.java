@@ -9,15 +9,15 @@ import org.mapstruct.Mappings;
 @Mapper(componentModel = "spring")
 public interface ChatMapper {
 
-    @Mappings({
-            @Mapping(target = "createdAt", source = "chatMessageDto.timestamp"),
-            @Mapping(target = "content", source = "chatMessageDto.message"),
-            @Mapping(target = "sender", ignore = true)
-    })
-    ChatMessage toChatMessage(ChatMessageDto chatMessageDto);
+//    @Mappings({
+//            @Mapping(target = "createdAt", source = "chatMessageDto.timestamp"),
+//            @Mapping(target = "content", source = "chatMessageDto.message"),
+//            @Mapping(target = "sender", ignore = true)
+//    })
+//    ChatMessage toChatMessage(ChatMessageDto chatMessageDto);
 
     @Mappings({
-            @Mapping(target = "sender", source = "chatMessage.sender.email"),
+            @Mapping(target = "sender", source = "chatMessage.email"),
             @Mapping(target = "message", source = "chatMessage.content"),
             @Mapping(target = "timestamp", source = "chatMessage.createdAt")
     })

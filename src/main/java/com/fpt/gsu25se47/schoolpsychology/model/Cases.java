@@ -5,16 +5,14 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.Priority;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgressTrend;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "cases")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
