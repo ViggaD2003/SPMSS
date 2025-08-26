@@ -69,7 +69,7 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
     @Query("""
                 SELECT CASE WHEN COUNT(sr) > 0 THEN true ELSE false END
                 FROM SurveyRecord sr
-                JOIN ProgramParticipants pp ON sr.student.id = pp.student.id
+                JOIN ProgramParticipants pp ON sr.student.id = pp.student.id AND sr.survey.id = pp.program.survey.id
                 WHERE sr.surveyRecordType = 'PROGRAM'
                   AND sr.surveyRecordIdentify = 'ENTRY'
                   AND sr.student.id = :studentId
@@ -82,7 +82,7 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
     @Query("""
                 SELECT CASE WHEN COUNT(sr) > 0 THEN true ELSE false END
                 FROM SurveyRecord sr
-                JOIN ProgramParticipants pp ON sr.student.id = pp.student.id
+                JOIN ProgramParticipants pp ON sr.student.id = pp.student.id AND sr.survey.id = pp.program.survey.id
                 WHERE sr.surveyRecordType = 'PROGRAM'
                   AND sr.surveyRecordIdentify = 'EXIT'
                   AND sr.student.id = :studentId
