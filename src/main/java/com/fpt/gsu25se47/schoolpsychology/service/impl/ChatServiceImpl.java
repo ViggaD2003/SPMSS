@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
     private final ChatClient chatClient;
@@ -62,11 +63,8 @@ public class ChatServiceImpl implements ChatService {
     public String sendMessage(ChatRequest request) {
         String userMessage = request.getMessage();
 
-        if (!isRelevantToSchoolPsychology(userMessage)) {
-            return "Sorry, the system only supports questions related to school psychology.";
-        }
-
-        return chatClient.prompt(userMessage)
+        return chatClient.prompt()
+                .user(userMessage)
                 .call()
                 .content();
     }

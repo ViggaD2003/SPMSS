@@ -201,7 +201,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointments = appointmentRepository.findByBookedByAndStatus(account.getId(), statuses);
         } else if (account.getRole() == Role.STUDENT) {
 
-            appointments = appointmentRepository.findByBookedForAndStatus(account.getId(), statuses);
+            appointments = appointmentRepository.findByBookedForAndStatus(account.getId(), statuses, null, null);
         } else if (account.getRole() == Role.COUNSELOR) {
 
             appointments = appointmentRepository.findAllByHostByWithStatus(account.getId(), statuses);

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProgramParticipantRepository extends JpaRepository<ProgramParticipants, Integer> {
@@ -12,8 +13,18 @@ public interface ProgramParticipantRepository extends JpaRepository<ProgramParti
     @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.program.id = :programId")
     List<ProgramParticipants> findByProgramId(Integer programId);
 
-    @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.student.id = :studentId")
-    List<ProgramParticipants> findByStudentId(Integer studentId);
+    @Query("""
+    SELECT pp 
+    FROM ProgramParticipants pp 
+    WHERE pp.student.id = :studentId 
+      AND pp.joinAt BETWEEN :startDate AND :endDate
+""")
+    List<ProgramParticipants> findByStudentIdAndJoinAtBetween(
+            Integer studentId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    );
+
 
     @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.student.id =:studentId AND pp.program.id = :supportProgramId")
     ProgramParticipants findByStudentId(Integer studentId, Integer supportProgramId);
