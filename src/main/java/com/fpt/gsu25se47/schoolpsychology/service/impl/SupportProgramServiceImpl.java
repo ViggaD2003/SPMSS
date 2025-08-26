@@ -186,6 +186,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     participant.setMentalEvaluation(mentalEvaluation);
                     programParticipantRepository.save(participant);
             }
+
             return Optional.of(surveyRecordDetailResponse);
         } catch (Exception e) {
             throw new RuntimeException("Error creating survey record", e);

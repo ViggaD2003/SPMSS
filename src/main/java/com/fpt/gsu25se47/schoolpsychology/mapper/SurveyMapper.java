@@ -68,7 +68,7 @@ public class SurveyMapper {
                 .createdAt(survey.getCreatedDate())
                 .updatedAt(survey.getUpdatedDate())
                 .category(categoryMapper.mapToCategorySurveyResponse(survey.getCategory()))
-                .createdBy(accountMapper.toDto(survey.getCreateBy()))
+                .createdBy(null)
                 .build();
     }
 

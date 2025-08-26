@@ -117,7 +117,6 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                surveyRecord.setSurveyRecordIdentify(identify);
            }
 
-
             SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
             return surveyRecordMapper.mapToSurveyRecordResponse(saved);
