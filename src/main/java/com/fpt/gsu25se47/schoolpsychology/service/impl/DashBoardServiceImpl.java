@@ -119,8 +119,6 @@ public class DashBoardServiceImpl implements DashBoardService {
         List<DataSet> surveyDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("survey", startDate, endDate, studentId)
                 .stream().map(this::mapToDataSet).toList();
 
-
-
         SurveyStatic surveyStatic = SurveyStatic.builder()
                 .activeSurveys(surveyRepository.findUnansweredExpiredSurveysByAccountId(studentId).size())
                 .dataSet(surveyDataSets)
