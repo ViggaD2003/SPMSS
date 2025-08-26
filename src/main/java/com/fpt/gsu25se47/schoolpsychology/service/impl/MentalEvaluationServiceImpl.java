@@ -86,6 +86,6 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     private Float getWeightedScoreForSurveyRecord(SurveyRecord surveyRecord) {
         Category category = surveyRecord.getSurvey().getCategory();
         Float weightedScore = surveyRecord.getTotalScore() * category.getSeverityWeight();
-        return weightedScore / (category.getMaxScore() * category.getQuestionLength()) * 4 ;
+        return weightedScore / (category.getMaxScore() * category.getQuestionLength()) * 4;
     }
 }

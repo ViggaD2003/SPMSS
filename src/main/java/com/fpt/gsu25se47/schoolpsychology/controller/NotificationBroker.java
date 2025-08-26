@@ -1,11 +1,15 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.ChatMessageDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiSettingRequest;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.ChatService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 
@@ -14,6 +18,8 @@ import org.springframework.stereotype.Controller;
 public class NotificationBroker {
 
     private final NotificationService notificationService;
+
+    private final ChatService chatService;
 
     @MessageMapping("/send")
     public void sendMessage(NotiRequest notiRequest) {
@@ -26,4 +32,9 @@ public class NotificationBroker {
         notificationService.sendNotificationSetting(notiSettingRequest);
     }
 
+    @MessageMapping("/chat/{roomId}")
+    @SendTo("/topic/chat/{roomId}")
+    public ChatMessageDto sendMessage(ChatMessageDto chatMessage, @DestinationVariable Integer roomId) {
+        return chatService.saveMessage(chatMessage, roomId);
+    }
 }

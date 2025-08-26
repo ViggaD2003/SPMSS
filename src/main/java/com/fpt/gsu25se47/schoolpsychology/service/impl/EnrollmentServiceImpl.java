@@ -3,9 +3,12 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateEnrollmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.EnrollmentResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.EnrollmentMapper;
+import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Enrollment;
 import com.fpt.gsu25se47.schoolpsychology.model.Student;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
+import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.EnrollmentRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.StudentRepository;
@@ -26,6 +29,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final ClassRepository classRepository;
 
     private final EnrollmentMapper enrollmentMapper;
+    private final AccountRepository accountRepository;
 
     @Override
     public List<EnrollmentResponse> createBulkEnrollment(CreateEnrollmentRequest request) {
@@ -56,6 +60,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .map(enrollmentMapper::toEnrollmentResponse)
                 .toList();
     }
+
+//    @Override
+//    public List<String> getConnectionUser(String email) {
+//        Account account = accountRepository.findByEmail(email)
+//                .orElseThrow(() -> new RuntimeException("Account not found"));
+//
+//        if(account.getRole() == Role.STUDENT) {
+//            return account.getStudent().get
+//        }
+//    }
 
     private List<Enrollment> getEnrollmentsToSave(CreateEnrollmentRequest request, List<Student> students, Classes clazz) {
         // Filter out already enrolled students

@@ -3,7 +3,10 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.ChatRequest;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -12,8 +15,15 @@ public class ChatController {
 
     private final ChatService chatService;
 
+
     @PostMapping
     public String sendMessage(@RequestBody ChatRequest chatRequest) {
         return chatService.sendMessage(chatRequest);
+    }
+
+
+    @GetMapping("/chat-room")
+    public ResponseEntity<List<Integer>> findChatRoom(@RequestParam Integer caseId) {
+        return ResponseEntity.ok(chatService.getAllChatRooms(caseId));
     }
 }

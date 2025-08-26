@@ -81,7 +81,4 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
             @Param("classId") Integer classId,
             @Param("grade") String grade
     );
-
-
-
 }
