@@ -66,7 +66,7 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
             Account student = participants.getStudent();
             mappedMentalEvaluation.setStudent(student);
             mappedMentalEvaluation.setProgramParticipants(participants);
-            mappedMentalEvaluation.setWeightedScore(entryWeightScore + exitWeightScore);
+            mappedMentalEvaluation.setWeightedScore((entryWeightScore + exitWeightScore) / 2);
             return mentalEvaluationRepository.save(mappedMentalEvaluation);
         }
 
@@ -86,6 +86,6 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
     private Float getWeightedScoreForSurveyRecord(SurveyRecord surveyRecord) {
         Category category = surveyRecord.getSurvey().getCategory();
         Float weightedScore = surveyRecord.getTotalScore() * category.getSeverityWeight();
-        return weightedScore / (category.getMaxScore() * category.getQuestionLength());
+        return weightedScore / (category.getMaxScore() * category.getQuestionLength()) * 4 ;
     }
 }
