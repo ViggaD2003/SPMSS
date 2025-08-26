@@ -2,12 +2,15 @@ package com.fpt.gsu25se47.schoolpsychology.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "system_config")
-@Data
+@Getter
+@Setter
 public class SystemConfig {
 
     @Id
