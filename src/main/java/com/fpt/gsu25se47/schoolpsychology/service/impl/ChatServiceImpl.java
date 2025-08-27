@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.ChatRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ChatMessageDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.ChatRoomResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ChatMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
@@ -118,9 +119,9 @@ public class ChatServiceImpl implements ChatService {
 
         if (account.getRole() == Role.COUNSELOR) {
             return Optional.of(chatRoomRepository.findAllByCasesId(caseId)
-                    .stream().map(item -> item.getId()).collect(Collectors.toList()));
+                    .stream().map(this::mapToChatRoomResponse).collect(Collectors.toList()));
         } else {
-            return Optional.of(chatRoomRepository.findAllByCasesIdAndByRoleRoom(caseId, account.getRole().toString(), account.getEmail()));
+            return Optional.of(this.mapToChatRoomResponse(chatRoomRepository.findAllByCasesIdAndByRoleRoom(caseId, account.getRole().toString(), account.getEmail())));
         }
     }
 
@@ -128,5 +129,14 @@ public class ChatServiceImpl implements ChatService {
     public List<ChatMessageDto> getAllChatMessages(Integer chatRoomId) {
         List<ChatMessage> list = chatMessageRepository.findAllByChatRoomId(chatRoomId);
         return list.stream().map(chatMapper::toChatMessageDto).collect(Collectors.toList());
+    }
+
+    private  ChatRoomResponse mapToChatRoomResponse(ChatRoom chatRoom) {
+        return ChatRoomResponse.builder()
+                .id(chatRoom.getId())
+                .email(chatRoom.getEmail())
+                .roleRoom(chatRoom.getRoleRoom())
+                .timeStamp(chatRoom.getTimeStamp())
+                .build();
     }
 }

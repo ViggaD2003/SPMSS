@@ -55,5 +55,4 @@ public class NotificationBroker {
         headerAccessor.getSessionAttributes().put("roomId", roomId);
         messagingTemplate.convertAndSend("/topic/chat/" + roomId, chatMessage);
     }
-
 }
