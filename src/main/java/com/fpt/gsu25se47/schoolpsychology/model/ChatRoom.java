@@ -27,4 +27,8 @@ public class ChatRoom {
     private List<ChatMessage> messages;
 
     private LocalDateTime timeStamp;
+
+    private String email;
+
+    private String roleRoom;
 }

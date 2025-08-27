@@ -85,42 +85,48 @@ public class ChatServiceImpl implements ChatService {
                 )
                 .build();
         System.out.println("ENTITY" + chatMessage);
-        return chatMapper.toChatMessageDto(chatMessageRepository.save(chatMessage));
+        chatMessageRepository.save(chatMessage);
+
+        return chatMessageDto;
     }
 
     @Override
     public void createChatRoom(Integer caseId) {
         Cases cases = caseRepository.findById(caseId).orElseThrow(() -> new RuntimeException("caseId not found"));
-        for(int i = 0; i < 2; i++){
-                chatRoomRepository.save(ChatRoom.builder()
-                        .cases(cases)
-                        .timeStamp(LocalDateTime.now())
-                        .build());
+        if (cases.getStudent().getRole() == Role.STUDENT) {
+            chatRoomRepository.save(ChatRoom.builder()
+                    .cases(cases)
+                    .email(cases.getStudent().getEmail())
+                    .roleRoom(cases.getStudent().getRole().toString())
+                    .timeStamp(LocalDateTime.now())
+                    .build());
         }
+
+        cases.getStudent().getStudent().getRelationships().forEach(relationship -> {
+            chatRoomRepository.save(ChatRoom.builder()
+                    .cases(cases)
+                    .email(relationship.getGuardian().getAccount().getEmail())
+                    .roleRoom(relationship.getGuardian().getAccount().getRole().toString())
+                    .timeStamp(LocalDateTime.now())
+                    .build());
+        });
     }
 
     @Override
     public Optional<?> getAllChatRooms(Integer caseId) {
         Account account = accountService.getCurrentAccount();
 
-        if(account.getRole() == Role.COUNSELOR){
+        if (account.getRole() == Role.COUNSELOR) {
             return Optional.of(chatRoomRepository.findAllByCasesId(caseId)
                     .stream().map(item -> item.getId()).collect(Collectors.toList()));
-        } else if (account.getRole() == Role.STUDENT){
-            return Optional.of(chatRoomRepository.findAllByCasesId(caseId)
-                    .stream().map(item -> item.getId()).findFirst().orElseThrow(() -> new RuntimeException("Not found")));
         } else {
-            List<Integer> chatRooms = chatRoomRepository.findAllByCasesId(caseId)
-                    .stream().map(item -> item.getId()).toList();
-
-            return Optional.of(chatRooms.get(chatRooms.size() - 1));
+            return Optional.of(chatRoomRepository.findAllByCasesIdAndByRoleRoom(caseId, account.getRole().toString(), account.getEmail()));
         }
     }
 
     @Override
     public List<ChatMessageDto> getAllChatMessages(Integer chatRoomId) {
         List<ChatMessage> list = chatMessageRepository.findAllByChatRoomId(chatRoomId);
-
         return list.stream().map(chatMapper::toChatMessageDto).collect(Collectors.toList());
     }
 }
