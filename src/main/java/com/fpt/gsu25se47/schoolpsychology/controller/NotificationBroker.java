@@ -59,7 +59,7 @@ public class NotificationBroker {
 
         onlineTrackerUser.setOnline(roomId, chatMessage.getSender());
 
-        messagingTemplate.convertAndSend("/topic/onlineUsers", onlineTrackerUser.getOnlineUsers(roomId));
+        messagingTemplate.convertAndSend("/topic/onlineUsers/" + roomId, onlineTrackerUser.getOnlineUsers(roomId));
         messagingTemplate.convertAndSend("/topic/chat/" + roomId, chatMessage);
     }
 }
