@@ -64,7 +64,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 log.info("📩 Incoming frame: {}", accessor != null ? accessor.getCommand() : "null");
 
-
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String token = (String) accessor.getSessionAttributes().get("jwt_token");
                     System.out.printf(token );
