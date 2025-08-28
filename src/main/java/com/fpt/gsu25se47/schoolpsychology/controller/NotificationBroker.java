@@ -8,6 +8,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiSettingRequest;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ChatService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -15,6 +16,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+import java.util.Map;
 
 
 @Controller
@@ -48,18 +51,17 @@ public class NotificationBroker {
         messagingTemplate.convertAndSend("/topic/chat/" + roomId, chatMessage);
     }
 
-    @MessageMapping("/chat.addUser/{roomId}")
+    @MessageMapping("/chat.addUser")
     public void addUser(
-            @Payload ChatMessageDto chatMessage,
-            SimpMessageHeaderAccessor headerAccessor,
-            @DestinationVariable Integer roomId
+            @Payload Map<String, String> payload,
+            SimpMessageHeaderAccessor headerAccessor
     ) {
-        headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
-        headerAccessor.getSessionAttributes().put("roomId", roomId);
+        String username = payload.get("username");
+        headerAccessor.getSessionAttributes().put("username", username);
 
-        onlineTrackerUser.setOnline(roomId, chatMessage.getSender());
+        onlineTrackerUser.setOnline(username);
 
-        messagingTemplate.convertAndSend("/topic/onlineUsers", onlineTrackerUser.getAllOnlineUsers());
-//        messagingTemplate.convertAndSend("/topic/chat/" + roomId, chatMessage);
+        messagingTemplate.convertAndSend("/topic/onlineUsers", onlineTrackerUser.getOnlineUsers());
     }
+
 }
