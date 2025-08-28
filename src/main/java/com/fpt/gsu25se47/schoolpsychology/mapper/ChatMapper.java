@@ -20,7 +20,6 @@ public interface ChatMapper {
             @Mapping(target = "sender", source = "chatMessage.email"),
             @Mapping(target = "message", source = "chatMessage.content"),
             @Mapping(target = "timestamp", source = "chatMessage.createdAt"),
-            @Mapping(target = "type", constant = "CHAT")
     })
     ChatMessageDto toChatMessageDto(ChatMessage chatMessage);
 }

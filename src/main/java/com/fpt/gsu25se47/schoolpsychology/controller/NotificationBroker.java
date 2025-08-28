@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
+import com.fpt.gsu25se47.schoolpsychology.configuration.OnlineTrackerUser;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ChatMessageDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiResponse;
@@ -25,6 +26,8 @@ public class NotificationBroker {
     private final ChatService chatService;
 
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final OnlineTrackerUser onlineTrackerUser;
 
 
     @MessageMapping("/send")
@@ -53,6 +56,10 @@ public class NotificationBroker {
     ) {
         headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
         headerAccessor.getSessionAttributes().put("roomId", roomId);
+
+        onlineTrackerUser.setOnline(roomId, chatMessage.getSender());
+
+        messagingTemplate.convertAndSend("/topic/onlineUsers", onlineTrackerUser.getOnlineUsers(roomId));
         messagingTemplate.convertAndSend("/topic/chat/" + roomId, chatMessage);
     }
 }
