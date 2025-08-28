@@ -10,10 +10,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.CaseMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.CaseService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ChatService;
@@ -245,7 +242,7 @@ public class CaseServiceImpl implements CaseService {
         numOfCompleted = (int) participants.stream().filter(pp -> RegistrationStatus.COMPLETED.equals(pp.getStatus()))
                 .count();
 
-        List<MentalEvaluation> mentalEvaluationOfPp = participants.stream().map(pp -> pp.getMentalEvaluation()).toList();
+        List<MentalEvaluation> mentalEvaluationOfPp = participants.stream().map(ProgramParticipants::getMentalEvaluation).toList();
 
         List<DataSet> programSupportDataSets = mentalEvaluationOfPp.stream()
                 .map(this::mapToDataSet)
@@ -287,18 +284,35 @@ public class CaseServiceImpl implements CaseService {
             List<Cases> filteredCases = cases.stream()
                     .filter(item -> caseIds.contains(item.getId()))
                     .toList();
+
+            if(filteredCases.isEmpty()) {
+                throw new BadRequestException("No case found");
+            }
+
             Survey survey = surveyRepository.findById(surveyId)
                     .orElseThrow(() -> new IllegalArgumentException("Survey not found"));
 
-            filteredCases.forEach(item -> {
-                SurveyCaseLink surveyCaseLink = SurveyCaseLink.builder()
-                        .cases(item)
-                        .survey(survey)
-                        .assignedBy(assignedBy)
-                        .isActive(true)
-                        .build();
-                surveyCaseLinkRepository.save(surveyCaseLink);
+            if(survey.getSurveyType() != SurveyType.FOLLOWUP){
+                throw new BadRequestException("Survey type is not followup");
+            }
 
+            filteredCases.forEach(item -> {
+                SurveyCaseLink surveyCaseLink = surveyCaseLinkRepository.existsBySurveyIdAndCaseId(surveyId, item.getId());
+                if(surveyCaseLink != null){
+                    if(!surveyCaseLink.getIsActive()){
+                        surveyCaseLink.setIsActive(true);
+                        surveyCaseLinkRepository.save(surveyCaseLink);
+                    } else {
+                        throw new RuntimeException("Survey case link still active");
+                    }
+                } else {
+                    surveyCaseLinkRepository.save(SurveyCaseLink.builder()
+                            .cases(item)
+                            .survey(survey)
+                            .assignedBy(assignedBy)
+                            .isActive(true)
+                            .build());
+                }
 
                 NotiResponse studentRes = notificationService.saveNotification(
                         NotiRequest.builder()

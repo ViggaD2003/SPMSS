@@ -10,4 +10,7 @@ public interface SurveyCaseLinkRepository extends JpaRepository<SurveyCaseLink, 
 
     @Query("SELECT scl FROM SurveyCaseLink scl WHERE scl.survey.id = :surveyId")
     List<SurveyCaseLink> findAllBySurveyId(Integer surveyId);
+
+    @Query("SELECT scl FROM SurveyCaseLink scl WHERE scl.survey.id =:surveyId AND scl.cases.id =:caseId")
+    SurveyCaseLink existsBySurveyIdAndCaseId(Integer surveyId, Integer caseId);
 }

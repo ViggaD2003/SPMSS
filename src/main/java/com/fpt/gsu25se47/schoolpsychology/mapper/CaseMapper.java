@@ -27,7 +27,7 @@ public class CaseMapper {
                 .status(cases.getStatus())
                 .progressTrend(cases.getProgressTrend())
                 .createBy(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCreateBy()))
-                .isAddSurvey(surveyId == null ? null : cases.getSurveyCaseLinks().stream().anyMatch(item -> item.getSurvey().getId() == surveyId))
+                .isAddSurvey(surveyId == null ? null : cases.getSurveyCaseLinks().stream().anyMatch(item -> item.getSurvey().getId() == surveyId  && item.getIsActive()))
                 .counselor(cases.getCreateBy() == null ? null : accountMapper.toDto(cases.getCounselor()))
                 .student(cases.getStudent() == null ? null : accountMapper.toDto(cases.getStudent()))
                 .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
