@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -116,8 +117,10 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     public StudentDashboard studentDashboard(LocalDate startDate, LocalDate endDate, Integer studentId) {
-        List<DataSet> surveyDataSets = mentalEvaluationRepository.findEvaluationsByTypeAndDate("survey", startDate.atStartOfDay(), endDate.atStartOfDay(), studentId)
-                .stream().map(this::mapToDataSet).toList();
+        List<MentalEvaluation> mentalEvaluations = mentalEvaluationRepository.findEvaluationsByTypeAndDate("survey", startDate.atStartOfDay(), endDate.atStartOfDay(), studentId);
+        List<DataSet> surveyDataSets = mentalEvaluations.stream()
+                .filter(item -> item.getWeightedScore() > 0)
+                .map(this::mapToDataSet).toList();
 
         int surveyCount = (int) surveyRepository
                 .findUnansweredExpiredSurveysByAccountId(studentId).stream().filter(item ->
@@ -127,7 +130,7 @@ public class DashBoardServiceImpl implements DashBoardService {
         SurveyStatic surveyStatic = SurveyStatic.builder()
                 .activeSurveys(surveyCount)
                 .dataSet(surveyDataSets)
-                .numberOfSkips(surveyRepository.countSurveySkip(studentId, startDate, endDate))
+                .numberOfSkips(surveyRepository.countSurveySkip(studentId, startDate.atStartOfDay(), endDate.atStartOfDay()))
                 .completedSurveys(surveyDataSets.size())
                 .build();
 
@@ -156,7 +159,7 @@ public class DashBoardServiceImpl implements DashBoardService {
                 .build();
 
         OverviewStudent overview = OverviewStudent.builder()
-                .totalSurveys(surveyCount + surveyDataSets.size())
+                .totalSurveys(surveyCount + mentalEvaluations.size())
                 .totalAppointments((int) appointmentRepository.findAllByBookedFor(studentId).stream().filter(item ->
                         !item.getCreatedDate().isBefore(startDate.atStartOfDay())
                                 && !item.getCreatedDate().isAfter(endDate.atStartOfDay())).count()

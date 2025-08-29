@@ -62,11 +62,15 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
                     .filter(sr -> sr.getSurveyRecordIdentify() == SurveyRecordIdentify.EXIT)
                     .findFirst().orElse(null)));
 
+            Integer max_score = participants.getProgram().getSurvey().getCategory().getMaxScore();
+
             MentalEvaluation mappedMentalEvaluation = mentalEvaluationMapper.toMentalEvaluation(mentalEvaluationRequest);
             Account student = participants.getStudent();
             mappedMentalEvaluation.setStudent(student);
             mappedMentalEvaluation.setProgramParticipants(participants);
-            mappedMentalEvaluation.setWeightedScore((entryWeightScore + exitWeightScore) / 2);
+            mappedMentalEvaluation.setWeightedScore(
+                    2 + ((exitWeightScore - entryWeightScore) / (max_score / 4))
+            );
             return mentalEvaluationRepository.save(mappedMentalEvaluation);
         }
 

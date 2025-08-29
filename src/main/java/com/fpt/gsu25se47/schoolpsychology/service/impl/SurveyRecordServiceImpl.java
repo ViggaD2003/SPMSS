@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
@@ -20,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +37,8 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
     private final AnswerRecordMapper answerRecordMapper;
     private final SurveyRecordMapper surveyRecordMapper;
     private final MentalEvaluationService mentalEvaluationService;
+    private final CaseRepository caseRepository;
+    private final SurveyCaseLinkRepository surveyCaseLinkRepository;
 
 
     @Override
@@ -68,13 +68,21 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                         .student(account)
                         .build();
 
-                if(surveyRecord.getSurvey().getSurveyType() != SurveyType.PROGRAM && identify == null){
-                    MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
+                if (survey.getSurveyType() != SurveyType.PROGRAM && identify == null) {
+                    MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(null, surveyRecord, null);
                     surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
                     surveyRecord.setSurveyRecordIdentify(null);
+
+                    if (survey.getSurveyType() == SurveyType.FOLLOWUP) {
+                        Cases cases = caseRepository.findActiveCaseByStudentId(account.getId());
+                        SurveyCaseLink surveyCaseLink = surveyCaseLinkRepository.existsBySurveyIdAndCaseId(survey.getId(), cases.getId());
+                        surveyCaseLink.setIsActive(false);
+                        surveyCaseLinkRepository.save(surveyCaseLink);
+                    }
                 } else {
                     surveyRecord.setSurveyRecordIdentify(identify);
                 }
+
                 SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 
                 return surveyRecordMapper.mapToSurveyRecordResponse(saved);
@@ -104,18 +112,25 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .level(matchLevel)
                     .build();
 
+            if (survey.getSurveyType() == SurveyType.FOLLOWUP) {
+                Cases cases = caseRepository.findActiveCaseByStudentId(account.getId());
+                SurveyCaseLink surveyCaseLink = surveyCaseLinkRepository.existsBySurveyIdAndCaseId(survey.getId(), cases.getId());
+                surveyCaseLink.setIsActive(false);
+                surveyCaseLinkRepository.save(surveyCaseLink);
+            }
+
             if (surveyRecord.getAnswerRecords() != null && !surveyRecord.getAnswerRecords().isEmpty()) {
                 surveyRecord.getAnswerRecords()
                         .forEach(item -> item.setSurveyRecord(surveyRecord));
             }
 
-           if(surveyRecord.getSurvey().getSurveyType() != SurveyType.PROGRAM){
-               MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext( null, surveyRecord, null);
-               surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
-               surveyRecord.setSurveyRecordIdentify(null);
-           } else {
-               surveyRecord.setSurveyRecordIdentify(identify);
-           }
+            if (surveyRecord.getSurvey().getSurveyType() != SurveyType.PROGRAM) {
+                MentalEvaluation mentalEvaluationSaved = mentalEvaluationService.createMentalEvaluationWithContext(null, surveyRecord, null);
+                surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
+                surveyRecord.setSurveyRecordIdentify(null);
+            } else {
+                surveyRecord.setSurveyRecordIdentify(identify);
+            }
 
             SurveyRecord saved = surveyRecordRepository.save(surveyRecord);
 

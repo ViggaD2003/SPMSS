@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ParticipantStatusJob implements Job {
+public class  ParticipantStatusJob implements Job {
 
     private final ProgramParticipantRepository participantRepository;
 
@@ -33,7 +33,7 @@ public class ParticipantStatusJob implements Job {
 
         listSupportProgram.forEach(program -> {
             program.getProgramRegistrations().forEach(registration -> {
-                if((program.getEndTime() == now) &&
+                if((program.getStartTime() == now) &&
                         !surveyRecordRepository.isEntrySurveyRecordByStudentId(registration.getStudent().getId(), program.getId())){
                     registration.setFinalScore(0f);
                     registration.setStatus(RegistrationStatus.ABSENT);

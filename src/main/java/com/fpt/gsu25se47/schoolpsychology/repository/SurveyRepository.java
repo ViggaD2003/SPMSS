@@ -92,10 +92,9 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                 LEFT JOIN SurveyRecord sr ON s.id = sr.survey.id
                 WHERE sr.isSkipped = true 
                   AND sr.student.id = :studentId
-                  AND s.startDate >= :startDate 
-                  AND s.endDate <= :endDate
+                  AND sr.completedAt BETWEEN :startDate AND :endDate
             """)
-    int countSurveySkip(Integer studentId, LocalDate startDate, LocalDate endDate);
+    int countSurveySkip(Integer studentId, LocalDateTime startDate, LocalDateTime endDate);
 
 
     @Query("""

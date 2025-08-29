@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.jobs;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -27,6 +28,16 @@ public class UpdateSurveysStatusJob implements Job {
 
         List<Survey> toFinish = surveyRepository.findByEndDateAndStatusPublished(now);
         toFinish.forEach(survey -> survey.setStatus(SurveyStatus.ARCHIVED));
+
+
+//        List<Survey> surveyList = toFinish.stream().filter(s -> s.getSurveyType() == SurveyType.FOLLOWUP || s.getSurveyType() == SurveyType.SCREENING)
+//                        .toList();
+
+//        surveyList.forEach(item -> {
+//            item.getSurveyRecords().forEach(record -> {
+//
+//            });
+//        });
 
         surveyRepository.saveAll(toPublish);
         surveyRepository.saveAll(toFinish);

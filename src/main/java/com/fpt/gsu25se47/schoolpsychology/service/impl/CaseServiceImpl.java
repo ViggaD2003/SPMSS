@@ -192,6 +192,7 @@ public class CaseServiceImpl implements CaseService {
                         numberOfNotSkips.incrementAndGet();
                     }
                 })
+                .filter(item -> item.getTotalScore() > 0 && item.getLevel() != null)
                 .map(record -> mapToDataSet(record.getMentalEvaluation()))
                 .filter(Objects::nonNull)
                 .toList();
@@ -207,15 +208,15 @@ public class CaseServiceImpl implements CaseService {
         List<Appointment> appointments = appointmentRepository.findAllByCaseId(caseId);
         int numOfAbsent =
                 (int) appointments.stream()
-                .filter(appt -> AppointmentStatus.ABSENT.equals(appt.getStatus()))
+                .filter(appt -> AppointmentStatus.ABSENT == appt.getStatus())
                 .count();
 
         int numOfActive = (int) appointments.stream()
-                .filter(appt -> AppointmentStatus.CONFIRMED.equals(appt.getStatus()) || AppointmentStatus.IN_PROGRESS.equals(appt.getStatus()))
+                .filter(appt -> AppointmentStatus.CONFIRMED == appt.getStatus() || AppointmentStatus.IN_PROGRESS == appt.getStatus())
                 .count();
 
         int numOfCompleted =  (int) appointments.stream()
-                .filter(appt -> AppointmentStatus.COMPLETED.equals(appt.getStatus()))
+                .filter(appt -> AppointmentStatus.COMPLETED == appt.getStatus())
                 .count();
 
         List<DataSet> appointmentDataSets = appointments.stream()
