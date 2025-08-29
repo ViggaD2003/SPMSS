@@ -7,4 +7,6 @@ import lombok.Data;
 @Builder
 public class ChatRequest {
     private String message;
+    private String sessionId;
+    private String conversationId;
 }

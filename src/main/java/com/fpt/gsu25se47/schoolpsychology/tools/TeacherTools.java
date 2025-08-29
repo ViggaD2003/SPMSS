@@ -18,7 +18,10 @@ public class TeacherTools {
     private final ClassService classService;
     private final AccountService accountService;
 
-    @Tool(name = "getTeacherClasses", description = "List classes of the currently logged in teacher")
+    @Tool(name = "getTeacherClasses",
+            description = "Trả về danh sách các lớp của giáo viên hiện tại, từng lớp có các thông tin của lớp ở phần response trả về, " +
+                    "khi được hỏi về các thông tin của từng lớp này, hãy đọc response hàm này trả về, từ đó đưa ra câu trả lời hoàn chỉnh," +
+                    "chính xác, thân thiện, phong thái chuyên nghiệp")
     public List<ClassResponse> getMyClasses() {
 
         Account account = accountService.getCurrentAccount();
