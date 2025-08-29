@@ -12,4 +12,5 @@ public interface CategoryService {
     Optional<?> createCategory(AddCategoryDto addCategoryDto);
     List<CategoryResponse> findAllCategories();
     List<LevelResponse> findAllLevelByCategoryId(Integer categoryId);
+    List<LevelResponse> findAllLevelByCategoryName(String name);
 }

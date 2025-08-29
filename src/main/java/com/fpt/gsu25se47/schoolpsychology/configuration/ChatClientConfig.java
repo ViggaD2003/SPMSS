@@ -28,6 +28,8 @@ public class ChatClientConfig {
     private final SupportProgramTools supportProgramTools;
     private final DashboardTools dashboardTools;
     private final AccountTools accountTools;
+    private final EventTools eventTools;
+    private final CategoryTools categoryTools;
 
     private final Map<String, String> promptTemplateCache = new ConcurrentHashMap<>();
 
@@ -45,7 +47,9 @@ public class ChatClientConfig {
 
         return chatClientBuilder
                 .defaultAdvisors(List.of(simpleLoggerAdvisor, tokenUsageAuditAdvisor, messageChatMemoryAdvisor))
-                .defaultTools(teacherTools, appointmentTools, supportProgramTools, accountTools, dashboardTools)
+                .defaultTools(teacherTools, appointmentTools, supportProgramTools,
+                        accountTools, dashboardTools, eventTools,
+                        categoryTools)
                 .defaultSystem(systemPromptTemplate)
                 .build();
     }
