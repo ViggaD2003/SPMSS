@@ -96,6 +96,7 @@ public class ChatServiceImpl implements ChatService {
                             a.param("ragContext", "");
                             a.param("ragInstructions", "");
                             a.param("currentUserRole", account.getRole());
+                            a.param("accountId", account.getId());
                         })
                         .call()
                         .content())

@@ -10,4 +10,7 @@ public interface LevelRepository extends JpaRepository<Level, Integer> {
 
     @Query("SELECT l FROM Level l WHERE l.category.id =:categoryId")
     List<Level> findAllByCategoryId(Integer categoryId);
+
+    @Query("SELECT l FROM Level l JOIN l.category c WHERE c.name LIKE CONCAT('%', :name, '%')")
+    List<Level> findAllByCategoryName(String name);
 }

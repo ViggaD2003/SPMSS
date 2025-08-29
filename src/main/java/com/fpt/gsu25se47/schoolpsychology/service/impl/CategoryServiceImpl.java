@@ -61,6 +61,15 @@ public class CategoryServiceImpl implements CategoryService {
         return responses;
     }
 
+    @Override
+    public List<LevelResponse> findAllLevelByCategoryName(String name) {
+        List<Level> levels = levelRepository.findAllByCategoryName(name);
+
+        return levels.stream()
+                .map(this::mapToLevelResponse)
+                .toList();
+    }
+
 
     private CategoryResponse mapToCategoryGetAllResponse(Category category) {
         return  CategoryResponse.builder()
