@@ -68,8 +68,9 @@ public class MentalEvaluationServiceImpl implements MentalEvaluationService {
             Account student = participants.getStudent();
             mappedMentalEvaluation.setStudent(student);
             mappedMentalEvaluation.setProgramParticipants(participants);
+            float denominator = max_score / 4f;
             mappedMentalEvaluation.setWeightedScore(
-                    2 + ((exitWeightScore - entryWeightScore) / (max_score % 4))
+                    2 + ((exitWeightScore - entryWeightScore) / denominator)
             );
             return mentalEvaluationRepository.save(mappedMentalEvaluation);
         }
