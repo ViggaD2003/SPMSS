@@ -305,7 +305,6 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     .recommendSupportPrograms(surveyRecordLatest.getSurvey().getCategory().getId())
                     .stream().map(supportProgramMapper::mapSupportProgramResponse)
                     .toList();
-
         }
         return recommendSupportProgram;
     }
@@ -360,5 +359,18 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             supportProgramRepository.save(supportProgram);
             return "Successfully closed support program";
         }
+    }
+
+    @Override
+    public List<SupportProgramResponse> getAllActiveSupportPrograms() {
+
+        Account account = accountService.getCurrentAccount();
+
+        List<SupportProgram> activeSupportPrograms = supportProgramRepository.findAllActive(account.getId());
+
+        List<SupportProgramResponse> responses = activeSupportPrograms.stream().map(supportProgramMapper::mapSupportProgramResponse)
+                .toList();
+
+        return responses;
     }
 }

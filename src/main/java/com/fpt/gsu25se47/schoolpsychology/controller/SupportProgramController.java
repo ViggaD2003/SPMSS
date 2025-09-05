@@ -178,4 +178,10 @@ public class SupportProgramController {
     public ResponseEntity<String> openSurvey(@RequestParam("supportProgramId") Integer supportProgramId) {
         return ResponseEntity.ok(service.openSurvey(supportProgramId));
     }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/active-program")
+    public ResponseEntity<List<SupportProgramResponse>> findAllActiveProgram() {
+        return ResponseEntity.ok(service.getAllActiveSupportPrograms());
+    }
 }

@@ -34,4 +34,6 @@ public interface SupportProgramService {
 
     String openSurvey(Integer supportProgramId);
 
+    List<SupportProgramResponse> getAllActiveSupportPrograms();
+
 }
