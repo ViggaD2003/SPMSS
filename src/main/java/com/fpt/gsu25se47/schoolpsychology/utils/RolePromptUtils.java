@@ -51,7 +51,7 @@ public class RolePromptUtils {
         return switch (role) {
             case STUDENT -> """
                     **QUY TẮC TRUY CẬP - HỌC SINH**:
-                    - Được xem: Thông tin cá nhân, kết quả khảo sát của mình, tiến trình tư vấn cá nhân
+                    - Được xem: Thông tin cá nhân, kết quả khảo sát của mình, tiến trình tư vấn cá nhân, các bài khảo sát mà học sinh này được làm
                     - Không được xem: Thông tin học sinh khác, dữ liệu hệ thống nội bộ, hồ sơ y tế chi tiết
                     - Bảo mật: Tất cả thông tin cá nhân được bảo vệ nghiêm ngặt
                     """;

@@ -49,4 +49,24 @@ public interface SlotRepository extends JpaRepository<Slot, Integer> {
             @Param("startDateTime") LocalDateTime startDateTime,
             @Param("endDateTime") LocalDateTime endDateTime
     );
+
+    @Query("SELECT s FROM Slot s JOIN s.hostedBy a " +
+            "WHERE s.startDateTime >= :now + :bufferMinutes MINUTE " +
+            "AND s.startDateTime <= :now + :maxHours HOUR " +
+            "AND s.status = 'PUBLISHED' " +
+            "ORDER BY s.startDateTime")
+    List<Slot> findAvailableSlots(@Param("now") LocalDateTime now,
+                                      @Param("bufferMinutes") int bufferMinutes,
+                                      @Param("maxHours") int maxHours);
+
+    @Query("SELECT s FROM Slot s JOIN s.hostedBy a " +
+            "WHERE s.startDateTime >= :now + :bufferMinutes MINUTE " +
+            "AND s.startDateTime <= :now + :maxHours HOUR " +
+            "AND s.status = 'PUBLISHED' " +
+            "AND a.fullName LIKE CONCAT('%', :name, '%') " +
+            "ORDER BY s.startDateTime")
+    List<Slot> findAvailableSlotsByHostName(@Param("now") LocalDateTime now,
+                                                @Param("bufferMinutes") int bufferMinutes,
+                                                @Param("maxHours") int maxHours,
+                                                @Param("name") String name);
 }
