@@ -287,7 +287,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     @Override
     public List<SupportProgramResponse> getSuggestSupportProgram(Integer studentId) {
 
-        if (!caseRepository.existsByStudentId(studentId)) {
+        if (caseRepository.existsByStudentId(studentId)) {
             return Collections.emptyList();
         }
 
