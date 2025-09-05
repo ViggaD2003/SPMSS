@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.configuration;
 
 import com.fpt.gsu25se47.schoolpsychology.advisors.TokenUsageAuditAdvisor;
-import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.tools.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -10,14 +9,13 @@ import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,16 +28,15 @@ public class ChatClientConfig {
     private final AccountTools accountTools;
     private final EventTools eventTools;
     private final CategoryTools categoryTools;
-
-    private final Map<String, String> promptTemplateCache = new ConcurrentHashMap<>();
-
-    private final AccountService accountService;
+    private final SlotTools slotTools;
+    private final SurveyTools surveyTools;
+    private final CaseTools caseTools;
 
     @Value("classpath:/promptTemplates/systemPromptTemplate.st")
     Resource systemPromptTemplate;
 
     @Bean
-    public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+    public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory, ToolCallbackProvider toolCallbackProvider) {
 
         MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
         SimpleLoggerAdvisor simpleLoggerAdvisor = new SimpleLoggerAdvisor();
@@ -49,8 +46,9 @@ public class ChatClientConfig {
                 .defaultAdvisors(List.of(simpleLoggerAdvisor, tokenUsageAuditAdvisor, messageChatMemoryAdvisor))
                 .defaultTools(teacherTools, appointmentTools, supportProgramTools,
                         accountTools, dashboardTools, eventTools,
-                        categoryTools)
+                        categoryTools, slotTools, surveyTools, caseTools)
                 .defaultSystem(systemPromptTemplate)
+                .defaultToolCallbacks(toolCallbackProvider)
                 .build();
     }
 

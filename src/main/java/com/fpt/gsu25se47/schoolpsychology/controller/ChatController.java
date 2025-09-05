@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.Ai.AiChatResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Ai.SessionDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Ai.SessionResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ChatMessageDto;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AIChatService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,21 +21,22 @@ import java.util.Optional;
 public class ChatController {
 
     private final ChatService chatService;
+    private final AIChatService aiChatService;
 
     @PostMapping
     public ResponseEntity<AiChatResponse> sendMessage(@RequestBody ChatRequest chatRequest) {
-        return ResponseEntity.ok(chatService.sendMessage(chatRequest));
+        return ResponseEntity.ok(aiChatService.sendMessage(chatRequest));
     }
 
 
     @GetMapping("/sessions")
     public ResponseEntity<List<SessionResponse>> getAllSessions() {
-        return ResponseEntity.ok(chatService.getAllSessionResponses());
+        return ResponseEntity.ok(aiChatService.getAllSessionResponses());
     }
 
     @GetMapping("/sessions/{sessionId}")
     public ResponseEntity<SessionDetailResponse> getSessionDetail(@PathVariable String sessionId) {
-        return ResponseEntity.ok(chatService.getSessionDetail(sessionId));
+        return ResponseEntity.ok(aiChatService.getSessionDetail(sessionId));
     }
 
 
