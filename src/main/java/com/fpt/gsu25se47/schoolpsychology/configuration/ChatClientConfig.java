@@ -9,7 +9,6 @@ import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
-import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +35,7 @@ public class ChatClientConfig {
     Resource systemPromptTemplate;
 
     @Bean
-    public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory, ToolCallbackProvider toolCallbackProvider) {
+    public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
 
         MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
         SimpleLoggerAdvisor simpleLoggerAdvisor = new SimpleLoggerAdvisor();
@@ -48,7 +47,7 @@ public class ChatClientConfig {
                         accountTools, dashboardTools, eventTools,
                         categoryTools, slotTools, surveyTools, caseTools)
                 .defaultSystem(systemPromptTemplate)
-                .defaultToolCallbacks(toolCallbackProvider)
+//                .defaultToolCallbacks(toolCallbackProvider)
                 .build();
     }
 
