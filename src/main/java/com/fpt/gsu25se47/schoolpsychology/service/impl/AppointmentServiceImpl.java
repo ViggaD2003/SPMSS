@@ -149,12 +149,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                         "Appointment not found for ID: " + appointmentId
                 ));
 
-        if (status == AppointmentStatus.CANCELED || status == AppointmentStatus.ABSENT || status == AppointmentStatus.COMPLETED) {
-            appointment.getSlot().setStatus(SlotStatus.PUBLISHED);
-        } else {
-            appointment.getSlot().setStatus(SlotStatus.CLOSED);
-        }
-
         appointment.setStatus(status);
 
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));

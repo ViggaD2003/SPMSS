@@ -49,6 +49,12 @@ public enum QuartzJobDefinition {
             "participantJobs",
             "participantStatusTrigger",
             ParticipantStatusJob.class
+    ),
+    SUPPORT_PROGRAM_STATUS(
+            "updateSupportProgramStatusJob",
+            "supportProgramJob",
+            "updateSupportProgramStatusTrigger",
+            UpdateSupportProgramStatusJob.class
     );
 
     private final String jobName;
