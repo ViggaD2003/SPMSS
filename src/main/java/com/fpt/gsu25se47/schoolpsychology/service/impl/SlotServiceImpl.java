@@ -69,11 +69,11 @@ public class SlotServiceImpl implements SlotService {
         List<Slot> retrievedSlots;
         if (curAccount.getRole() == Role.STUDENT || curAccount.getRole() == Role.PARENTS) {
 
-            retrievedSlots = slotRepository.findAllByHostedByIdAndStatus(hostBy.getId(), SlotStatus.PUBLISHED);
+            retrievedSlots = findPublishedSlotsByHost(hostBy.getId());
         } else if (curAccount.getRole() == Role.COUNSELOR || curAccount.getRole() == Role.TEACHER) {
 
             if (Objects.equals(hostById, curAccount.getId())) {
-                retrievedSlots = slotRepository.findAllByHostedByIdAndStatus(hostById, SlotStatus.PUBLISHED);
+                retrievedSlots = slotRepository.findAllByHostedById(hostById);
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "HostById is not the same ID as current account logged in for role TEACHER, COUNSELOR");
@@ -135,11 +135,11 @@ public class SlotServiceImpl implements SlotService {
         return slotMapper.toSlotResponseWithoutAppointments(slot);
     }
 
-//    private List<Slot> findPublishedSlotsByHost(Integer hostById) {
-//        return slotRepository.findAllByHostedById(hostById).stream()
-//                .filter(slot -> slot.getStatus() == SlotStatus.PUBLISHED)
-//                .toList();
-//    }
+    private List<Slot> findPublishedSlotsByHost(Integer hostById) {
+        return slotRepository.findAllByHostedById(hostById).stream()
+                .filter(slot -> slot.getStatus() == SlotStatus.PUBLISHED)
+                .toList();
+    }
 
     private static void validateOfficeHours(CreateSlotRequest request) {
         LocalTime officeStart = LocalTime.of(8, 0);   // 8:00 AM
