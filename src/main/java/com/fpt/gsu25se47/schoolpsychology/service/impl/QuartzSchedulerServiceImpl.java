@@ -53,6 +53,7 @@ public class QuartzSchedulerServiceImpl implements QuartzSchedulerService {
             case RECURRING_SURVEY_STATUS -> ProcessRecurringSurveysJob.class;
             case ATTENDENCE_MEETING -> AttendenceMeetingJob.class;
             case PARTICIPANT_STATUS -> ParticipantStatusJob.class;
+            case SUPPORT_PROGRAM_STATUS -> UpdateSupportProgramStatusJob.class;
         };
     }
 
