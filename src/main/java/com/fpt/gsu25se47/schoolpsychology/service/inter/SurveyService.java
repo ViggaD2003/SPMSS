@@ -4,14 +4,12 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyGetAllResponse;
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.List;
 import java.util.Optional;
 
 public interface SurveyService {
 
-    Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto);
+    Integer addNewSurvey(AddNewSurveyDto addNewSurveyDto);
 
     List<SurveyGetAllResponse> getAllSurveys();
 

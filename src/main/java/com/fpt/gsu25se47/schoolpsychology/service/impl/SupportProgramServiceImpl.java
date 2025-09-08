@@ -57,8 +57,8 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     @Transactional
     public SupportProgramResponse createSupportProgram(MultipartFile thumbnail, SupportProgramRequest request) throws IOException {
 
-        Optional<?> surveyId = surveyService.addNewSurvey(request.getAddNewSurveyDto());
-        if (surveyId.isEmpty()) {
+        Integer surveyId = surveyService.addNewSurvey(request.getAddNewSurveyDto());
+        if (surveyId == null) {
             throw new RuntimeException("Could not add new survey");
         }
 
