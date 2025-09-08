@@ -108,7 +108,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public Optional<?> getSurveyById(Integer id) {
+    public SurveyDetailResponse getSurveyById(Integer id) {
         try {
             Survey survey = surveyRepository.findById(id).orElse(null);
 
@@ -117,7 +117,7 @@ public class SurveyServiceImpl implements SurveyService {
             }
 
             SurveyDetailResponse response = surveyMapper.mapToSurveyDetailResponse(survey);
-            return Optional.of(response);
+            return response;
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");

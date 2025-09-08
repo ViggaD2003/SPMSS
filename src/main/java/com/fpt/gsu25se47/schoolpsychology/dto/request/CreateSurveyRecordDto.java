@@ -28,4 +28,5 @@ public class CreateSurveyRecordDto {
     @Size(min = 1, message = "There must be at least one answer record")
     @Valid
     private List<SubmitAnswerRecordRequest> answerRecordRequests;
+
 }
