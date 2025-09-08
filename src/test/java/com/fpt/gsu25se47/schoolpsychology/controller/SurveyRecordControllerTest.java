@@ -1,12 +1,14 @@
 package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fpt.gsu25se47.schoolpsychology.common.PaginationResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SubmitAnswerRecordRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.RecurringCycle;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordType;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyRecordService;
+import com.fpt.gsu25se47.schoolpsychology.utils.PaginationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,14 +19,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,6 +50,11 @@ public class SurveyRecordControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private PaginationUtil paginationUtil;
+
+    private SurveyRecordGetAllResponse surveyRecordResponse;
 
 
     private CreateSurveyRecordDto createSurveyRecordDto;
@@ -118,6 +129,16 @@ public class SurveyRecordControllerTest {
                 .answerRecords(list)
                 .build();
 
+
+        surveyRecordResponse = SurveyRecordGetAllResponse.builder()
+                .id(1)
+                .totalScore(8.5f)
+                .isSkipped(false)
+                .identify(null)
+                .completedAt(LocalDateTime.now().minusHours(1))
+                .level(level)
+                .survey(survey)
+                .build();
     }
 
     private SubmitAnswerRecordRequest createAnswerRecord(int questionId, int answerId, boolean isSkipped) {
@@ -173,6 +194,64 @@ public class SurveyRecordControllerTest {
                 .andExpect(jsonPath("$.survey.title").value("Khảo sát tâm lý học sinh"));
 //                .andExpect(jsonPath("$.answerRecords[0].answerResponse.text").value("Vài ngày"));
         //THEN
+    }
+
+    @Test
+    @WithMockUser(username = "STUDENT", roles = {"STUDENT"})
+    void getAllSurveyRecord() throws Exception {
+        // GIVEN
+        int accountId = 123;
+        int page = 0;
+        int size = 5;
+        String field = "completedAt";
+        String direction = "desc";
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+        List<SurveyRecordGetAllResponse> content = List.of(surveyRecordResponse);
+        Page<SurveyRecordGetAllResponse> mockPage = new PageImpl<>(content, pageRequest, 1);
+
+//        PaginationResponse response = paginationUtil.getPaginationResponse(0, pageRequest, mockPage, content);
+
+//        return ResponseEntity.ok(paginationUtil.getPaginationResponse(count, pageRequest, surveyRecordResponses, surveyRecordResponses.getContent()));
+
+
+        PaginationResponse response = PaginationResponse.builder()
+                .page(0)
+                .size(5)
+                .totalPages(1)
+                .numberOfSkipped(0)
+                .totalElements(1) // <-- giá trị bạn muốn test
+                .hasNext(false)
+                .hasPrevious(false)
+                .content(List.of(surveyRecordResponse))
+                .build();
+
+        // MOCK
+        Mockito.when(paginationUtil.getPageRequest(page, size, direction, field)).thenReturn(pageRequest);
+        Mockito.when(surveyRecordService.getAllSurveyRecordById(null, accountId, pageRequest)).thenReturn(mockPage);
+        Mockito.when(surveyRecordService.countSurveyRecordSkippedByAccountId(accountId)).thenReturn(0);
+        Mockito.when(paginationUtil.getPaginationResponse(
+                Mockito.eq(0),
+                Mockito.eq(pageRequest),
+                Mockito.eq(mockPage),
+                Mockito.anyList()
+        )).thenReturn(response);
+
+        // WHEN + THEN
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/api/v1/survey-records/accounts/{accountId}", accountId)
+                        .param("page", String.valueOf(page))
+                        .param("size", String.valueOf(size))
+                        .param("direction", direction)
+                        .param("field", field)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].totalScore").value(8.5f))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].survey.title").value("Khảo sát tâm lý học sinh"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].level.label").value("Bình thường"));
     }
 
 
