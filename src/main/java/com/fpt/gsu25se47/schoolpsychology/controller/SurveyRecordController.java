@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class SurveyRecordController {
 
     private final PaginationUtil paginationUtil;
+
     private final SurveyRecordService surveyRecordService;
 
     @PostMapping
