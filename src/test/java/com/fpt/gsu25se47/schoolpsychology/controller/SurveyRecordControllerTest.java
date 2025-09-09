@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Slf4j
 public class SurveyRecordControllerTest {
 
-    private static final Logger log = LoggerFactory.getLogger(SurveyControllerTest.class);
+    private static final Logger log = LoggerFactory.getLogger(SurveyRecordControllerTest.class);
 
     @Autowired
     private MockMvc mockMvc;
@@ -255,4 +255,45 @@ public class SurveyRecordControllerTest {
     }
 
 
+    @Test
+    @WithMockUser(username = "STUDENT", roles = {"STUDENT"})
+    void getSurveyRecordById() throws Exception {
+        Integer surveyRecordId = 101;
+
+        //GIVEN
+        Mockito.when(surveyRecordService.getSurveyRecordById(surveyRecordId))
+                .thenReturn(surveyRecordDetailResponse);
+        //WHEN
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/survey-records/{surveyRecordId}", surveyRecordId)
+                        .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.totalScore").value(2.0))
+                .andExpect(jsonPath("$.surveyRecordType").value(SurveyRecordType.SCREENING.name()));
+        //THEN
+    }
+
+    @Test
+    @WithMockUser(username = "STUDENT", roles = {"STUDENT"})
+    void getAllSurveyRecordBySurveyId() throws Exception {
+        // GIVEN
+        Integer surveyId = 1;
+        Mockito.when(surveyRecordService.findAllSurveyRecordBySurveyId(surveyId))
+                .thenReturn(List.of(surveyRecordResponse));
+
+        // WHEN + THEN
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/survey-records/view-all-by-survey")
+                        .param("surveyId", surveyId.toString())
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].totalScore").value(8.5))
+                .andExpect(jsonPath("$[0].isSkipped").value(false))
+                .andExpect(jsonPath("$[0].survey.surveyId").value(1))
+                .andExpect(jsonPath("$[0].survey.title").value("Khảo sát tâm lý học sinh"))
+                .andExpect(jsonPath("$[0].survey.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$[0].level.label").value("Bình thường"))
+                .andExpect(jsonPath("$[0].level.description").value("Không có dấu hiệu tâm lý bất thường"));
+    }
 }

@@ -72,6 +72,7 @@ public class SurveyControllerTest {
 
     private List<SurveyGetAllResponse> surveys;
 
+    private List<SurveyGetAllResponse> surveyPublished;
     @BeforeEach
     void initData(){
         surveyDto = AddNewSurveyDto.builder()
@@ -193,6 +194,9 @@ public class SurveyControllerTest {
                 .build();
 
         surveys = List.of(survey1, survey2);
+
+        surveyPublished = surveys.stream().filter(item -> item.getStatus() == SurveyStatus.PUBLISHED.name())
+                .toList();
     }
 
     @Test
@@ -266,5 +270,27 @@ public class SurveyControllerTest {
     }
 
 
+    @Test
+    @WithMockUser(username = "studentUser", roles = {"STUDENT"})
+    void getAllSurveyPublishedForStudent() throws Exception{
+        //GIVEN
+        Integer studentId = 2003;
 
+        Mockito.when(surveyService.getAllSurveyWithPublished(studentId))
+                .thenReturn(surveyPublished);
+        //WHEN
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/survey/published")
+                .param("studentId", studentId.toString())
+                        .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].surveyId").value(2))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value("Khảo sát học lực"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value("Đánh giá học lực giữa kỳ"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].isRequired").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].isRecurring").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].recurringCycle").value("MONTHLY"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].surveyType").value("SCREENING"));
+        //THEN
+    }
 }
