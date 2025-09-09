@@ -36,11 +36,12 @@ public class SurveyServiceImpl implements SurveyService {
     private final SurveyMapper surveyMapper;
 
     private final QuestionMapper questionMapper;
+
     private final NotificationService notificationService;
 
     @Override
     @Transactional
-    public Optional<?> addNewSurvey(AddNewSurveyDto addNewSurveyDto) {
+    public Integer addNewSurvey(AddNewSurveyDto addNewSurveyDto) {
         try {
             UserDetails userDetails = CurrentAccountUtils.getCurrentUser();
             if (userDetails == null) {
@@ -86,7 +87,7 @@ public class SurveyServiceImpl implements SurveyService {
                 notificationService.sendNotification(student.getEmail(), "/queue/notifications", payload);
             });
 
-            return Optional.of(saved.getId());
+            return saved.getId();
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Could not create survey. Please check your data.");
@@ -107,7 +108,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public Optional<?> getSurveyById(Integer id) {
+    public SurveyDetailResponse getSurveyById(Integer id) {
         try {
             Survey survey = surveyRepository.findById(id).orElse(null);
 
@@ -116,7 +117,7 @@ public class SurveyServiceImpl implements SurveyService {
             }
 
             SurveyDetailResponse response = surveyMapper.mapToSurveyDetailResponse(survey);
-            return Optional.of(response);
+            return response;
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
             throw new RuntimeException("Something went wrong");

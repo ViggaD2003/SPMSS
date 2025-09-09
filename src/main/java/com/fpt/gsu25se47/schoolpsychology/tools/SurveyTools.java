@@ -1,5 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.tools;
 
+import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class SurveyTools {
     }
 
     @Tool(description = "For all roles except TEACHER role -> Get detailed information for a specific survey by ID")
-    public Optional<?> getSurveyById(Integer id) {
+    public SurveyDetailResponse getSurveyById(Integer id) {
         return surveyService.getSurveyById(id);
     }
 
