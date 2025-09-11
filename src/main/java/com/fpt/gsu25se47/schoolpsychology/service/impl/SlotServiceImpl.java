@@ -42,6 +42,14 @@ public class SlotServiceImpl implements SlotService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Slot not found for ID: " + slotId));
 
+        if (slot.getAppointments().stream()
+                .filter(s -> s.getStatus() == AppointmentStatus.CONFIRMED
+                        || s.getStatus() == AppointmentStatus.IN_PROGRESS
+                        || s.getStatus() == AppointmentStatus.PENDING)
+                .toList().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There's appointment booked in this slot");
+        }
+
         Slot slotUpdated = slotMapper.updateSlotFromRequest(request, slot);
 
         Slot slotSaved = slotRepository.save(slotUpdated);

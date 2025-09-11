@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "time": {
-      "command": "docker",
-      "args": ["run", "-i", "--rm", "mcp/time", "--local-timezone=Asia/Ho_Chi_Minh"]
+      "command": "python",
+      "args": ["-m", "mcp_server_time", "--local-timezone=Asia/Ho_Chi_Minh"]
     }
   }
 }

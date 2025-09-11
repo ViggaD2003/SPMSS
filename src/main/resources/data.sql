@@ -43,10 +43,10 @@ VALUES
     ('L3', 'High concern', 'Immediate', 'High', 1, 100, 71, 'Severe symptoms', 1);
 
 -- CLASS
-INSERT INTO classes (code_class, end_time, grade, is_active, school_year, start_time, teacher_id)
+INSERT INTO classes (code_class, end_time, grade, is_active, start_time, teacher_id)
 VALUES
-    ('10A1', '2025-05-31 00:00:00', 'GRADE_10', b'1', '2024-2025', '2024-09-01 00:00:00', NULL),
-    ('11A2', '2025-05-31 00:00:00', 'GRADE_11', b'1', '2024-2025', '2024-09-01 00:00:00', NULL);
+    ('10A1', '2025-05-31 00:00:00', 'GRADE_10', b'1', '2024-09-01 00:00:00', NULL),
+    ('11A2', '2025-05-31 00:00:00', 'GRADE_11', b'1', '2024-09-01 00:00:00', NULL);
 
 -- ENROLLMENT
 INSERT INTO enrollment (class_id, student_id)
