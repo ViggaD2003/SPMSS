@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddCategoryDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewLevelDto;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateCategoryDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.CategoryResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.LevelResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
@@ -68,6 +69,36 @@ public class CategoryServiceImpl implements CategoryService {
         return levels.stream()
                 .map(this::mapToLevelResponse)
                 .toList();
+    }
+
+    @Override
+    public CategoryResponse updateCategory(Integer categoryId, UpdateCategoryDto updateCategoryDto) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
+        if(category.getIsActive()){
+            category.setName(updateCategoryDto.getName());
+            category.setDescription(updateCategoryDto.getDescription());
+            category.setCode(updateCategoryDto.getCode());
+            category.setIsLimited(updateCategoryDto.getIsLimited());
+            category.setMinScore(updateCategoryDto.getMinScore());
+            category.setMaxScore(updateCategoryDto.getMaxScore());
+            category.setIsSum(updateCategoryDto.getIsSum());
+            category.setQuestionLength(updateCategoryDto.getQuestionLength());
+            category.setSeverityWeight(updateCategoryDto.getSeverityWeight());
+            return this.mapToCategoryGetAllResponse(categoryRepository.save(category));
+        } else {
+            throw new IllegalArgumentException("Category is not active");
+        }
+    }
+
+    @Override
+    public CategoryResponse updateStatus(Integer categoryId, Boolean status) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
+        category.setIsActive(status);
+        return this.mapToCategoryGetAllResponse(categoryRepository.save(category));
     }
 
 
