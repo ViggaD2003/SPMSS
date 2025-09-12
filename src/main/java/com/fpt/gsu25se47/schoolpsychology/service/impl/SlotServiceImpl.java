@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,11 +43,12 @@ public class SlotServiceImpl implements SlotService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Slot not found for ID: " + slotId));
 
+        validateOfficeHours(request.getStartDateTime(), request.getEndDateTime());
+
         if (slot.getAppointments().stream()
-                .filter(s -> s.getStatus() == AppointmentStatus.CONFIRMED
+                .noneMatch(s -> s.getStatus() == AppointmentStatus.CONFIRMED
                         || s.getStatus() == AppointmentStatus.IN_PROGRESS
-                        || s.getStatus() == AppointmentStatus.PENDING)
-                .toList().isEmpty()) {
+                        || s.getStatus() == AppointmentStatus.PENDING)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There's appointment booked in this slot");
         }
 
@@ -116,7 +118,7 @@ public class SlotServiceImpl implements SlotService {
                 continue;
             }
 
-            validateOfficeHours(request);
+            validateOfficeHours(request.getStartDateTime(), request.getEndDateTime());
 
             Slot newSlot = slotMapper.toSlot(request, account);
             slotsToCreate.add(newSlot);
@@ -149,12 +151,12 @@ public class SlotServiceImpl implements SlotService {
                 .toList();
     }
 
-    private static void validateOfficeHours(CreateSlotRequest request) {
+    private static void validateOfficeHours(LocalDateTime slotStartDT, LocalDateTime slotEndDT) {
         LocalTime officeStart = LocalTime.of(8, 0);   // 8:00 AM
         LocalTime officeEnd = LocalTime.of(17, 0);    // 17:00 PM
 
-        LocalTime slotStart = request.getStartDateTime().toLocalTime();
-        LocalTime slotEnd = request.getEndDateTime().toLocalTime();
+        LocalTime slotStart = slotStartDT.toLocalTime();
+        LocalTime slotEnd = slotEndDT.toLocalTime();
 
         if (slotStart.isBefore(officeStart) || slotEnd.isAfter(officeEnd)) {
             throw new RuntimeException("Slot must be within office hours (08:00 - 15:00)");
