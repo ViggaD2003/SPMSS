@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.controller;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.RegisterProgramParticipantResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramPPResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SupportProgramResponse;
@@ -126,8 +127,14 @@ public class SupportProgramController {
     })
     @PreAuthorize("hasRole('COUNSELOR') or hasRole('MANAGER')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateSupportProgram(@PathVariable Integer id, @RequestParam ProgramStatus status) {
-        return ResponseEntity.ok(service.updateSupportProgram(id, status));
+    public ResponseEntity<?> updateStatusSupportProgram(@PathVariable Integer id, @RequestParam ProgramStatus status) {
+        return ResponseEntity.ok(service.updateStatusSupportProgram(id, status));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PutMapping("/{id}/update-program")
+    public ResponseEntity<?> updateSupportProgram(@PathVariable Integer id, @RequestBody UpdateSupportProgramRequest request) {
+        return ResponseEntity.ok(service.updateSupportProgram(id, request));
     }
 
     @Operation(

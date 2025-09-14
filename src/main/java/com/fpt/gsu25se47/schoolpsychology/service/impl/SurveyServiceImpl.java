@@ -2,12 +2,14 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.AddNewSurveyDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateQuestion;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSurveyRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.QuestionMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
@@ -19,8 +21,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -150,8 +155,12 @@ public class SurveyServiceImpl implements SurveyService {
             }
             default -> throw new IllegalStateException("Cannot update survey with status: " + survey.getStatus());
         }
-
         Survey updatedSurvey = surveyRepository.save(survey);
+
+        if(survey.getSurveyType() == SurveyType.PROGRAM){
+            return Optional.of(updatedSurvey);
+        }
+
         return Optional.of(surveyMapper.mapToSurveyDetailResponse(updatedSurvey));
     }
 
@@ -254,7 +263,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     private void updateAllSurveyInfo(Survey survey, UpdateSurveyRequest dto, boolean deleteQuestions) {
-        // Update basic survey info
+        // 1. Update basic survey info
         survey.setTitle(dto.getTitle());
         survey.setDescription(dto.getDescription());
         survey.setSurveyType(dto.getSurveyType());
@@ -262,17 +271,23 @@ public class SurveyServiceImpl implements SurveyService {
         survey.setTargetGradeLevel(dto.getTargetGrade());
         updateBasicSurveyInfo(survey, dto);
 
-        // Handle questions based on deleteQuestions flag
         if (deleteQuestions) {
-            // Draft Round 1: Delete questions (cascade delete)
+            // Trường hợp Draft Round 1: Xóa toàn bộ câu hỏi cũ
             survey.getQuestions().clear();
-        } else {
-            // Draft Round > 1 or Archived: Unlink questions (không xóa khỏi DB)
-            survey.getQuestions().forEach(question -> question.setSurvey(null));
-            survey.getQuestions().clear();
+        } else if(dto.getUpdateQuestions() != null) {
+            // 2. Update các câu hỏi cũ
+            Map<Integer, Question> existingQuestionsMap = survey.getQuestions().stream()
+                    .collect(Collectors.toMap(Question::getId, q -> q));
+
+            for (UpdateQuestion updateDto : dto.getUpdateQuestions()) {
+                Question q = existingQuestionsMap.get(updateDto.getQuestionId());
+                if (q != null) {
+                   q.setIsActive(updateDto.getIsActive());
+                }
+            }
         }
 
-        // Add new questions
+        // 3. Thêm câu hỏi mới
         List<Question> newQuestions = dto.getNewQuestions().stream()
                 .map(questionMapper::mapToQuestion)
                 .peek(q -> {
@@ -280,8 +295,10 @@ public class SurveyServiceImpl implements SurveyService {
                     if (q.getAnswers() != null) {
                         q.getAnswers().forEach(a -> a.setQuestion(q));
                     }
-                }).toList();
+                })
+                .toList();
 
         survey.getQuestions().addAll(newQuestions);
     }
+
 }

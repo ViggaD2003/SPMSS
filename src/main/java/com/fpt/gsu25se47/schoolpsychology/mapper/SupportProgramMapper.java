@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
@@ -9,6 +10,7 @@ import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
+import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public abstract class SupportProgramMapper {
@@ -25,9 +27,6 @@ public abstract class SupportProgramMapper {
     @Autowired
     protected ParticipantMapper participantMapper;
 
-    @Autowired
-    private SurveyRecordRepository surveyRecordRepository;
-
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "hostedBy", ignore = true)
@@ -36,12 +35,12 @@ public abstract class SupportProgramMapper {
     @Mapping(target = "programRegistrations", ignore = true)
     public abstract SupportProgram mapSupportProgram(SupportProgramRequest request);
 
-
     @Mappings({
             @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "programSurvey", expression = "java(mapSurvey(supportProgram.getSurvey()))"),
-            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? 0 : supportProgram.getProgramRegistrations().size())")
+            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? 0 : supportProgram.getProgramRegistrations().size())"),
+            @Mapping(target = "thumbnail", expression = "java(mapThumbnail(supportProgram))")
     })
     public abstract SupportProgramResponse mapSupportProgramResponse(SupportProgram supportProgram);
 
@@ -49,7 +48,8 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "category", expression = "java(mapCategory(supportProgram.getCategory()))"),
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "programSurvey", expression = "java(mapSurvey(supportProgram.getSurvey()))"),
-            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? null : mapToDto(supportProgram.getProgramRegistrations()))")
+            @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? null : mapToDto(supportProgram.getProgramRegistrations()))"),
+            @Mapping(target = "thumbnail", expression = "java(mapThumbnail(supportProgram))")
     })
     public abstract SupportProgramDetail mapSupportProgramDetail(SupportProgram supportProgram);
 
@@ -59,7 +59,8 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations().size())"),
             @Mapping(target = "surveyId", source = "supportProgram.survey.id"),
             @Mapping(target = "student", ignore = true),
-            @Mapping(target = "isActiveSurvey", source = "supportProgram.isActiveSurvey")
+            @Mapping(target = "isActiveSurvey", source = "supportProgram.isActiveSurvey"),
+            @Mapping(target = "thumbnail", expression = "java(mapThumbnail(supportProgram))")
     })
     public abstract SupportProgramStudentDetail mapSupportProgramStudentDetail(SupportProgram supportProgram);
 
@@ -68,6 +69,7 @@ public abstract class SupportProgramMapper {
             @Mapping(target = "hostedBy", expression = "java(mapHostedBy(supportProgram.getHostedBy()))"),
             @Mapping(target = "programSurvey", expression = "java(mapSurvey(supportProgram.getSurvey()))"),
             @Mapping(target = "participants", expression = "java(supportProgram.getProgramRegistrations() == null ? 0 : supportProgram.getProgramRegistrations().size())"),
+            @Mapping(target = "thumbnail", expression = "java(mapThumbnail(supportProgram))")
     })
     public abstract SupportProgramPPResponse toSupportProgramPPResponse(SupportProgram supportProgram);
 
@@ -94,5 +96,14 @@ public abstract class SupportProgramMapper {
     protected List<ProgramPPParticipantResponse> mapToProgramPPParticipantResponses(List<ProgramParticipants> participants) {
         if (participants == null) return null;
         return participants.stream().map(participantMapper::toProgramPPParticipantResponse).toList();
+    }
+
+    protected Map<String, String> mapThumbnail(SupportProgram supportProgram) {
+        if (supportProgram == null) return null;
+
+        return Map.of(
+                "url", supportProgram.getThumbnail(),
+                "public_id", supportProgram.getPublicId()
+        );
     }
 }

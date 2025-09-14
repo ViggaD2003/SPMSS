@@ -21,10 +21,8 @@ public class FileUploadServiceImpl implements FileUploadService {
     private final SystemConfigService systemConfigService;
 
     @Override
-    public String uploadFile(MultipartFile file) throws IOException {
-
+    public Map<String, String> uploadFile(MultipartFile file) throws IOException {
         long sizeInBytes = file.getSize();
-
         double sizeInMB = (double) sizeInBytes / (1024 * 1024);
 
         Long maxSize = systemConfigService.getValueAs("file.size", Long.class);
@@ -34,11 +32,29 @@ public class FileUploadServiceImpl implements FileUploadService {
                     "File size exceeded " + maxSize);
         }
 
-        return cloudinary.uploader()
-                .upload(file.getBytes(),
-                        Map.of("public_id",
-                                UUID.randomUUID().toString()))
-                .get("url")
-                .toString();
+        String publicId = UUID.randomUUID().toString();
+
+        Map uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                Map.of("public_id", publicId)
+        );
+
+        String url = uploadResult.get("url").toString();
+
+        return Map.of(
+                "public_id", publicId,
+                "url", url
+        );
     }
+
+    public void deleteFile(String publicId) {
+        try {
+            Map result = cloudinary.uploader().destroy(publicId, Map.of());
+            System.out.println("Delete result: " + result);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error deleting file from Cloudinary", e);
+        }
+    }
+
 }

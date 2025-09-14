@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/upload-file")
@@ -18,8 +19,8 @@ public class FileUploadController {
     private final FileUploadService fileUploadService;
 
     @PostMapping
-    public String uploadFile(@RequestParam("image") MultipartFile file) throws IOException {
-        String imageURL = fileUploadService.uploadFile(file);
+    public Map<String, String> uploadFile(@RequestParam("image") MultipartFile file) throws IOException {
+        Map<String, String> imageURL = fileUploadService.uploadFile(file);
         return imageURL;
     }
 

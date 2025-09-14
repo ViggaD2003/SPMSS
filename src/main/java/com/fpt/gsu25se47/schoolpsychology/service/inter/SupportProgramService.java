@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +19,9 @@ public interface SupportProgramService {
 
     List<ProgramParticipantsResponse> addParticipantsToSupportProgram(Integer supportProgramId, List<Integer> caseIds);
 
-    SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus status);
+    SupportProgramResponse updateStatusSupportProgram(Integer id, ProgramStatus status);
+
+    SupportProgramResponse updateSupportProgram(Integer id, UpdateSupportProgramRequest request);
 
     Optional<?> saveSurveySupportProgram(Integer programId, Integer studentId, CreateSurveyRecordDto createSurveyRecordDto);
 

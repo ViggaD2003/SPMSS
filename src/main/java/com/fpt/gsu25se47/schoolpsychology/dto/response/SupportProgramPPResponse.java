@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 public class SupportProgramPPResponse {
@@ -23,7 +24,7 @@ public class SupportProgramPPResponse {
 
     private ProgramStatus status;
 
-    private String thumbnail;
+    private Map<String, String> thumbnail;
 
     private String location;
 

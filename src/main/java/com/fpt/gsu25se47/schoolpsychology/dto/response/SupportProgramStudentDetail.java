@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @Builder
@@ -27,7 +28,7 @@ public class SupportProgramStudentDetail {
 
     private ProgramStatus status;
 
-    private String thumbnail;
+    private Map<String, String> thumbnail;
 
     private String location;
 

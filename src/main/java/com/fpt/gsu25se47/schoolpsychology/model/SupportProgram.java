@@ -39,6 +39,8 @@ public class SupportProgram extends Auditable {
 
     private String thumbnail;
 
+    private String publicId;
+
     private Boolean isActiveSurvey;
 
     @ManyToOne

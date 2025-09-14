@@ -4,10 +4,12 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateSurveyRecordDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.SupportProgramRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateSupportProgramRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.*;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ParticipantMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.ProgramParticipantsMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SupportProgramMapper;
+import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
@@ -27,10 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +50,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final SurveyRecordRepository surveyRecordRepository;
     private final NotificationService notificationService;
     private final AccountService accountService;
+    private final SurveyMapper surveyMapper;
 
 
     @Override
@@ -73,8 +73,9 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         );
 
         SupportProgram supportProgram = supportProgramMapper.mapSupportProgram(request);
-        String rawFile = fileUploadService.uploadFile(thumbnail);
-        supportProgram.setThumbnail(rawFile);
+        Map<String, String> rawFile = fileUploadService.uploadFile(thumbnail);
+        supportProgram.setThumbnail(rawFile.get("url"));
+        supportProgram.setPublicId(rawFile.get("public_id"));
         supportProgram.setCategory(category);
         supportProgram.setHostedBy(account);
         supportProgram.setSurvey(survey);
@@ -329,11 +330,36 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
-    public SupportProgramResponse updateSupportProgram(Integer id, ProgramStatus newStatus) {
+    public SupportProgramResponse updateStatusSupportProgram(Integer id, ProgramStatus newStatus) {
 
         SupportProgram supportProgram = getSupportProgram(id);
 
         supportProgram.setStatus(newStatus);
+        return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
+    }
+
+    @Override
+    public SupportProgramResponse updateSupportProgram(Integer id, UpdateSupportProgramRequest request) {
+        SupportProgram supportProgram = getSupportProgram(id);
+
+        if(supportProgram.getStatus() != ProgramStatus.ACTIVE) {
+            throw new RuntimeException("Support program can not be update with status " + supportProgram.getStatus());
+        }
+
+        supportProgram.setDescription(request.getDescription());
+        supportProgram.setName(request.getName());
+        supportProgram.setMaxParticipants(request.getMaxParticipants());
+        supportProgram.setStartTime(request.getStartTime());
+        supportProgram.setEndTime(request.getEndTime());
+        supportProgram.setLocation(request.getLocation());
+
+        Account account = accountRepository.findById(request.getHostedBy())
+                .orElseThrow(() -> new RuntimeException("Account not found for hosted by: " + request.getHostedBy()));
+
+        supportProgram.setHostedBy(account);
+
+        Optional<Survey> survey = (Optional<Survey>) surveyService.updateSurveyById(request.getSurveyId(), request.getSurvey());
+        supportProgram.setSurvey(survey.get());
         return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
     }
 
