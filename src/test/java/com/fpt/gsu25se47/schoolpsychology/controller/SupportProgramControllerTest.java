@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -204,7 +205,7 @@ public class SupportProgramControllerTest {
                 .endTime(LocalDateTime.now().plusDays(10))
                 .status(ProgramStatus.ACTIVE)
                 .isActiveSurvey(true)
-                .thumbnail("thumbnail.jpg")
+                .thumbnail(Map.of("thumbnail.jpg", "sop20033"))
                 .location("Phòng hội thảo A1")
                 .category(category)
                 .hostedBy(accountMapper.toDto(counselorAccount))
@@ -236,7 +237,7 @@ public class SupportProgramControllerTest {
                 .updatedDate(LocalDateTime.now())
                 .status(ProgramStatus.ACTIVE)
                 .isActiveSurvey(true)
-                .thumbnail("thumbnail.jpg")
+                .thumbnail(Map.of("thumbnail.jpg", "sop20033"))
                 .location("Phòng hội thảo A1")
                 .participants(0)
                 .build();

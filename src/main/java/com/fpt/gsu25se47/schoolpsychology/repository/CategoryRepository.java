@@ -35,5 +35,4 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
                 GROUP BY c.id, c.name
             """)
     List<CaseSummaryResponse> getCaseCountsByCategoryForCurrentTeacher(@Param("teacherId") Integer teacherId);
-
 }
