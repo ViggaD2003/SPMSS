@@ -21,11 +21,11 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
             FROM Student s
             JOIN Account a ON a.id = s.id
             WHERE a.status = true
-            AND s.targetLevel = COALESCE(:grade, (
-                                             SELECT c.grade\s
-                                             FROM Classes c\s
-                                             WHERE c.id = :classId
-                                            ))
+            AND (s.targetLevel IS NULL OR s.targetLevel = COALESCE(:grade, (
+                SELECT c.grade
+                FROM Classes c
+                WHERE c.id = :classId
+            )))
             AND (:gender IS NULL OR a.gender = :gender)
             AND NOT EXISTS (
                 SELECT 1
