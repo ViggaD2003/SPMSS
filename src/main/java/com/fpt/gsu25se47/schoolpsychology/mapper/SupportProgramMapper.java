@@ -102,8 +102,8 @@ public abstract class SupportProgramMapper {
         if (supportProgram == null) return null;
 
         return Map.of(
-                "url", supportProgram.getThumbnail(),
-                "public_id", supportProgram.getPublicId()
+                "url", supportProgram.getThumbnail() == null ? "" : supportProgram.getThumbnail() ,
+                "public_id", supportProgram.getPublicId() == null ? "" : supportProgram.getPublicId()
         );
     }
 }
