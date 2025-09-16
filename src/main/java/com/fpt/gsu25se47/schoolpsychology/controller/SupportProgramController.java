@@ -191,4 +191,22 @@ public class SupportProgramController {
     public ResponseEntity<List<SupportProgramResponse>> findAllActiveProgram() {
         return ResponseEntity.ok(service.getAllActiveSupportPrograms());
     }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping(value = "/add-new-thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> addNewThumbnail(
+            @RequestPart("thumbnail") MultipartFile thumbnail,
+            @RequestPart("programId") Integer programId
+    )  throws IOException {
+        return ResponseEntity.ok(service.addNewThumbnail(programId, thumbnail));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @DeleteMapping(value = "/delete-thumbnail")
+    public ResponseEntity<?> deleteThumbnail(
+            @RequestParam("programId") Integer programId,
+            @RequestParam("publicId") String publicId
+    ) {
+        return ResponseEntity.ok(service.deleteThumbnail(programId, publicId));
+    }
 }

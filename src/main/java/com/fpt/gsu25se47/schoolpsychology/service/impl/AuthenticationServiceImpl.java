@@ -2,16 +2,15 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 
 import com.fpt.gsu25se47.schoolpsychology.common.GoogleTokenStore;
 import com.fpt.gsu25se47.schoolpsychology.common.Status;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.ChangePasswordRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.RefreshTokenRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.SignInRequest;
-import com.fpt.gsu25se47.schoolpsychology.dto.request.SignUpRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.*;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.JwtAuthenticationResponse;
 import com.fpt.gsu25se47.schoolpsychology.exception.DuplicateResourceException;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.EmailTemplateName;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.TokenType;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AuthenticationService;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.EmailService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.GoogleCalendarService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.JWTService;
 import com.fpt.gsu25se47.schoolpsychology.utils.ResponseObject;
@@ -19,25 +18,28 @@ import com.fpt.gsu25se47.schoolpsychology.utils.TokenUtil;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.services.calendar.model.EntryPoint;
 import com.google.api.services.calendar.model.Event;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -59,6 +61,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final StudentRepository studentRepository;
     private final CounselorRepository counselorRepository;
     private final GuardianRepository guardianRepository;
+    private final MailTokenRepository mailTokenRepository;
+    private final EmailService emailService;
 
     @Value("${google.client.id}")
     private String clientId;
@@ -425,6 +429,90 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         response.sendRedirect("https://spmss.vercel.app/login-success?token=" + newAccess.getValue());
+    }
+
+    @Override
+    public void verifyUserAccount(String email) throws BadRequestException, MessagingException {
+        Account account = accountRepo.findByEmail(email).orElseThrow(() -> new RuntimeException("Account not found"));
+        if(account != null && account.getPassword() == null){
+            throw new BadRequestException("This email is not available in our system");
+        } else if (account == null) {
+            throw new BadRequestException("This email is not available in our system");
+        } else {
+            sendValidationEmail(account);
+        }
+    }
+
+    @Override
+    public String activateChangePassword(String token) throws MessagingException {
+        MailToken mailToken = mailTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if(LocalDateTime.now().isAfter(mailToken.getExpiresAt())){
+            sendValidationEmail(mailToken.getAccount());
+            throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
+        }
+
+        var user =  accountRepo.findById(mailToken.getAccount().getId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        mailToken.setValidatedAt(LocalDateTime.now());
+        mailTokenRepository.save(mailToken);
+
+        return "Verify Successfully !";
+    }
+
+    @Override
+    public String changeForgotPassword(String email, ChangeForgotPasswordRequest request) {
+        Account account = accountRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if(!request.getNewPassword().equals(request.getConfirmNewPassword())){
+            throw new IllegalArgumentException("password are not the same");
+        }
+        account.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        accountRepo.save(account);
+        return "Change Password Successfully !";
+    }
+
+
+    private String generateAndSaveActivationToken(Account account) {
+        // Generate a token
+        String generatedToken = generateActivationCode(6);
+        var token = MailToken.builder()
+                .token(generatedToken)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .account(account)
+                .build();
+        mailTokenRepository.save(token);
+        return generatedToken;
+    }
+
+    private void sendValidationEmail(Account account) throws MessagingException {
+        var newToken = generateAndSaveActivationToken(account);
+
+        emailService.sendEmail(
+                account.getEmail(),
+                account.getFullName(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                "",
+                newToken,
+                "OTP CODE"
+        );
+    }
+
+    private String generateActivationCode(int length) {
+        String characters = "0123456789";
+        StringBuilder codeBuilder = new StringBuilder();
+
+        SecureRandom secureRandom = new SecureRandom();
+
+        for (int i = 0; i < length; i++) {
+            int randomIndex = secureRandom.nextInt(characters.length());
+            codeBuilder.append(characters.charAt(randomIndex));
+        }
+
+        return codeBuilder.toString();
     }
 
 

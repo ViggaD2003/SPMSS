@@ -74,6 +74,9 @@ public class Account extends Auditable implements UserDetails {
     @OneToMany(mappedBy = "bookedBy")
     private List<Appointment> appointmentsMade = new ArrayList<>();
 
+    @OneToMany(mappedBy = "account")
+    private List<MailToken> mailTokens = new ArrayList<>();
+
     @OneToMany(mappedBy = "hostedBy")
     private List<Slot> slotsHostBy = new ArrayList<>();
 

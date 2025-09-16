@@ -9,5 +9,5 @@ public interface FileUploadService {
 
     Map<String, String> uploadFile(MultipartFile file) throws IOException;
 
-    void deleteFile(String publicId);
+    String deleteFile(String publicId);
 }

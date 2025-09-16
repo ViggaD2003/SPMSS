@@ -47,10 +47,11 @@ public class FileUploadServiceImpl implements FileUploadService {
         );
     }
 
-    public void deleteFile(String publicId) {
+    public String deleteFile(String publicId) {
         try {
             Map result = cloudinary.uploader().destroy(publicId, Map.of());
             System.out.println("Delete result: " + result);
+            return publicId;
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error deleting file from Cloudinary", e);

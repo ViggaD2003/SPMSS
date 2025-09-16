@@ -39,4 +39,8 @@ public interface SupportProgramService {
 
     List<SupportProgramResponse> getAllActiveSupportPrograms();
 
+    String addNewThumbnail(Integer programId, MultipartFile thumbnail) throws IOException;
+
+    String deleteThumbnail(Integer programId, String public_id);
+
 }

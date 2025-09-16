@@ -399,4 +399,34 @@ public class SupportProgramServiceImpl implements SupportProgramService {
 
         return responses;
     }
+
+    @Override
+    public String addNewThumbnail(Integer programId, MultipartFile thumbnail) throws IOException {
+        SupportProgram supportProgram = supportProgramRepository.findById(programId)
+                .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + programId));
+
+        Map<String, String> thumbnailMap = fileUploadService.uploadFile(thumbnail);
+
+        supportProgram.setThumbnail(thumbnailMap.get("url"));
+        supportProgram.setPublicId(thumbnailMap.get("public_id"));
+        supportProgramRepository.save(supportProgram);
+
+        return "Add New Thumbnail Successfully";
+    }
+
+    @Override
+    public String deleteThumbnail(Integer programId, String public_id) {
+        SupportProgram supportProgram = supportProgramRepository.findById(programId)
+                .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + programId));
+
+        String public_id_response = fileUploadService.deleteFile(public_id);
+        if(!public_id_response.isEmpty() && public_id.equals(public_id_response)) {
+            supportProgram.setPublicId(null);
+            supportProgram.setThumbnail(null);
+            supportProgramRepository.save(supportProgram);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Thumbnail not found");
+        }
+        return "Thumbnail Deleted Successfully";
+    }
 }
