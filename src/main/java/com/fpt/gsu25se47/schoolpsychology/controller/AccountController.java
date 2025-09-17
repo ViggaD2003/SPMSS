@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDetailResp
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RelationshipType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -114,5 +115,24 @@ public class AccountController {
     @GetMapping("/students/details")
     public ResponseEntity<StudentDetailResponse> getStudentDetails(@RequestParam("accountId") Integer accountId) throws BadRequestException {
         return ResponseEntity.ok(accountService.getStudentDetails(accountId));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping("/link-relationship")
+    public ResponseEntity<?> linkRelationship(
+        @RequestParam("parentId") Integer parentId,
+        @RequestParam("childIds") List<Integer> childIds,
+        @RequestParam("type") RelationshipType type
+    ) {
+        return ResponseEntity.ok(accountService.linkRelationship(parentId, childIds, type));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @DeleteMapping("/remove-relationship")
+    public ResponseEntity<?> removeRelationship(
+            @RequestParam("parentId") Integer parentId,
+            @RequestParam("childIds") List<Integer> childIds
+    ) {
+        return ResponseEntity.ok(accountService.removeRelationship(parentId, childIds));
     }
 }

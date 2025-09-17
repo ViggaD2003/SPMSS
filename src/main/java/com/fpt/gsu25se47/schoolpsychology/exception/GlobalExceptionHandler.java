@@ -75,6 +75,7 @@ public class GlobalExceptionHandler {
         return switch (exception.getStatusCode()) {
             case HttpStatus.NOT_FOUND -> createResponseEntity(HttpStatus.NOT_FOUND.value(), exception.getReason());
             case HttpStatus.BAD_REQUEST -> createResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getReason());
+            case HttpStatus.CONFLICT -> createResponseEntity(HttpStatus.CONFLICT.value(), exception.getReason());
             case HttpStatus.INTERNAL_SERVER_ERROR ->
                     createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
             default -> throw new IllegalStateException("Unexpected value: " + exception.getStatusCode());

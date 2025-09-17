@@ -8,6 +8,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentSRCRespons
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RelationshipType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -39,4 +40,8 @@ public interface AccountService {
     List<TeacherDto> getEligibleTeachers(Integer classId);
 
     StudentDetailResponse getStudentDetails(Integer studentId);
+
+    String linkRelationship(Integer parentId, List<Integer> childIds, RelationshipType relationshipType);
+
+    String removeRelationship(Integer parentId, List<Integer> childIds);
 }

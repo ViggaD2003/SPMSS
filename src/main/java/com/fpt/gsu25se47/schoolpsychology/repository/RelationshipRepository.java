@@ -9,6 +9,14 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface RelationshipRepository extends JpaRepository<Relationship, Integer> {
-    @Query("SELECT r.student FROM Relationship r WHERE r.guardian.account.id = :parentAccountId")
-    List<Student> findChildrenByParentAccountId(@Param("parentAccountId") Integer parentAccountId);
+    @Query("SELECT r FROM Relationship r WHERE r.guardian.id = :parentId and r.student.id = :childId")
+    Relationship findByParentIdAndChildId(@Param("parentId") Integer parentId, @Param("childId") Integer childId);
+
+    @Query("SELECT COUNT(r) > 0 " +
+            "FROM Relationship r " +
+            "WHERE r.guardian.id = :parentId " +
+            "AND r.student.id IN :childIds")
+    boolean checkRelationshipExists(@Param("parentId") Integer parentId,
+                                    @Param("childIds") List<Integer> childIds);
+
 }

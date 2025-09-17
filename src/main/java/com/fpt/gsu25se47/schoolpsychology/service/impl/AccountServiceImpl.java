@@ -12,6 +12,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
 import com.fpt.gsu25se47.schoolpsychology.mapper.*;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Grade;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.RelationshipType;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
@@ -48,6 +49,7 @@ public class AccountServiceImpl implements AccountService {
     private final TeacherMapper teacherMapper;
     private final ParentMapperInf parentMapperInf;
     private final CaseMapper caseMapper;
+    private final RelationshipRepository relationshipRepository;
 
     @Override
     public UserDetailsService userDetailsService() {
@@ -210,4 +212,48 @@ public class AccountServiceImpl implements AccountService {
 
         return studentMapper.toStudentDetailResponse(student, cases, parentBaseResponses);
     }
+
+    @Override
+    public String linkRelationship(Integer parentId, List<Integer> childIds, RelationshipType relationshipType) {
+        if(relationshipRepository.checkRelationshipExists(parentId, childIds)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Relationship already exists");
+        }
+
+        Account parent = accountRepository.findById(parentId)
+                .orElseThrow(() -> new RuntimeException("Parent not found for ID: " + parentId));
+
+        for (Integer childId : childIds) {
+            Account child = accountRepository.findById(childId)
+                    .orElseThrow(() -> new RuntimeException("Parent not found for ID: " + parentId));
+
+            Relationship relationship = Relationship.builder()
+                    .student(child.getStudent())
+                    .guardian(parent.getGuardian())
+                    .relationshipType(relationshipType)
+                    .build();
+
+            relationshipRepository.save(relationship);
+        }
+
+        return "Link successfully !";
+    }
+
+    @Override
+    public String removeRelationship(Integer parentId, List<Integer> childIds) {
+        Account parent = accountRepository.findById(parentId)
+                .orElseThrow(() -> new RuntimeException("Parent not found for ID: " + parentId));
+
+        for (Integer childId : childIds) {
+            Relationship relationship = relationshipRepository.findByParentIdAndChildId(parent.getId(), childId);
+            if(relationship != null) {
+                relationshipRepository.delete(relationship);
+            } else {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Relationship not found");
+            }
+        }
+
+        return "Remove successfully !";
+    }
+
+
 }
