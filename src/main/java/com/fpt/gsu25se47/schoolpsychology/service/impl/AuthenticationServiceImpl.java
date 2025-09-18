@@ -439,6 +439,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } else if (account == null) {
             throw new BadRequestException("This email is not available in our system");
         } else {
+            List<MailToken> revoking = mailTokenRepository.findAllWhereRevokedIsFalse(account.getId());
+            revoking.forEach(t -> t.setRevoked(true));
+            mailTokenRepository.saveAll(revoking);
             sendValidationEmail(account);
         }
     }
@@ -449,8 +452,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
         if(LocalDateTime.now().isAfter(mailToken.getExpiresAt())){
-            sendValidationEmail(mailToken.getAccount());
-            throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
+            throw new RuntimeException("Activation token has expired. Please do it again !");
         }
 
         var user =  accountRepo.findById(mailToken.getAccount().getId())
@@ -469,6 +471,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if(!request.getNewPassword().equals(request.getConfirmNewPassword())){
             throw new IllegalArgumentException("password are not the same");
         }
+
         account.setPassword(passwordEncoder.encode(request.getNewPassword()));
         accountRepo.save(account);
         return "Change Password Successfully !";
@@ -482,6 +485,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .token(generatedToken)
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .revoked(false)
                 .account(account)
                 .build();
         mailTokenRepository.save(token);

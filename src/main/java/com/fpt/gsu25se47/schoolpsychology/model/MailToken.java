@@ -22,6 +22,7 @@ public class MailToken {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private LocalDateTime validatedAt;
+    private Boolean revoked;
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
