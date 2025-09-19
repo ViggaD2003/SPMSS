@@ -46,6 +46,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             cases = caseRepository.findById(request.getCaseId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "Case not found for ID: " + request.getCaseId()));
+            validateCounselorOwnCase(cases, accountService.getCurrentAccount().getCounselor());
         }
 
         // system config for appointment feature enabled
@@ -83,6 +84,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointmentResponse.setSystemConfigs(systemConfigService.getConfigsByGroup("APPOINTMENT"));
 
         return appointmentResponse;
+    }
+
+    private void validateCounselorOwnCase(Cases cases, Counselor counselor) {
+        if (cases.getCounselor() != counselor.getAccount()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "This case is not belong to you");
+        }
     }
 
     @Override
