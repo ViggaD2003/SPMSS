@@ -48,11 +48,9 @@ public class UpdateSurveyRequest {
     @NotNull(message = "Khối lớp mục tiêu không được để trống")
     private List<Grade> targetGrade;
 
-    @NotEmpty(message = "Danh sách câu hỏi không được để trống")
     @Valid
     private List<UpdateQuestion> updateQuestions;
 
-    @NotEmpty(message = "Danh sách câu hỏi không được để trống")
     @Valid
     private List<AddNewQuestionDto> newQuestions;
 }
