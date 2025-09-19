@@ -31,11 +31,7 @@ public class UpdateSurveyRequest {
     @NotNull(message = "Vui lòng xác định khảo sát có lặp lại không")
     private Boolean isRecurring;
 
-    /**
-     * Nếu isRecurring = true thì recurringCycle không được null.
-     * Validate ở tầng service hoặc sử dụng custom validator.
-     */
-    @Size(max = 50, message = "Chu kỳ lặp không được vượt quá 50 ký tự")
+    @NotNull(message = "Recurring cycle is required")
     private RecurringCycle recurringCycle;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
