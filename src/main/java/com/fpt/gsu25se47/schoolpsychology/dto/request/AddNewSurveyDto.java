@@ -31,10 +31,6 @@ public class AddNewSurveyDto {
     @NotNull(message = "Vui lòng xác định khảo sát có lặp lại không")
     private Boolean isRecurring;
 
-    /**
-     * Nếu isRecurring = true thì recurringCycle không được null.
-     * Validate ở tầng service hoặc sử dụng custom validator.
-     */
     @NotNull(message = "Recurring cycle is required")
     private RecurringCycle recurringCycle;
 

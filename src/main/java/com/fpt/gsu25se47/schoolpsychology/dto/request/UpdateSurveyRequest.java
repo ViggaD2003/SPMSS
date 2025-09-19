@@ -48,7 +48,6 @@ public class UpdateSurveyRequest {
     @NotNull(message = "Khối lớp mục tiêu không được để trống")
     private List<Grade> targetGrade;
 
-    @Valid
     private List<UpdateQuestion> updateQuestions;
 
     @Valid

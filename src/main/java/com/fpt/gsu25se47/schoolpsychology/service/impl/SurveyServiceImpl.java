@@ -138,23 +138,12 @@ public class SurveyServiceImpl implements SurveyService {
         // Validate input dates and recurring rules
         validateUpdateSurveyRequest(dto);
 
-        switch (survey.getStatus()) {
-            case DRAFT -> {
-                if (survey.getRound() == 1) {
-                    updateAllSurveyInfo(survey, dto, true); // deleteQuestions = true
-                } else {
-                    // Draft Round > 1: Update fields, round không tăng, questions unlink và thêm mới
-                    updateAllSurveyInfo(survey, dto, false); // deleteQuestions = false
-                }
-            }
-            case ARCHIVED -> {
-                // Archived: Round +1, update fields, questions unlink và thêm mới
-                survey.setRound(survey.getRound() + 1);
-                survey.setStatus(SurveyStatus.DRAFT); // revive from archive
-                updateAllSurveyInfo(survey, dto, false); // deleteQuestions = false
-            }
-            default -> throw new IllegalStateException("Cannot update survey with status: " + survey.getStatus());
+        if(survey.getStatus() != SurveyStatus.PUBLISHED) {
+            updateAllSurveyInfo(survey, dto);
+        } else {
+            throw new IllegalStateException("Cannot update survey with status: " + survey.getStatus());
         }
+
         Survey updatedSurvey = surveyRepository.save(survey);
         return Optional.of(surveyMapper.mapToSurveyDetailResponse(updatedSurvey));
     }
@@ -257,7 +246,7 @@ public class SurveyServiceImpl implements SurveyService {
 
     }
 
-    private void updateAllSurveyInfo(Survey survey, UpdateSurveyRequest dto, boolean deleteQuestions) {
+    private void updateAllSurveyInfo(Survey survey, UpdateSurveyRequest dto) {
         // 1. Update basic survey info
         survey.setTitle(dto.getTitle());
         survey.setDescription(dto.getDescription());
@@ -266,10 +255,8 @@ public class SurveyServiceImpl implements SurveyService {
         survey.setTargetGradeLevel(dto.getTargetGrade());
         updateBasicSurveyInfo(survey, dto);
 
-        if (deleteQuestions) {
-            // Trường hợp Draft Round 1: Xóa toàn bộ câu hỏi cũ
-            survey.getQuestions().clear();
-        } else if(dto.getUpdateQuestions() != null) {
+
+        if(dto.getUpdateQuestions().isEmpty()) {
             // 2. Update các câu hỏi cũ
             Map<Integer, Question> existingQuestionsMap = survey.getQuestions().stream()
                     .collect(Collectors.toMap(Question::getId, q -> q));
@@ -283,7 +270,7 @@ public class SurveyServiceImpl implements SurveyService {
         }
 
         // 3. Thêm câu hỏi mới
-        if(dto.getNewQuestions() != null) {
+        if(!dto.getNewQuestions().isEmpty()) {
             List<Question> newQuestions = dto.getNewQuestions().stream()
                     .map(questionMapper::mapToQuestion)
                     .peek(q -> {
