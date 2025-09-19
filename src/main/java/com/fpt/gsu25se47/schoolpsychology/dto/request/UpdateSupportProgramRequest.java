@@ -34,12 +34,5 @@ public class UpdateSupportProgramRequest {
 
     @NotNull(message = "Người tổ chức không được để trống")
     private Integer hostedBy;
-
-    @NotNull(message = "Survey id can not be null")
-    private Integer surveyId;
-
-    @NotNull(message = "Khảo sát không được để trống")
-    @Valid
-    private UpdateSurveyRequest survey;
 }
 

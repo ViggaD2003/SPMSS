@@ -357,9 +357,6 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                 .orElseThrow(() -> new RuntimeException("Account not found for hosted by: " + request.getHostedBy()));
 
         supportProgram.setHostedBy(account);
-
-        Optional<Survey> survey = (Optional<Survey>) surveyService.updateSurveyById(request.getSurveyId(), request.getSurvey());
-        supportProgram.setSurvey(survey.get());
         return supportProgramMapper.mapSupportProgramResponse(supportProgramRepository.save(supportProgram));
     }
 

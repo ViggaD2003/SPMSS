@@ -35,5 +35,8 @@ public class UpdateSupportProgramStatusJob implements Job {
                 .toList();
 
         supportProgramsEnd.forEach(program -> program.setStatus(ProgramStatus.COMPLETED));
+
+        supportProgramRepository.saveAll(supportProgramsStart);
+        supportProgramRepository.saveAll(supportProgramsEnd);
     }
 }

@@ -156,11 +156,6 @@ public class SurveyServiceImpl implements SurveyService {
             default -> throw new IllegalStateException("Cannot update survey with status: " + survey.getStatus());
         }
         Survey updatedSurvey = surveyRepository.save(survey);
-
-        if(survey.getSurveyType() == SurveyType.PROGRAM){
-            return Optional.of(updatedSurvey);
-        }
-
         return Optional.of(surveyMapper.mapToSurveyDetailResponse(updatedSurvey));
     }
 
