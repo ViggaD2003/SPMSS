@@ -283,17 +283,18 @@ public class SurveyServiceImpl implements SurveyService {
         }
 
         // 3. Thêm câu hỏi mới
-        List<Question> newQuestions = dto.getNewQuestions().stream()
-                .map(questionMapper::mapToQuestion)
-                .peek(q -> {
-                    q.setSurvey(survey);
-                    if (q.getAnswers() != null) {
-                        q.getAnswers().forEach(a -> a.setQuestion(q));
-                    }
-                })
-                .toList();
-
-        survey.getQuestions().addAll(newQuestions);
+        if(dto.getNewQuestions() != null) {
+            List<Question> newQuestions = dto.getNewQuestions().stream()
+                    .map(questionMapper::mapToQuestion)
+                    .peek(q -> {
+                        q.setSurvey(survey);
+                        if (q.getAnswers() != null) {
+                            q.getAnswers().forEach(a -> a.setQuestion(q));
+                        }
+                    })
+                    .toList();
+            survey.getQuestions().addAll(newQuestions);
+        }
     }
 
 }
