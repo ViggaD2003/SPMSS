@@ -138,7 +138,19 @@ public class SurveyServiceImpl implements SurveyService {
         // Validate input dates and recurring rules
         validateUpdateSurveyRequest(dto);
 
+        SurveyStatus surveyStatus = survey.getStatus();
+
         if(survey.getStatus() != SurveyStatus.PUBLISHED) {
+            if(surveyStatus == SurveyStatus.ARCHIVED && !dto.getIsRecurring() && dto.getStartDate().isAfter(LocalDate.now())) {
+                surveyStatus = SurveyStatus.DRAFT;
+                survey.setRound(survey.getRound() + 1);
+            }
+
+            if (surveyStatus == SurveyStatus.DRAFT && survey.getStartDate().isEqual(LocalDate.now())) {
+                surveyStatus = SurveyStatus.PUBLISHED;
+            }
+
+            survey.setStatus(surveyStatus);
             updateAllSurveyInfo(survey, dto);
         } else {
             throw new IllegalStateException("Cannot update survey with status: " + survey.getStatus());

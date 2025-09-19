@@ -42,6 +42,7 @@ public class ProcessRecurringSurveysJob implements Job {
     private boolean shouldOpen(Survey survey, LocalDate today) {
         if (!survey.getIsRecurring()) return false;
         if (survey.getStartDate() == null) return true;
+        if (survey.getStartDate().isEqual(today)) return true;
 
         return switch (survey.getRecurringCycle()) {
             case WEEKLY -> !survey.getStartDate().plusWeeks(1).isAfter(today);

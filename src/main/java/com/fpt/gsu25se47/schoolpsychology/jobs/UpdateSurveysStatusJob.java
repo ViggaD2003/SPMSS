@@ -29,16 +29,6 @@ public class UpdateSurveysStatusJob implements Job {
         List<Survey> toFinish = surveyRepository.findByEndDateAndStatusPublished(now);
         toFinish.forEach(survey -> survey.setStatus(SurveyStatus.ARCHIVED));
 
-
-//        List<Survey> surveyList = toFinish.stream().filter(s -> s.getSurveyType() == SurveyType.FOLLOWUP || s.getSurveyType() == SurveyType.SCREENING)
-//                        .toList();
-
-//        surveyList.forEach(item -> {
-//            item.getSurveyRecords().forEach(record -> {
-//
-//            });
-//        });
-
         surveyRepository.saveAll(toPublish);
         surveyRepository.saveAll(toFinish);
     }
