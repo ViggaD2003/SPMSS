@@ -23,20 +23,29 @@ public class UpdateSupportProgramStatusJob implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         LocalDateTime now = LocalDateTime.now();
-        log.info("Test cronjob support program status updated at {}", now);
-        List<SupportProgram> supportProgramsStart = supportProgramRepository.findAll()
-                .stream().filter(item -> item.getStartTime() == now)
-                .toList();
+//        log.info("Test cronjob support program status updated at {}", now);
+//        List<SupportProgram> supportProgramsStart = supportProgramRepository.findAll()
+//                .stream().filter(item -> item.getStartTime().getDayOfMonth() == now.getDayOfMonth())
+//                .toList();
+//
+//        supportProgramsStart.forEach(program -> program.setStatus(ProgramStatus.ON_GOING));
+//
+//        List<SupportProgram> supportProgramsEnd = supportProgramRepository.findAll()
+//                .stream().filter(item -> item.getEndTime(). == now)
+//                .toList();
+//
+//        supportProgramsEnd.forEach(program -> program.setStatus(ProgramStatus.COMPLETED));
 
-        supportProgramsStart.forEach(program -> program.setStatus(ProgramStatus.ON_GOING));
 
-        List<SupportProgram> supportProgramsEnd = supportProgramRepository.findAll()
-                .stream().filter(item -> item.getEndTime() == now)
-                .toList();
+        List<SupportProgram> programs = supportProgramRepository.findAll();
 
-        supportProgramsEnd.forEach(program -> program.setStatus(ProgramStatus.COMPLETED));
-
-        supportProgramRepository.saveAll(supportProgramsStart);
-        supportProgramRepository.saveAll(supportProgramsEnd);
+        programs.forEach(program -> {
+            if (program.getStartTime().isBefore(now) && program.getEndTime().isAfter(now)) {
+                program.setStatus(ProgramStatus.ON_GOING);
+            } else if (program.getEndTime().isBefore(now) || program.getEndTime().isEqual(now)) {
+                program.setStatus(ProgramStatus.COMPLETED);
+            }
+        });
+        supportProgramRepository.saveAll(programs);
     }
 }
