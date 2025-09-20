@@ -100,22 +100,12 @@ public class AppointmentServiceImpl implements AppointmentService {
                         HttpStatus.NOT_FOUND,
                         "Appointment not found for ID: " + appointmentId
                 ));
-        if (appointment.getCreatedDate().toLocalDate().isEqual(appointment.getStartDateTime().toLocalDate())) {
-            // Case 1: Booked on the same day → can cancel until the appointment starts
-            if (LocalDateTime.now().isAfter(appointment.getStartDateTime())) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Appointment has already started, cannot be canceled"
-                );
-            }
-        } else {
-            // Case 2: Booked earlier → cannot cancel on appointment day
-            if (!LocalDateTime.now().toLocalDate().isBefore(appointment.getStartDateTime().toLocalDate())) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Appointment cannot be canceled on the same day as the start time"
-                );
-            }
+
+        if (!LocalDateTime.now().toLocalDate().isBefore(appointment.getStartDateTime().toLocalDate())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Appointment cannot be canceled on the same day as the start time"
+            );
         }
 
         appointment.setStatus(AppointmentStatus.CANCELED);
