@@ -1,7 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.dto.response;
 
 
-import lombok.Builder;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseProfileDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,4 +24,6 @@ public abstract class AccountDto {
     private LocalDate dob;
 
     private String roleName;
+
+    private CaseProfileDto caseProfile;
 }

@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllForStudentResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseProfileDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Parent.ParentBaseResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Student.StudentDto;
@@ -74,7 +75,11 @@ public abstract class StudentMapper {
         dto.setClassDto(classMapper.toDto(activeClass, schoolYearMapper));
         Cases activeCase = caseRepository.findActiveCaseByStudentId(student.getId());
         dto.setCaseId(activeCase == null ? null : activeCase.getId());
-
+        dto.setCaseProfile(activeCase == null ? null : CaseProfileDto.builder()
+                        .id(activeCase.getId())
+                        .status(activeCase.getStatus())
+                        .hostBy(activeCase.getCounselor().getId())
+                .build());
         return dto;
     }
 
