@@ -101,6 +101,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                         "Appointment not found for ID: " + appointmentId
                 ));
 
+        if (!LocalDateTime.now().toLocalDate().isBefore(appointment.getStartDateTime().toLocalDate())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Appointment cannot be canceled on the same day as the start time"
+            );
+        }
+
         appointment.setStatus(AppointmentStatus.CANCELED);
         appointment.getSlot().setStatus(SlotStatus.CLOSED);
         appointment.setCancelReason(reasonCancel);

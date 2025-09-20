@@ -3,7 +3,6 @@ package com.fpt.gsu25se47.schoolpsychology.mapper;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.CounselorDto;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
 import com.fpt.gsu25se47.schoolpsychology.model.Counselor;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
 import com.fpt.gsu25se47.schoolpsychology.repository.CaseRepository;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +53,7 @@ public abstract class CounselorMapper {
 
         counselorDto.setCategories(setCategory);
         counselorDto.setHasAvailable(!activeCases.isEmpty());
-
+        counselorDto.setStatus(counselor.getAccount().getStatus());
         return counselorDto;
     }
 }
