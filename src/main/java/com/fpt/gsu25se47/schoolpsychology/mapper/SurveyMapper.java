@@ -93,7 +93,6 @@ public class SurveyMapper {
                 .updatedAt(survey.getUpdatedDate())
                 .category(categoryMapper.mapToCategorySurveyResponse(survey.getCategory()))
                 .questions(survey.getQuestions().stream()
-                        .filter(q -> Boolean.TRUE.equals(q.getIsActive()))
                         .map(questionMapper::mapToQuestionResponse)
                         .toList())
                 .build();
