@@ -80,6 +80,7 @@ public abstract class StudentMapper {
                         .status(activeCase.getStatus())
                         .hostBy(activeCase.getCounselor().getId())
                 .build());
+        dto.setStatus(student.getAccount().getStatus());
         return dto;
     }
 

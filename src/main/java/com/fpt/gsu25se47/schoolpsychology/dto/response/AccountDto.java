@@ -25,5 +25,7 @@ public abstract class AccountDto {
 
     private String roleName;
 
+    private Boolean status;
+
     private CaseProfileDto caseProfile;
 }

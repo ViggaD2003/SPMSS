@@ -1,15 +1,15 @@
 package com.fpt.gsu25se47.schoolpsychology.mapper;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.response.TeacherDto;
-import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Teacher;
-import org.mapstruct.*;
-
-import java.util.List;
-import java.util.Optional;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Builder;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface TeacherMapper {
+    @Mapping(target = "status", source = "account.status")
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "roleName", source = "account.role")
     @Mapping(target = "gender", source = "account.gender")

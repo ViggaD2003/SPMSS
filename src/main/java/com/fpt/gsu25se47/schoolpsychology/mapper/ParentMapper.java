@@ -41,6 +41,7 @@ public abstract class ParentMapper {
         List<StudentDto> studentDtos = students.stream().map(s -> studentMapper.mapStudentDtoWithClass(s)).toList();
 
         dto.setStudent(studentDtos);
+        dto.setStatus(parent.getAccount().getStatus());
         return dto;
     }
 }
