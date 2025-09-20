@@ -77,6 +77,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public List<?> listAllAccounts() {
+        return accountRepository.findAll()
+                .stream().filter(account -> !"MANAGER".equals(account.getRole().name()))
+                .map(accountMapper::toDto)
+                .toList();
+    }
+
+    @Override
     public Optional<?> getAccountById(Integer id) throws BadRequestException {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found account"));

@@ -75,6 +75,13 @@ public class AccountController {
         return ResponseEntity.ok(accountService.listAllAccounts(role, classId, grade));
     }
 
+    @ApiResponse(responseCode = "200", description = "Lấy danh sách tài khoản thành công")
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/accounts")
+    public ResponseEntity<?> listAllAccounts() {
+        return ResponseEntity.ok(accountService.listAllAccounts());
+    }
+
     @Operation(
             summary = "Lấy thông tin tài khoản theo ID",
             description = "Chỉ TEACHER hoặc COUNSELOR có thể lấy chi tiết thông tin tài khoản bằng cách truyền vào accountId"

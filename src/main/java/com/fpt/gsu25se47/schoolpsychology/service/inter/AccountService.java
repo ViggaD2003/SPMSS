@@ -23,6 +23,8 @@ public interface AccountService {
 
     List<?> listAllAccounts(Role role, Integer classId, Grade grade);
 
+    List<?> listAllAccounts();
+
     Optional<?> getAccountById(Integer id) throws BadRequestException;
 
     Optional<?> updateProfileAccount(UpdateProfileDto updateProfileDto);
