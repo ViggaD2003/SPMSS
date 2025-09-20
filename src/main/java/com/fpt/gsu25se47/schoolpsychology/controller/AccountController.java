@@ -135,4 +135,10 @@ public class AccountController {
     ) {
         return ResponseEntity.ok(accountService.removeRelationship(parentId, childIds));
     }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping("/enable-account/{id}")
+    public ResponseEntity<?> enableAccount(@PathVariable("id") Integer accountId, @RequestParam("status") Boolean status) {
+        return ResponseEntity.ok(accountService.enableStatusAccount(accountId, status));
+    }
 }

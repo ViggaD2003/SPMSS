@@ -44,4 +44,6 @@ public interface AccountService {
     String linkRelationship(Integer parentId, List<Integer> childIds, RelationshipType relationshipType);
 
     String removeRelationship(Integer parentId, List<Integer> childIds);
+
+    String enableStatusAccount(Integer accountId, Boolean status);
 }

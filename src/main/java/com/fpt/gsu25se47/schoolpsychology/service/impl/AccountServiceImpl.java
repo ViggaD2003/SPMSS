@@ -255,5 +255,13 @@ public class AccountServiceImpl implements AccountService {
         return "Remove successfully !";
     }
 
+    @Override
+    public String enableStatusAccount(Integer accountId, Boolean status) {
+            Account account = accountRepository.findById(accountId)
+                    .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
 
+            account.setStatus(status);
+            accountRepository.save(account);
+            return "Update Account successfully !";
+    }
 }
