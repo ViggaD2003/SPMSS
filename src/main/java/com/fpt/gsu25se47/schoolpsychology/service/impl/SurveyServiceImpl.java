@@ -268,7 +268,7 @@ public class SurveyServiceImpl implements SurveyService {
         updateBasicSurveyInfo(survey, dto);
 
 
-        if(dto.getUpdateQuestions().isEmpty()) {
+        if(!dto.getUpdateQuestions().isEmpty()) {
             // 2. Update các câu hỏi cũ
             Map<Integer, Question> existingQuestionsMap = survey.getQuestions().stream()
                     .collect(Collectors.toMap(Question::getId, q -> q));
