@@ -78,7 +78,7 @@ public abstract class StudentMapper {
         dto.setCaseProfile(activeCase == null ? null : CaseProfileDto.builder()
                         .id(activeCase.getId())
                         .status(activeCase.getStatus())
-                        .hostBy(activeCase.getCounselor().getId())
+                        .hostBy(activeCase.getCounselor() == null ? null : activeCase.getCounselor().getId())
                 .build());
         dto.setStatus(student.getAccount().getStatus());
         return dto;
