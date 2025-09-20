@@ -100,6 +100,12 @@ public class AppointmentServiceImpl implements AppointmentService {
                         HttpStatus.NOT_FOUND,
                         "Appointment not found for ID: " + appointmentId
                 ));
+        if (LocalDateTime.now().isAfter(appointment.getStartDateTime().toLocalDate().atStartOfDay())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Appointment cannot be canceled less than 1 day before the start time"
+            );
+        }
 
         appointment.setStatus(AppointmentStatus.CANCELED);
         appointment.getSlot().setStatus(SlotStatus.CLOSED);
