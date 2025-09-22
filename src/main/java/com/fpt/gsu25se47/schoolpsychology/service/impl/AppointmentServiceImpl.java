@@ -117,7 +117,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 BuildNotiRequest.buildNotiRequest(
                         appointmentResponse.getId(),
                         "New Appointment",
-                        appointmentResponse.getBookedFor() + "have already a new appointment to you !",
+                        appointmentResponse.getBookedFor().getFullName() + "have already a new appointment to you !",
                         "APPOINTMENT",
                         appointmentResponse.getHostedBy().getEmail()
                 )
