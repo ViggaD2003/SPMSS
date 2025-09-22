@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +37,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final MentalEvaluationService mentalEvaluationService;
     private final SystemConfigService systemConfigService;
     private final AppointmentMapper appointmentMapper;
+    private final NotificationService notificationService;
 
     @Transactional
     @Override
     public AppointmentResponse createAppointment(CreateAppointmentRequest request) {
 
         Cases cases = null;
+        Slot slot = null;
         if (request.getCaseId() != null) {
             cases = caseRepository.findById(request.getCaseId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -49,20 +52,42 @@ public class AppointmentServiceImpl implements AppointmentService {
             validateCounselorOwnCase(cases, accountService.getCurrentAccount().getCounselor());
         }
 
+        validateAppointmentDuration(request.getStartDateTime(), request.getEndDateTime());
+
         // system config for appointment feature enabled
         validateAppointmentFeatureEnabled();
 
         // bookedBy ( person who book appointment )
         Account bookedBy = accountService.getCurrentAccount();
 
-        // system config for max appointments per day
-        validateMaxAppointments(request, bookedBy);
-
-//        ensureNoAppointmentConflicts(request);
-
         Account bookedFor = getBookedFor(request);
 
-        Slot slot = getSlot(request);
+        if (bookedBy == bookedFor) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "The appointment cannot be created with same host and guest");
+        }
+
+        if (bookedBy.getRole() == Role.STUDENT || bookedBy.getRole() == Role.PARENTS) {
+
+            // student or parents book: ensure no appointment with same counselor with same start end time is confirmed or in progress
+            ensureNoAppointmentConflicts(bookedFor.getId(), request.getStartDateTime(), request.getEndDateTime());
+
+            // get slot and ensure this slot is belong to the counselor
+            slot = getAndValidateSlot(request.getSlotId(), bookedFor, request.getHostType());
+
+            // system config for max appointments per day
+            validateMaxAppointmentsForStudentAndParents(request, bookedBy);
+        } else if (bookedBy.getRole() == Role.COUNSELOR){
+
+            // counselor book : ensure no appointment with same counselor with same start end time is confirmed or in progress
+            ensureNoAppointmentConflicts(bookedBy.getId(), request.getStartDateTime(), request.getEndDateTime());
+
+            // get slot and ensure this slot is belong to the counselor
+            slot = getAndValidateSlot(request.getSlotId(), bookedBy, request.getHostType());
+
+            // system config for max appointments per day
+            validateMaxAppointments(request, bookedBy);
+        }
 
         validateTimeWithinSlot(request, slot);
 
@@ -84,6 +109,14 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointmentResponse.setSystemConfigs(systemConfigService.getConfigsByGroup("APPOINTMENT"));
 
         return appointmentResponse;
+    }
+
+    private void validateAppointmentDuration(LocalDateTime startDate, LocalDateTime endDate) {
+        long minutes = Duration.between(startDate, endDate).toMinutes();
+
+        if (minutes != 30) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment must be 30 minutes long.");
+        }
     }
 
     private void validateCounselorOwnCase(Cases cases, Counselor counselor) {
@@ -246,6 +279,11 @@ public class AppointmentServiceImpl implements AppointmentService {
                     "Start and end time must not be equal");
         }
 
+        if (request.getStartDateTime().isAfter(request.getEndDateTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Start time must be before end time");
+        }
+
         // check if the time from appointment is in the slot time range
         if (request.getStartDateTime().isBefore(slot.getStartDateTime()) ||
                 request.getEndDateTime().isAfter(slot.getEndDateTime())) {
@@ -254,13 +292,21 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-    private Slot getSlot(CreateAppointmentRequest request) {
+    private Slot getAndValidateSlot(Integer slotId, Account counselor, HostType hostType) {
 
-        Slot slot = slotRepository.findById(request.getSlotId())
+        Slot slot = slotRepository.findById(slotId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
 
         if (slot.getStatus() == SlotStatus.CLOSED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
+        } else if (hostType == HostType.COUNSELOR) {
+            if (slot.getHostedBy().getCounselor().getAccount() != counselor) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the counselor");
+            }
+        } else if (hostType == HostType.TEACHER) {
+            if (slot.getHostedBy().getTeacher().getAccount() != counselor) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the teacher");
+            }
         }
 
         return slot;
@@ -276,12 +322,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         return bookedFor;
     }
 
-    private void ensureNoAppointmentConflicts(CreateAppointmentRequest request) {
+    private void ensureNoAppointmentConflicts(Integer hostById, LocalDateTime startDate, LocalDateTime endDate) {
 
         List<Appointment> conflictingAppointments = appointmentRepository.findConflictingAppointments(
-                request.getSlotId(),
-                request.getStartDateTime(),
-                request.getEndDateTime()
+                hostById,
+                startDate,
+                endDate
         );
 
         if (!conflictingAppointments.isEmpty()) {
@@ -303,6 +349,39 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         if (currentAppointments >= maxAppointments) {
             throw new IllegalStateException("Your account has reached the maximum appointments for the day.");
+        }
+    }
+
+    private void validateMaxAppointmentsForStudentAndParents(CreateAppointmentRequest request, Account bookedBy) {
+        LocalDateTime startOfDay = request.getStartDateTime().toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        int currentAppointmentsWithTeacher = appointmentRepository.countActiveAppointmentsStudentsInRange(
+                bookedBy.getId(), HostType.TEACHER, startOfDay, endOfDay
+        );
+
+        int currentAppointmentsWithCounselor = appointmentRepository.countActiveAppointmentsStudentsInRange(
+                bookedBy.getId(), HostType.COUNSELOR, startOfDay, endOfDay
+        );
+
+        if (currentAppointmentsWithTeacher == 1) {
+            if (request.getHostType() == HostType.TEACHER) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "You already have 1 appointment with homeroom teacher today");
+            }
+        }
+
+        if (currentAppointmentsWithCounselor == 1) {
+            if (request.getHostType() == HostType.COUNSELOR) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "You already have 1 appointment with counselor today");
+            }
+        }
+
+        int total = currentAppointmentsWithCounselor + currentAppointmentsWithTeacher;
+
+        if (total >= 2) {
+            throw new IllegalStateException("Your account has reached the maximum appointments for the day. (1 with teacher, 1 with counselor)");
         }
     }
 
