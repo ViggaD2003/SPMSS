@@ -94,7 +94,7 @@ public class CaseServiceImpl implements CaseService {
                 .build();
 
 
-        chatService.createChatRoom(caseRepository.save(cases).getId());
+        chatService.createChatRoom(caseRepository.save(cases).getId(), dto.getNotify());
 
         // Gửi notification cho student
         NotiResponse studentRes = notificationService.saveNotification(
