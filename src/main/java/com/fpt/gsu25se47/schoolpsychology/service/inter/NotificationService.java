@@ -2,7 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.inter;
 
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiSettingRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiSettingRequest;
 
 import java.util.List;
 import java.util.UUID;

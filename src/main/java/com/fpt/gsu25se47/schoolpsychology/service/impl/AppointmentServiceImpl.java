@@ -3,6 +3,7 @@ package com.fpt.gsu25se47.schoolpsychology.service.impl;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.CreateAppointmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.UpdateAppointmentRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Appointment.AppointmentResponse;
+import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiResponse;
 import com.fpt.gsu25se47.schoolpsychology.mapper.AppointmentMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
@@ -11,12 +12,12 @@ import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SlotStatus;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.*;
+import com.fpt.gsu25se47.schoolpsychology.utils.BuildNotiRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,7 +45,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     public AppointmentResponse createAppointment(CreateAppointmentRequest request) {
 
         Cases cases = null;
-        Slot slot = null;
+        Slot slot = slotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new RuntimeException("Slot not found with id: " + request.getSlotId()));
         if (request.getCaseId() != null) {
             cases = caseRepository.findById(request.getCaseId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -108,6 +110,18 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointmentResponse.setSystemConfigs(systemConfigService.getConfigsByGroup("APPOINTMENT"));
 
+        NotiResponse response = notificationService.saveNotification(
+                BuildNotiRequest.buildNotiRequest(
+                        appointmentResponse.getId(),
+                        "New Appointment",
+                        appointmentResponse.getBookedFor() + "have already a new appointment to you !",
+                        "APPOINTMENT",
+                        appointmentResponse.getHostedBy().getEmail()
+                )
+        );
+
+        notificationService.sendNotification(appointmentResponse.getHostedBy().getEmail(), "/queue/notifications", response);
+
         return appointmentResponse;
     }
 
@@ -144,6 +158,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELED);
         appointment.getSlot().setStatus(SlotStatus.CLOSED);
         appointment.setCancelReason(reasonCancel);
+
+        NotiResponse response = notificationService.saveNotification(
+                BuildNotiRequest.buildNotiRequest(
+                        appointment.getId(),
+                        "Cancel Appointment",
+                        appointment.getBookedFor() + "have already a cancel appointment!",
+                        "APPOINTMENT",
+                        appointment.getSlot().getHostedBy().getEmail()
+                )
+        );
+
+        notificationService.sendNotification(appointment.getSlot().getHostedBy().getEmail(), "/queue/notifications", response);
 
         return appointmentMapper.toAppointmentResponse(
                 appointmentRepository.save(appointment));

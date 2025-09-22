@@ -9,7 +9,7 @@ public interface ChatService {
 
     ChatMessageDto saveMessage(ChatMessageDto chatMessageDto, Integer chatRoomId);
 
-    void createChatRoom(Integer caseId);
+    void createChatRoom(Integer caseId, Boolean notify);
 
     Optional<?> getAllChatRooms(Integer caseId);
 

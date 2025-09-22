@@ -1,4 +1,4 @@
-package com.fpt.gsu25se47.schoolpsychology.dto.response;
+package com.fpt.gsu25se47.schoolpsychology.dto.request;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,12 +9,15 @@ public class NotiSettingRequest {
 
     private int entityId;
 
+    private String title;
+
+    private String content;
+
+    private String notificationType;
+
     private Boolean notifyTeacher;
 
     private Boolean notifyParent;
 
     private Boolean notifyCounselor;
-
-    private Boolean notifyManager;
-
 }

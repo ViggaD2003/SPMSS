@@ -40,4 +40,7 @@ public class AddNewCaseDto {
     @NotNull(message = "Initial level ID must not be null")
     @Positive(message = "Initial level ID must be a positive number")
     private Integer initialLevelId;
+
+    @NotNull(message = "This is a value for what should notificate to parent")
+    private Boolean notify;
 }

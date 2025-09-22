@@ -73,6 +73,7 @@ public abstract class StudentMapper {
 
         Classes activeClass = classRepository.findActiveClassByStudentId(student.getId());
         dto.setClassDto(classMapper.toDto(activeClass, schoolYearMapper));
+
         Cases activeCase = caseRepository.findActiveCaseByStudentId(student.getId());
         dto.setCaseId(activeCase == null ? null : activeCase.getId());
         dto.setCaseProfile(activeCase == null ? null : CaseProfileDto.builder()

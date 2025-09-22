@@ -62,7 +62,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void createChatRoom(Integer caseId) {
+    public void createChatRoom(Integer caseId, Boolean notify) {
         Cases cases = caseRepository.findById(caseId).orElseThrow(() -> new RuntimeException("caseId not found"));
         if (cases.getStudent().getRole() == Role.STUDENT) {
             chatRoomRepository.save(ChatRoom.builder()

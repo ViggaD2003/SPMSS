@@ -4,7 +4,7 @@ import com.fpt.gsu25se47.schoolpsychology.configuration.OnlineTrackerUser;
 import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiRequest;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.ChatMessageDto;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiResponse;
-import com.fpt.gsu25se47.schoolpsychology.dto.response.NotiSettingRequest;
+import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiSettingRequest;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.ChatService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +29,7 @@ public class NotificationBroker {
     private final SimpMessagingTemplate messagingTemplate;
 
     private final OnlineTrackerUser onlineTrackerUser;
+
 
 
     @MessageMapping("/send")

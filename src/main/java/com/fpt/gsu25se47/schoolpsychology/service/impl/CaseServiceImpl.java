@@ -85,7 +85,7 @@ public class CaseServiceImpl implements CaseService {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .priority(dto.getPriority())
-                .status(Status.NEW)
+                .status(dto.getNotify() ? Status.CONFIRMED : Status.NEW)
                 .progressTrend(dto.getProgressTrend())
                 .createBy(createdBy)
                 .student(student)
@@ -136,7 +136,6 @@ public class CaseServiceImpl implements CaseService {
         );
 
         notificationService.sendNotification("namcaonguyen41@gmail.com", "/queue/notifications", managerRes);
-
 
         return Optional.of("Case created!");
     }
@@ -281,9 +280,18 @@ public class CaseServiceImpl implements CaseService {
 
             Account assignedBy = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new BadRequestException("Unauthorized"));
 
-            List<Cases> cases = caseRepository.findAll();
-            List<Cases> filteredCases = cases.stream()
-                    .filter(item -> caseIds.contains(item.getId()))
+            List<Cases> filteredCases = caseRepository.findAll().stream()
+                    .filter(item -> {
+                        if(caseIds.contains(item.getId())){
+                            if(!item.getStudent().getStudent().getIsEnableSurvey()){
+                                return true;
+                            } else {
+                                throw new RuntimeException(item.getStudent().getFullName() + " is not enable survey");
+                            }
+                        } else {
+                            return false;
+                        }
+                    })
                     .toList();
 
             if(filteredCases.isEmpty()) {
