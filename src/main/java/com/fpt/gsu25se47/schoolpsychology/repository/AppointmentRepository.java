@@ -18,12 +18,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     @Query("""
                 SELECT a FROM Appointment a
                 WHERE
-                    a.bookedFor.id = :hostById AND
-                    a.startDateTime < :endDateTime AND
-                    a.endDateTime > :startDateTime AND
-                    (a.status <> 'CANCELED' AND a.status <> 'ABSENT' AND a.status <> 'COMPLETED')
+                    (a.bookedBy.id = :participantId OR a.bookedFor.id = :participantId)
+                    AND a.startDateTime < :endDateTime
+                    AND a.endDateTime > :startDateTime
+                    AND a.status NOT IN ('CANCELED', 'ABSENT', 'COMPLETED')
             """)
-    List<Appointment> findConflictingAppointments(Integer hostById, LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<Appointment> findConflictingAppointments(
+            Integer participantId,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime
+    );
 
     @Query("""
                 SELECT a FROM Appointment a
@@ -40,13 +44,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     List<Appointment> findAllByCaseId(Integer caseId);
 
     @Query("""
-    SELECT a FROM Appointment a
-    WHERE a.bookedFor.id = :bookedForId
-      AND a.status IN (:statuses)
-      AND (:startDateTime IS NULL OR a.startDateTime >= :startDateTime)
-      AND (:endDateTime IS NULL OR a.endDateTime <= :endDateTime)
-    ORDER BY a.startDateTime ASC, a.endDateTime ASC
-""")
+                SELECT a FROM Appointment a
+                WHERE a.bookedFor.id = :bookedForId
+                  AND a.status IN (:statuses)
+                  AND (:startDateTime IS NULL OR a.startDateTime >= :startDateTime)
+                  AND (:endDateTime IS NULL OR a.endDateTime <= :endDateTime)
+                ORDER BY a.startDateTime ASC, a.endDateTime ASC
+            """)
     List<Appointment> findByBookedForAndStatus(
             Integer bookedForId,
             List<AppointmentStatus> statuses,
