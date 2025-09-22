@@ -47,6 +47,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         Cases cases = null;
         Slot slot = slotRepository.findById(request.getSlotId())
                 .orElseThrow(() -> new RuntimeException("Slot not found with id: " + request.getSlotId()));
+
+        if (slot.getStatus() == SlotStatus.CLOSED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
+        }
+
         if (request.getCaseId() != null) {
             cases = caseRepository.findById(request.getCaseId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -75,14 +80,15 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (bookedBy.getRole() == Role.STUDENT || bookedBy.getRole() == Role.PARENTS) {
 
             // get slot and ensure this slot is belong to the counselor
-            slot = getAndValidateSlot(request.getSlotId(), bookedFor, request.getHostType());
+//            slot = getAndValidateSlot(request.getSlotId(), bookedFor, request.getHostType());
+
 
             // system config for max appointments per day
             validateMaxAppointmentsForStudentAndParents(request, bookedBy);
         } else if (bookedBy.getRole() == Role.COUNSELOR){
 
             // get slot and ensure this slot is belong to the counselor
-            slot = getAndValidateSlot(request.getSlotId(), bookedBy, request.getHostType());
+//            slot = getAndValidateSlot(request.getSlotId(), bookedBy, request.getHostType());
 
             // system config for max appointments per day
             validateMaxAppointments(request, bookedBy);
@@ -315,25 +321,25 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-    private Slot getAndValidateSlot(Integer slotId, Account account, HostType hostType) {
-
-        Slot slot = slotRepository.findById(slotId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
-
-        if (slot.getStatus() == SlotStatus.CLOSED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
-        } else if (hostType == HostType.COUNSELOR) {
-            if (slot.getHostedBy().getCounselor().getAccount() != account) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the counselor");
-            }
-        } else if (hostType == HostType.TEACHER) {
-            if (slot.getHostedBy().getTeacher().getAccount() != account) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the teacher");
-            }
-        }
-
-        return slot;
-    }
+//    private Slot getAndValidateSlot(Integer slotId, Account account, HostType hostType) {
+//
+//        Slot slot = slotRepository.findById(slotId)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
+//
+//        if (slot.getStatus() == SlotStatus.CLOSED) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
+//        } else if (hostType == HostType.COUNSELOR) {
+//            if (slot.getHostedBy().getCounselor().getAccount() != account) {
+//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the counselor");
+//            }
+//        } else if (hostType == HostType.TEACHER) {
+//            if (slot.getHostedBy().getTeacher().getAccount() != account) {
+//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the teacher");
+//            }
+//        }
+//
+//        return slot;
+//    }
 
     private Account getBookedFor(CreateAppointmentRequest request) {
         // bookdedFor -> person to host this appointment
