@@ -67,10 +67,10 @@ public class AppointmentServiceImpl implements AppointmentService {
                     "The appointment cannot be created with same host and guest");
         }
 
-        if (bookedBy.getRole() == Role.STUDENT || bookedBy.getRole() == Role.PARENTS) {
+        // ensure no appointment with same counselor with same start end time is confirmed or in progress
+        ensureNoAppointmentConflicts(bookedFor.getId(), request.getStartDateTime(), request.getEndDateTime());
 
-            // student or parents book: ensure no appointment with same counselor with same start end time is confirmed or in progress
-            ensureNoAppointmentConflicts(bookedFor.getId(), request.getStartDateTime(), request.getEndDateTime());
+        if (bookedBy.getRole() == Role.STUDENT || bookedBy.getRole() == Role.PARENTS) {
 
             // get slot and ensure this slot is belong to the counselor
             slot = getAndValidateSlot(request.getSlotId(), bookedFor, request.getHostType());
@@ -78,9 +78,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             // system config for max appointments per day
             validateMaxAppointmentsForStudentAndParents(request, bookedBy);
         } else if (bookedBy.getRole() == Role.COUNSELOR){
-
-            // counselor book : ensure no appointment with same counselor with same start end time is confirmed or in progress
-            ensureNoAppointmentConflicts(bookedBy.getId(), request.getStartDateTime(), request.getEndDateTime());
 
             // get slot and ensure this slot is belong to the counselor
             slot = getAndValidateSlot(request.getSlotId(), bookedBy, request.getHostType());
