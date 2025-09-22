@@ -62,10 +62,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Account bookedFor = getBookedFor(request);
 
-        if (bookedBy == bookedFor) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "The appointment cannot be created with same host and guest");
-        }
+//        if (bookedBy == bookedFor) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+//                    "The appointment cannot be created with same host and guest");
+//        }
 
         // ensure no appointment with same counselor with same start end time is confirmed or in progress
         ensureNoAppointmentConflicts(bookedFor.getId(), request.getStartDateTime(), request.getEndDateTime());
