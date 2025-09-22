@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,14 +48,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatMessageDto saveMessage(ChatMessageDto chatMessageDto, Integer chatRoomId) {
-        ChatMessage chatMessage = ChatMessage.builder()
-                .createdAt(LocalDateTime.now())
-                .email(chatMessageDto.getSender())
-                .content(chatMessageDto.getMessage())
-                .chatRoom(chatRoomRepository.findById(chatRoomId)
-                        .orElseThrow(() -> new RuntimeException("Room not found"))
-                )
-                .build();
+        ChatMessage chatMessage = ChatMessage.builder().createdAt(LocalDateTime.now()).email(chatMessageDto.getSender()).content(chatMessageDto.getMessage()).chatRoom(chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new RuntimeException("Room not found"))).build();
         System.out.println("ENTITY" + chatMessage);
         chatMessageRepository.save(chatMessage);
 
@@ -63,24 +57,31 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void createChatRoom(Integer caseId, Boolean notify) {
-        Cases cases = caseRepository.findById(caseId).orElseThrow(() -> new RuntimeException("caseId not found"));
-        if (cases.getStudent().getRole() == Role.STUDENT) {
-            chatRoomRepository.save(ChatRoom.builder()
-                    .cases(cases)
-                    .email(cases.getStudent().getEmail())
-                    .roleRoom(cases.getStudent().getRole().toString())
-                    .timeStamp(LocalDateTime.now())
-                    .build());
+        Cases cases = caseRepository.findById(caseId)
+                .orElseThrow(() -> new RuntimeException("caseId not found"));
+
+        // Tạo list các account cần join room
+        List<Account> accounts = new ArrayList<>();
+        accounts.add(cases.getStudent()); // student luôn có mặt
+
+        if (!notify) {
+            // thêm guardian nếu notify = false
+            accounts.addAll(
+                    cases.getStudent().getStudent().getRelationships().stream()
+                            .map(rel -> rel.getGuardian().getAccount())
+                            .toList()
+            );
         }
 
-        cases.getStudent().getStudent().getRelationships().forEach(relationship -> {
-            chatRoomRepository.save(ChatRoom.builder()
-                    .cases(cases)
-                    .email(relationship.getGuardian().getAccount().getEmail())
-                    .roleRoom(relationship.getGuardian().getAccount().getRole().toString())
-                    .timeStamp(LocalDateTime.now())
-                    .build());
-        });
+        // Lưu chatroom cho từng account
+        accounts.forEach(acc -> chatRoomRepository.save(
+                ChatRoom.builder()
+                        .cases(cases)
+                        .email(acc.getEmail())
+                        .roleRoom(acc.getRole().toString())
+                        .timeStamp(LocalDateTime.now())
+                        .build()
+        ));
     }
 
     @Override
@@ -88,8 +89,7 @@ public class ChatServiceImpl implements ChatService {
         Account account = accountService.getCurrentAccount();
 
         if (account.getRole() == Role.COUNSELOR) {
-            return Optional.of(chatRoomRepository.findAllByCasesId(caseId)
-                    .stream().map(this::mapToChatRoomResponse).collect(Collectors.toList()));
+            return Optional.of(chatRoomRepository.findAllByCasesId(caseId).stream().map(this::mapToChatRoomResponse).collect(Collectors.toList()));
         } else {
             return Optional.of(this.mapToChatRoomResponse(chatRoomRepository.findAllByCasesIdAndByRoleRoom(caseId, account.getRole().toString(), account.getEmail())));
         }
@@ -102,11 +102,6 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private ChatRoomResponse mapToChatRoomResponse(ChatRoom chatRoom) {
-        return ChatRoomResponse.builder()
-                .id(chatRoom.getId())
-                .email(chatRoom.getEmail())
-                .roleRoom(chatRoom.getRoleRoom())
-                .timeStamp(chatRoom.getTimeStamp())
-                .build();
+        return ChatRoomResponse.builder().id(chatRoom.getId()).email(chatRoom.getEmail()).roleRoom(chatRoom.getRoleRoom()).timeStamp(chatRoom.getTimeStamp()).build();
     }
 }

@@ -32,6 +32,7 @@ public class CaseMapper {
                 .student(cases.getStudent() == null ? null : accountMapper.toDto(cases.getStudent()))
                 .initialLevel(levelMapper.mapToLevelResponse(cases.getInitialLevel()))
                 .currentLevel(levelMapper.mapToLevelResponse(cases.getCurrentLevel()))
+                .notify(cases.getNotify())
                 .createdAt(cases.getCreatedDate())
                 .updatedAt(cases.getUpdatedDate())
                 .build();

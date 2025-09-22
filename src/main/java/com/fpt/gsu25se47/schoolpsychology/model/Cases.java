@@ -26,6 +26,8 @@ public class Cases extends Auditable {
 
     private String description;
 
+    private Boolean notify;
+
     @Enumerated(EnumType.STRING)
     private Priority priority;
 

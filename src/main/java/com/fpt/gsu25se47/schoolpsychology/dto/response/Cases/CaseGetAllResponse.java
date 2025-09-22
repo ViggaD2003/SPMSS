@@ -46,5 +46,7 @@ public class CaseGetAllResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private Boolean notify;
 }
 

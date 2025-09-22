@@ -51,7 +51,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             cases = caseRepository.findById(request.getCaseId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "Case not found for ID: " + request.getCaseId()));
-            validateCounselorOwnCase(cases, accountService.getCurrentAccount().getCounselor());
+            validateCounselorOwnCase(cases, slot.getHostedBy().getCounselor());
         }
 
         validateAppointmentDuration(request.getStartDateTime(), request.getEndDateTime());
@@ -315,7 +315,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-    private Slot getAndValidateSlot(Integer slotId, Account counselor, HostType hostType) {
+    private Slot getAndValidateSlot(Integer slotId, Account account, HostType hostType) {
 
         Slot slot = slotRepository.findById(slotId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
@@ -323,11 +323,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (slot.getStatus() == SlotStatus.CLOSED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
         } else if (hostType == HostType.COUNSELOR) {
-            if (slot.getHostedBy().getCounselor().getAccount() != counselor) {
+            if (slot.getHostedBy().getCounselor().getAccount() != account) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the counselor");
             }
         } else if (hostType == HostType.TEACHER) {
-            if (slot.getHostedBy().getTeacher().getAccount() != counselor) {
+            if (slot.getHostedBy().getTeacher().getAccount() != account) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the teacher");
             }
         }

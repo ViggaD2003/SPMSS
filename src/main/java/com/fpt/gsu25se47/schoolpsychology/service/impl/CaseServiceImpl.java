@@ -88,11 +88,11 @@ public class CaseServiceImpl implements CaseService {
                 .status(dto.getNotify() ? Status.CONFIRMED : Status.NEW)
                 .progressTrend(dto.getProgressTrend())
                 .createBy(createdBy)
+                .notify(dto.getNotify())
                 .student(student)
                 .initialLevel(initialLevel)
                 .currentLevel(currentLevel)
                 .build();
-
 
         chatService.createChatRoom(caseRepository.save(cases).getId(), dto.getNotify());
 
