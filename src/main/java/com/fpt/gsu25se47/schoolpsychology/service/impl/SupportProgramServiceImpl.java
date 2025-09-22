@@ -151,7 +151,6 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             );
 
             notificationService.sendNotification(participant.getStudent().getEmail(), "/queue/notifications", programSupport);
-
         });
 
         return participants.stream().map(participantMapper::mapToProgramParticipantsResponse).toList();

@@ -135,7 +135,7 @@ public class CaseServiceImpl implements CaseService {
                         .build()
         );
 
-        notificationService.sendNotification("danhkvtse172932@fpt.edu.vn", "/queue/notifications", managerRes);
+        notificationService.sendNotification("namcaonguyen41@gmail.com", "/queue/notifications", managerRes);
 
 
         return Optional.of("Case created!");

@@ -10,6 +10,7 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyType;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.TargetScope;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.SurveyService;
@@ -79,7 +80,16 @@ public class SurveyServiceImpl implements SurveyService {
             survey.setRound(1);
             Survey saved = surveyRepository.save(survey);
 
-            accountRepository.findAllWithRoleStudent().forEach(student -> {
+            List<Account> students = new ArrayList<>();
+
+            if(addNewSurveyDto.getTargetScope() == TargetScope.ALL) {
+                students = accountRepository.findAllWithRoleStudent();
+            } else if(addNewSurveyDto.getTargetScope() == TargetScope.GRADE) {
+                students = accountRepository.findAllWithRoleStudent()
+                        .stream().filter(s -> addNewSurveyDto.getTargetGrade().contains(s.getStudent().getTargetLevel())).toList();
+            }
+
+            students.forEach(student -> {
                 NotiResponse payload = notificationService.saveNotification(
                         NotiRequest.builder()
                         .title("Thông báo mới từ trường")
