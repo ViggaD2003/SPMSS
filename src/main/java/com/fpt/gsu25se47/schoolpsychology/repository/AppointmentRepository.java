@@ -2,6 +2,7 @@ package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,12 +18,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     @Query("""
                 SELECT a FROM Appointment a
                 WHERE
-                    a.slot.id = :slotId AND
+                    a.bookedFor.id = :hostById AND
                     a.startDateTime < :endDateTime AND
                     a.endDateTime > :startDateTime AND
-                    (a.status <> 'CANCELLED' AND a.status <> 'ABSENT' AND a.status <> 'COMPLETED')
+                    (a.status <> 'CANCELED' AND a.status <> 'ABSENT' AND a.status <> 'COMPLETED')
             """)
-    List<Appointment> findConflictingAppointments(Integer slotId, LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<Appointment> findConflictingAppointments(Integer hostById, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
     @Query("""
                 SELECT a FROM Appointment a
@@ -73,13 +74,30 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
                 FROM Appointment a
                 WHERE a.bookedBy.id = :bookedById
                   AND a.startDateTime BETWEEN :start AND :end
-                  AND a.status <> :cancelStatus
+                  AND
+                  (a.status <> 'CANCELED' AND a.status <> 'ABSENT' AND a.status <> 'COMPLETED')
             """)
     int countActiveAppointmentsInRange(
             @Param("bookedById") Integer bookedById,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             @Param("cancelStatus") AppointmentStatus cancelStatus
+    );
+
+    @Query("""
+                SELECT COUNT(a)
+                FROM Appointment a
+                WHERE a.bookedBy.id = :bookedById
+                  AND a.hostType = :hostType
+                  AND a.startDateTime BETWEEN :start AND :end
+                  AND
+                  (a.status <> 'CANCELED' AND a.status <> 'ABSENT' AND a.status <> 'COMPLETED')
+            """)
+    int countActiveAppointmentsStudentsInRange(
+            @Param("bookedById") Integer bookedById,
+            @Param("hostType") HostType hostType,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
     );
 
     @Query(value = """
