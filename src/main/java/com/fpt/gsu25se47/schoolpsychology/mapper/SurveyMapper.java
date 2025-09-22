@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.SurveyStatic;
 import com.fpt.gsu25se47.schoolpsychology.model.Category;
+import com.fpt.gsu25se47.schoolpsychology.model.Question;
 import com.fpt.gsu25se47.schoolpsychology.model.Survey;
 import com.fpt.gsu25se47.schoolpsychology.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +76,7 @@ public class SurveyMapper {
     /**
      * Ánh xạ Survey entity sang SurveyDetailResponse DTO.
      */
-    public SurveyDetailResponse mapToSurveyDetailResponse(Survey survey) {
+    public SurveyDetailResponse mapToSurveyDetailResponse(Survey survey, Boolean flag) {
         return SurveyDetailResponse.builder()
                 .surveyId(survey.getId())
                 .title(survey.getTitle())
@@ -92,7 +93,12 @@ public class SurveyMapper {
                 .createdAt(survey.getCreatedDate())
                 .updatedAt(survey.getUpdatedDate())
                 .category(categoryMapper.mapToCategorySurveyResponse(survey.getCategory()))
-                .questions(survey.getQuestions().stream()
+                .questions(flag ? survey.getQuestions().stream()
+                        .filter(q -> Boolean.TRUE.equals(q.getIsActive()))
+                        .map(questionMapper::mapToQuestionResponse)
+                        .toList()
+                        :
+                        survey.getQuestions().stream()
                         .map(questionMapper::mapToQuestionResponse)
                         .toList())
                 .build();

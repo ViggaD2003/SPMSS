@@ -225,7 +225,7 @@ public class SurveyControllerTest {
         //GIVEN
         Integer surveyId = 1;
 
-        Mockito.when(surveyService.getSurveyById(surveyId))
+        Mockito.when(surveyService.getSurveyById(surveyId, false))
                 .thenReturn(surveyDetailResponse);
         //WHEN
         mockMvc.perform(MockMvcRequestBuilders
@@ -246,7 +246,7 @@ public class SurveyControllerTest {
         //GIVEN
         Integer surveyId = 1;
 
-        Mockito.when(surveyService.getSurveyById(surveyId))
+        Mockito.when(surveyService.getSurveyById(surveyId, false))
                 .thenThrow(new RuntimeException("Something went wrong"));
         //WHEN
         mockMvc.perform(MockMvcRequestBuilders

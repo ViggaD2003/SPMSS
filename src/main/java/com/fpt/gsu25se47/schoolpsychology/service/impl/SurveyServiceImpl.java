@@ -113,7 +113,7 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public SurveyDetailResponse getSurveyById(Integer id) {
+    public SurveyDetailResponse getSurveyById(Integer id, Boolean flag) {
         try {
             Survey survey = surveyRepository.findById(id).orElse(null);
 
@@ -121,7 +121,7 @@ public class SurveyServiceImpl implements SurveyService {
                 throw new RuntimeException("Survey not found");
             }
 
-            SurveyDetailResponse response = surveyMapper.mapToSurveyDetailResponse(survey);
+            SurveyDetailResponse response = surveyMapper.mapToSurveyDetailResponse(survey, flag);
             return response;
         } catch (Exception e) {
             log.error("Failed to create survey: {}", e.getMessage(), e);
@@ -157,7 +157,7 @@ public class SurveyServiceImpl implements SurveyService {
         }
 
         Survey updatedSurvey = surveyRepository.save(survey);
-        return Optional.of(surveyMapper.mapToSurveyDetailResponse(updatedSurvey));
+        return Optional.of(surveyMapper.mapToSurveyDetailResponse(updatedSurvey, false));
     }
 
 

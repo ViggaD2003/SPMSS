@@ -39,8 +39,8 @@ public class SurveyController {
     @PreAuthorize("hasRole('MANAGER') or hasRole('STUDENT') or hasRole('PARENTS') or hasRole('COUNSELOR')")
     @GetMapping("/{id}")
     @Operation(summary = "Xem chi tiết khảo sát", description = "Xem chi tiết khảo sát theo ID. Các vai trò có thể truy cập: Học sinh, Phụ huynh, Cố vấn, Quản lý.")
-    public ResponseEntity<?> getSurveyById(@PathVariable Integer id) {
-        return ResponseEntity.ok(surveyService.getSurveyById(id));
+    public ResponseEntity<?> getSurveyById(@PathVariable Integer id, @RequestParam("flag") Boolean flag) {
+        return ResponseEntity.ok(surveyService.getSurveyById(id, flag));
     }
 
     @PreAuthorize("hasRole('MANAGER')")

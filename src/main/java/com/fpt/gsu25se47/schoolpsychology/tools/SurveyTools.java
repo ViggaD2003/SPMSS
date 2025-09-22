@@ -22,8 +22,8 @@ public class SurveyTools {
     }
 
     @Tool(description = "For all roles except TEACHER role -> Get detailed information for a specific survey by ID")
-    public SurveyDetailResponse getSurveyById(Integer id) {
-        return surveyService.getSurveyById(id);
+    public SurveyDetailResponse getSurveyById(Integer id, Boolean flag) {
+        return surveyService.getSurveyById(id, flag);
     }
 
     @Tool(description = "For STUDENTS and PARENTS -> Get all published surveys available for a specific student. " +

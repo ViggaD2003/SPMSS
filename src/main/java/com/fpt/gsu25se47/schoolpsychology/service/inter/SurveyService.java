@@ -14,7 +14,7 @@ public interface SurveyService {
 
     List<SurveyGetAllResponse> getAllSurveys();
 
-    SurveyDetailResponse getSurveyById(Integer id);
+    SurveyDetailResponse getSurveyById(Integer id, Boolean flag);
 
     Optional<?> updateSurveyById(Integer id, UpdateSurveyRequest updateSurveyRequest);
 
