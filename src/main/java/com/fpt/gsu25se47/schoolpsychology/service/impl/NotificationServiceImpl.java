@@ -6,10 +6,12 @@ import com.fpt.gsu25se47.schoolpsychology.dto.request.NotiSettingRequest;
 import com.fpt.gsu25se47.schoolpsychology.mapper.NotificationMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.Account;
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
+import com.fpt.gsu25se47.schoolpsychology.model.Classes;
 import com.fpt.gsu25se47.schoolpsychology.model.Notifications;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.Role;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.AppointmentRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.ClassRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.NotificationRepository;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.NotificationService;
 import com.fpt.gsu25se47.schoolpsychology.utils.BuildNotiRequest;
@@ -31,6 +33,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final AppointmentRepository appointmentRepository;
+    private final ClassRepository classRepository;
 
 
     @Override
@@ -92,7 +95,9 @@ public class NotificationServiceImpl implements NotificationService {
                     request.getContent(),
                     request.getNotificationType(),
                     appointment.getSlot().getHostedBy().getEmail());
-                this.sendNotification(appointment.getSlot().getHostedBy().getEmail(),
+
+            Classes activeClass = classRepository.findActiveClassByStudentId(appointment.getBookedFor().getId());
+                this.sendNotification(activeClass.getTeacher().getAccount().getEmail(),
                         "/queue/notifications",
                         this.saveNotification(notiRequest));
         }
