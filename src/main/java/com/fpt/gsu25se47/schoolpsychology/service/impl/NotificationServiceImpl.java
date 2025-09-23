@@ -43,7 +43,7 @@ public class NotificationServiceImpl implements NotificationService {
         Account account = accountRepository.findByEmail(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Not found account !"));
 
-        notification.setContent(request.getContent() + "_INFO");
+        notification.setNotificationType(request.getNotificationType().contains("_") ? request.getNotificationType() : request.getNotificationType() + "_INFO");
         notification.setReceiver(account);
         notification.setIsRead(false);
 
