@@ -19,7 +19,8 @@ public abstract class NotificationMapper {
 
     @Mappings({
             @Mapping(target = "receiver", ignore = true),
-            @Mapping(target = "isRead", ignore = true)
+            @Mapping(target = "isRead", ignore = true),
+            @Mapping(target = "content", ignore = true)
     })
     public abstract Notifications mapNotification(NotiRequest notification);
 
