@@ -90,13 +90,13 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         if(request.getNotifyTeacher()) {
+            Classes activeClass = classRepository.findActiveClassByStudentId(appointment.getBookedFor().getId());
             NotiRequest notiRequest = BuildNotiRequest.buildNotiRequest(request.getEntityId(),
                     request.getTitle(),
                     request.getContent(),
                     request.getNotificationType(),
-                    appointment.getSlot().getHostedBy().getEmail());
+                    activeClass.getTeacher().getAccount().getEmail());
 
-            Classes activeClass = classRepository.findActiveClassByStudentId(appointment.getBookedFor().getId());
                 this.sendNotification(activeClass.getTeacher().getAccount().getEmail(),
                         "/queue/notifications",
                         this.saveNotification(notiRequest));
