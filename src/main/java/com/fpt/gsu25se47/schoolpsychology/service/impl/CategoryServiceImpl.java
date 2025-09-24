@@ -76,7 +76,6 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        if(category.getIsActive()){
             category.setName(updateCategoryDto.getName());
             category.setDescription(updateCategoryDto.getDescription());
             category.setCode(updateCategoryDto.getCode());
@@ -87,9 +86,6 @@ public class CategoryServiceImpl implements CategoryService {
             category.setQuestionLength(updateCategoryDto.getQuestionLength());
             category.setSeverityWeight(updateCategoryDto.getSeverityWeight());
             return this.mapToCategoryGetAllResponse(categoryRepository.save(category));
-        } else {
-            throw new IllegalArgumentException("Category is not active");
-        }
     }
 
     @Override
