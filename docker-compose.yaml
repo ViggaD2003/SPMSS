@@ -20,8 +20,8 @@ services:
       MYSQL_DATABASE: school_mental_health_support_db
       MYSQL_USER: spmss
       MYSQL_PASSWORD: spmss2025
-#    ports:
-#      - "3309:3306"
+    ports:
+      - "3309:3306"
     volumes:
       - spmss-mysql-data:/var/lib/mysql
     networks:
