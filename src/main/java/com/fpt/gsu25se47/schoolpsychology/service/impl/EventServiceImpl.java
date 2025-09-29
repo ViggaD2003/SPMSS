@@ -4,7 +4,10 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.EventResponse;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.AccountRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.CaseRepository;
+import com.fpt.gsu25se47.schoolpsychology.repository.RelationshipRepository;
 import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRepository;
+import com.fpt.gsu25se47.schoolpsychology.service.inter.AccountService;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,16 +25,25 @@ public class EventServiceImpl implements EventService {
 
     private final SurveyRepository surveyRepository;
     private final AccountRepository accountRepository;
+    private final CaseRepository caseRepository;
+    private final AccountService accountService;
+    private final RelationshipRepository relationshipRepository;
 
     @Override
     public List<EventResponse> getEvents(Integer studentId, LocalDate startDate, LocalDate endDate) {
+
+        Account account = accountService.getCurrentAccount();
 
         Account curAcc = accountRepository.findById(studentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Student not found for ID: " + studentId));
 
+        Cases activeCase = caseRepository.findActiveCaseByStudentId(studentId);
+
         List<Appointment> appointments = curAcc.getAppointmentsForMe().stream()
-                .filter(a -> a.getStartDateTime().isBefore(endDate.plusDays(1).atStartOfDay()) // starts before filter end
+                .filter(a -> a.getStartDateTime().isBefore(endDate.plusDays(1).atStartOfDay()
+
+                ) // starts before filter end
                         && a.getEndDateTime().isAfter(startDate.atStartOfDay())               // ends after filter start
                         && a.getStatus() != AppointmentStatus.ABSENT
                         && a.getStatus() != AppointmentStatus.CANCELED
@@ -51,6 +63,21 @@ public class EventServiceImpl implements EventService {
                 .filter(s -> s.getStartDate().isBefore(endDate.plusDays(1))
                         && s.getEndDate().isAfter(startDate))
                 .toList();
+
+        if(account.getRole() == Role.PARENTS && relationshipRepository.checkRelationshipExists(account.getId(), List.of(curAcc.getId()))
+                && !activeCase.getNotify()
+        ) {
+            appointments = appointments.stream().filter(item -> !activeCase.getAppointments().contains(item)).toList();
+
+            List<SupportProgram> programCases = activeCase.getProgramParticipants().stream().map(ProgramParticipants::getProgram).toList();
+
+            supportPrograms = supportPrograms.stream().filter(item -> !programCases.contains(item)).toList();
+
+            List<Survey> surveyCases = activeCase.getSurveyCaseLinks().stream().map(SurveyCaseLink::getSurvey).toList();
+
+            surveys = surveys.stream().filter(item -> !surveyCases.contains(item)).toList();
+        }
+
 
         List<EventResponse> events = new ArrayList<>();
 
