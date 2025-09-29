@@ -283,7 +283,7 @@ public class CaseServiceImpl implements CaseService {
             List<Cases> filteredCases = caseRepository.findAll().stream()
                     .filter(item -> {
                         if(caseIds.contains(item.getId())){
-                            if(!item.getStudent().getStudent().getIsEnableSurvey()){
+                            if(item.getStudent().getStudent().getIsEnableSurvey()){
                                 return true;
                             } else {
                                 throw new RuntimeException(item.getStudent().getFullName() + " is not enable survey");
