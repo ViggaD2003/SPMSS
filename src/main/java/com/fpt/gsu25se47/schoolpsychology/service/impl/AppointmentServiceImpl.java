@@ -69,28 +69,11 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Account bookedFor = getBookedFor(request);
 
-//        if (bookedBy == bookedFor) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-//                    "The appointment cannot be created with same host and guest");
-//        }
-
-        // ensure no appointment with same counselor with same start end time is confirmed or in progress
         ensureNoAppointmentConflicts(bookedFor.getId(), request.getStartDateTime(), request.getEndDateTime());
 
         if (bookedBy.getRole() == Role.STUDENT || bookedBy.getRole() == Role.PARENTS) {
-
-            // get slot and ensure this slot is belong to the counselor
-//            slot = getAndValidateSlot(request.getSlotId(), bookedFor, request.getHostType());
-
-
-            // system config for max appointments per day
             validateMaxAppointmentsForStudentAndParents(request, bookedBy);
         } else if (bookedBy.getRole() == Role.COUNSELOR){
-
-            // get slot and ensure this slot is belong to the counselor
-//            slot = getAndValidateSlot(request.getSlotId(), bookedBy, request.getHostType());
-
-            // system config for max appointments per day
             validateMaxAppointments(request, bookedBy);
         }
 
@@ -113,17 +96,33 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointmentResponse.setSystemConfigs(systemConfigService.getConfigsByGroup("APPOINTMENT"));
 
-        NotiResponse response = notificationService.saveNotification(
-                BuildNotiRequest.buildNotiRequest(
-                        appointmentResponse.getId(),
-                        "New Appointment",
-                        appointmentResponse.getBookedFor().getFullName() + "have already a new appointment to you !",
-                        "APPOINTMENT",
-                        appointmentResponse.getHostedBy().getEmail()
-                )
-        );
 
-        notificationService.sendNotification(appointmentResponse.getHostedBy().getEmail(), "/queue/notifications", response);
+        if(bookedBy.getRole() == Role.STUDENT) {
+            NotiResponse response = notificationService.saveNotification(
+                    BuildNotiRequest.buildNotiRequest(
+                            appointmentResponse.getId(),
+                            "New Appointment",
+                            appointmentResponse.getBookedFor().getFullName() + "have already a new appointment to you !",
+                            "APPOINTMENT",
+                            appointmentResponse.getHostedBy().getEmail()
+                    )
+            );
+            notificationService.sendNotification(appointmentResponse.getHostedBy().getEmail(), "/queue/notifications", response);
+        } else {
+            NotiResponse response = notificationService.saveNotification(
+                    BuildNotiRequest.buildNotiRequest(
+                            appointmentResponse.getId(),
+                            "New Appointment",
+                            appointmentResponse.getHostedBy().getFullName() + "have already a new appointment to you !",
+                            "APPOINTMENT",
+                            appointmentResponse.getBookedFor().getEmail()
+                    )
+            );
+            notificationService.sendNotification(appointmentResponse.getHostedBy().getEmail(), "/queue/notifications", response);
+        }
+
+
+
 
         return appointmentResponse;
     }
@@ -320,26 +319,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                     "Start and end time must be within the slot time range");
         }
     }
-
-//    private Slot getAndValidateSlot(Integer slotId, Account account, HostType hostType) {
-//
-//        Slot slot = slotRepository.findById(slotId)
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Slot not found"));
-//
-//        if (slot.getStatus() == SlotStatus.CLOSED) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is CLOSED");
-//        } else if (hostType == HostType.COUNSELOR) {
-//            if (slot.getHostedBy().getCounselor().getAccount() != account) {
-//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the counselor");
-//            }
-//        } else if (hostType == HostType.TEACHER) {
-//            if (slot.getHostedBy().getTeacher().getAccount() != account) {
-//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot is not belong to the teacher");
-//            }
-//        }
-//
-//        return slot;
-//    }
 
     private Account getBookedFor(CreateAppointmentRequest request) {
         // bookdedFor -> person to host this appointment
