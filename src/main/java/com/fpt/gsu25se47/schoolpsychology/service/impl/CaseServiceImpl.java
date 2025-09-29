@@ -339,7 +339,7 @@ public class CaseServiceImpl implements CaseService {
             return Optional.of("Added survey case link successfully !");
         } catch (Exception e) {
             log.error("Failed to create survey case link: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create survey case link", e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
