@@ -10,4 +10,5 @@ public class CaseProfileDto {
     private Integer id;
     private Integer hostBy;
     private Status status;
+    private Boolean notify;
 }
