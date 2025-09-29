@@ -43,7 +43,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                                      JOIN cases c ON scl.case_id = c.id
                             WHERE scl.survey_id = s.id
                               AND c.student_id = st.id
-                              AND c.status = 'CLOSED'      
+                              AND c.status <> 'CLOSED'      
                               AND (scl.is_active IS NULL OR scl.is_active = true)
                         ))
                     )
