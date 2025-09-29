@@ -64,7 +64,7 @@ public class ChatServiceImpl implements ChatService {
         List<Account> accounts = new ArrayList<>();
         accounts.add(cases.getStudent()); // student luôn có mặt
 
-        if (!notify) {
+        if (notify) {
             // thêm guardian nếu notify = false
             accounts.addAll(
                     cases.getStudent().getStudent().getRelationships().stream()
