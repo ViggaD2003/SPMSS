@@ -380,6 +380,13 @@ public class CaseServiceImpl implements CaseService {
         Cases cases = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
+        if (request.getStatus() == Status.CLOSED){
+            cases.getSurveyCaseLinks().forEach(item -> {
+                item.setRemoveAt(LocalDate.now());
+                item.setIsActive(false);
+                surveyCaseLinkRepository.save(item);
+            });
+        }
         cases.setStatus(request.getStatus());
         cases.setPriority(request.getPriority());
         cases.setProgressTrend(request.getProgressTrend());
