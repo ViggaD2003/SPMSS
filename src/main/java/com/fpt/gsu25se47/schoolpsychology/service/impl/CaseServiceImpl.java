@@ -85,7 +85,7 @@ public class CaseServiceImpl implements CaseService {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .priority(dto.getPriority())
-                .status(dto.getNotify() ? Status.CONFIRMED : Status.NEW)
+                .status(dto.getNotify() ? Status.NEW : Status.CONFIRMED)
                 .progressTrend(dto.getProgressTrend())
                 .createBy(createdBy)
                 .notify(dto.getNotify())
