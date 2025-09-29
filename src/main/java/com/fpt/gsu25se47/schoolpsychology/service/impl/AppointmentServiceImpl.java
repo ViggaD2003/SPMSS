@@ -158,7 +158,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         appointment.setStatus(AppointmentStatus.CANCELED);
-        appointment.getSlot().setStatus(SlotStatus.CLOSED);
         appointment.setCancelReason(reasonCancel);
 
         NotiResponse response = notificationService.saveNotification(
