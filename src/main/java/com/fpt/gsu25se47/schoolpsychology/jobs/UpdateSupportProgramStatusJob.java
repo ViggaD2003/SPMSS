@@ -19,33 +19,26 @@ public class UpdateSupportProgramStatusJob implements Job {
 
     private final SupportProgramRepository supportProgramRepository;
 
-
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         LocalDateTime now = LocalDateTime.now();
-//        log.info("Test cronjob support program status updated at {}", now);
-//        List<SupportProgram> supportProgramsStart = supportProgramRepository.findAll()
-//                .stream().filter(item -> item.getStartTime().getDayOfMonth() == now.getDayOfMonth())
-//                .toList();
-//
-//        supportProgramsStart.forEach(program -> program.setStatus(ProgramStatus.ON_GOING));
-//
-//        List<SupportProgram> supportProgramsEnd = supportProgramRepository.findAll()
-//                .stream().filter(item -> item.getEndTime(). == now)
-//                .toList();
-//
-//        supportProgramsEnd.forEach(program -> program.setStatus(ProgramStatus.COMPLETED));
-
-
         List<SupportProgram> programs = supportProgramRepository.findAll();
 
         programs.forEach(program -> {
-            if (program.getStartTime().isBefore(now) && program.getEndTime().isAfter(now)) {
-                program.setStatus(ProgramStatus.ON_GOING);
-            } else if (program.getEndTime().isBefore(now) || program.getEndTime().isEqual(now)) {
+            ProgramStatus oldStatus = program.getStatus();
+
+            if (now.isAfter(program.getEndTime()) || now.isEqual(program.getEndTime())) {
                 program.setStatus(ProgramStatus.COMPLETED);
+            } else if (now.isAfter(program.getStartTime()) || now.isEqual(program.getStartTime())) {
+                program.setStatus(ProgramStatus.ON_GOING);
+            }
+
+            if (program.getStatus() != oldStatus) {
+                log.info("Program {} status updated from {} to {}", program.getId(), oldStatus, program.getStatus());
             }
         });
+
         supportProgramRepository.saveAll(programs);
     }
+
 }
