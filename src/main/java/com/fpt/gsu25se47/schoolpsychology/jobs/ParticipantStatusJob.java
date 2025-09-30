@@ -16,34 +16,43 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class  ParticipantStatusJob implements Job {
+public class ParticipantStatusJob implements Job {
 
     private final ProgramParticipantRepository participantRepository;
-
     private final SurveyRecordRepository surveyRecordRepository;
-
     private final SupportProgramRepository supportProgramRepository;
 
-
     @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public void execute(JobExecutionContext context) throws JobExecutionException {
         LocalDateTime now = LocalDateTime.now();
 
-        List<SupportProgram> listSupportProgram = supportProgramRepository.findAll();
+        List<SupportProgram> programs = supportProgramRepository.findAll();
 
-        listSupportProgram.forEach(program -> {
+        programs.forEach(program -> {
             program.getProgramRegistrations().forEach(registration -> {
-                if((program.getStartTime() == now) &&
-                        !surveyRecordRepository.isEntrySurveyRecordByStudentId(registration.getStudent().getId(), program.getId())){
+                Integer studentId = registration.getStudent().getId();
+                Integer programId = program.getId();
+
+                boolean hasEntry = surveyRecordRepository.isEntrySurveyRecordByStudentId(studentId, programId);
+                boolean hasExit = surveyRecordRepository.isExitSurveyRecordByStudentId(studentId, programId);
+
+                // Rule 1: Nếu đã qua thời gian bắt đầu mà chưa làm Entry Survey => ABSENT
+                if (program.getStartTime().isBefore(now) && !hasEntry) {
                     registration.setFinalScore(0f);
                     registration.setStatus(RegistrationStatus.ABSENT);
-                    participantRepository.save(registration);
-                } else if((program.getEndTime() == now) &&
-                        !surveyRecordRepository.isExitSurveyRecordByStudentId(registration.getStudent().getId(), program.getId())){
+
+                    // Rule 2: Nếu đã qua thời gian kết thúc mà không có Exit Survey => ABSENT
+                } else if (program.getEndTime().isBefore(now) && hasEntry && !hasExit) {
                     registration.setFinalScore(0f);
                     registration.setStatus(RegistrationStatus.ABSENT);
-                    participantRepository.save(registration);
+
+                    // Rule 3: Nếu chương trình kết thúc mà người đó chỉ ở trạng thái ENROLLED => ABSENT
+                } else if (program.getEndTime().isBefore(now) && registration.getStatus() == RegistrationStatus.ENROLLED) {
+                    registration.setFinalScore(0f);
+                    registration.setStatus(RegistrationStatus.ABSENT);
                 }
+
+                participantRepository.save(registration);
             });
         });
     }
