@@ -25,16 +25,17 @@ public interface ProgramParticipantRepository extends JpaRepository<ProgramParti
             LocalDateTime endDate
     );
 
-    @Query(value = """
-                SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END
-                FROM program_participants pp
-                JOIN support_program sp ON pp.program_id = sp.id
-                WHERE pp.student_id = :studentId
-                  AND DATE(sp.start_time) = CURRENT_DATE
-                  AND pp.status NOT IN ('COMPLETED', 'ABSENT')
-            """, nativeQuery = true)
-    boolean checkAlreadyRegisterInDay(@Param("studentId") Integer studentId);
-
+    @Query("""
+                SELECT COUNT(pp) > 0
+                FROM ProgramParticipants pp
+                WHERE pp.student.id = :studentId
+                AND FUNCTION('DATE', pp.program.startTime) = :date
+                AND pp.status NOT IN ('COMPLETED','ABSENT')
+            """)
+    boolean checkAlreadyRegisterInDay(
+            @Param("studentId") Integer studentId,
+            @Param("date") java.time.LocalDate date
+    );
 
     @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.student.id =:studentId AND pp.program.id = :supportProgramId")
     ProgramParticipants findByStudentId(Integer studentId, Integer supportProgramId);

@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -130,7 +131,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         List<ProgramParticipants> listRegistered = new ArrayList<>();
 
         filteredCases.forEach(c -> {
-            if (programParticipantRepository.checkAlreadyRegisterInDay(c.getStudent().getId())) {
+            if (programParticipantRepository.checkAlreadyRegisterInDay(c.getStudent().getId(), supportProgram.getStartTime().toLocalDate())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         c.getStudent().getFullName() + " has already registered to another program in today");
             }
@@ -227,7 +228,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     "This student is having mental cases in progress");
         }
 
-        if (programParticipantRepository.checkAlreadyRegisterInDay(student.getId())) {
+        if (programParticipantRepository.checkAlreadyRegisterInDay(student.getId(), supportProgram.getStartTime().toLocalDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "You have already registered to another program in today");
         }
