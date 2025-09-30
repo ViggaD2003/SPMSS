@@ -41,9 +41,9 @@ public interface ProgramParticipantRepository extends JpaRepository<ProgramParti
     ProgramParticipants findByStudentId(Integer studentId, Integer supportProgramId);
 
     @Query("""
-            SELECT CASE 
-                       WHEN COUNT(sr.id) >= 2 THEN TRUE 
-                       ELSE FALSE 
+            SELECT CASE
+                       WHEN COUNT(sr.id) >= 2 THEN TRUE
+                       ELSE FALSE
                    END
             FROM ProgramParticipants pp
             JOIN pp.program sp
