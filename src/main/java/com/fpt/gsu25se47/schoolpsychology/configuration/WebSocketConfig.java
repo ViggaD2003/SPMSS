@@ -66,10 +66,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String token = (String) accessor.getSessionAttributes().get("jwt_token");
-                    System.out.printf(token );
-
-                    log.info("🔍 Token from CONNECT: {}", token);
-
                     if (token != null) {
                         try {
                             String username = jwtService.extractUsernameFromJWT(token);
