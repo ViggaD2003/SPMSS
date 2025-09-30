@@ -110,19 +110,21 @@ public class CaseServiceImpl implements CaseService {
         notificationService.sendNotification(student.getEmail(), "/queue/notifications", studentRes);
 
         // Gửi notification cho phụ huynh
-        student.getStudent().getRelationships().forEach(relationship -> {
-            NotiResponse parentRes = notificationService.saveNotification(
-                    NotiRequest.builder()
-                            .title("Con bạn đã được tạo case mới")
-                            .content("Case " + cases.getTitle())
-                            .username(relationship.getGuardian().getAccount().getEmail())
-                            .notificationType("CASE")
-                            .relatedEntityId(cases.getId())
-                            .build()
-            );
+        if (dto.getNotify()){
+            student.getStudent().getRelationships().forEach(relationship -> {
+                NotiResponse parentRes = notificationService.saveNotification(
+                        NotiRequest.builder()
+                                .title("Con bạn đã được tạo case mới")
+                                .content("Case " + cases.getTitle())
+                                .username(relationship.getGuardian().getAccount().getEmail())
+                                .notificationType("CASE")
+                                .relatedEntityId(cases.getId())
+                                .build()
+                );
 
-            notificationService.sendNotification(relationship.getGuardian().getAccount().getEmail(), "/queue/notifications", parentRes);
-        });
+                notificationService.sendNotification(relationship.getGuardian().getAccount().getEmail(), "/queue/notifications", parentRes);
+            });
+        }
 
 
         NotiResponse managerRes = notificationService.saveNotification(

@@ -30,8 +30,6 @@ public class NotificationBroker {
 
     private final OnlineTrackerUser onlineTrackerUser;
 
-
-
     @MessageMapping("/send")
     public void sendMessage(NotiRequest notiRequest) {
         NotiResponse response = notificationService.saveNotification(notiRequest);
