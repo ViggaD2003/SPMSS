@@ -20,41 +20,50 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
     List<Survey> findByEndDateAndStatusPublished(LocalDate date);
 
     @Query(value = """
-                SELECT DISTINCT s.*
-                FROM survey s
-                         JOIN students st ON st.id = :accountId
-                WHERE s.status = 'PUBLISHED'
-                  AND st.is_enable_survey = true
-                  AND (
-                    -- Xử lý target_grade_level
-                        s.target_grade_level = '[]'
-                        OR JSON_LENGTH(s.target_grade_level) = 0
-                        OR s.target_grade_level LIKE CONCAT('%', st.target_level, '%')
-                    )
-                  AND (
-                    -- SCREENING: hiển thị cho tất cả students
-                    s.survey_type = 'SCREENING'
-                        OR
-                        -- FOLLOWUP: chỉ hiển thị nếu student có case và survey được assign
-                    (s.survey_type = 'FOLLOWUP'
-                        AND EXISTS (
-                            SELECT 1
-                            FROM survey_case_link scl
-                                     JOIN cases c ON scl.case_id = c.id
-                            WHERE scl.survey_id = s.id
-                              AND c.student_id = st.id
-                              AND c.status <> 'CLOSED'      
-                              AND (scl.is_active IS NULL OR scl.is_active = true)
-                        ))
-                    )
-                  AND NOT EXISTS (
-                    SELECT 1
-                    FROM survey_record sr
-                    WHERE sr.survey_id = s.id
-                      AND sr.account_id = st.id
-                      AND sr.round = s.round
-                )
-                ORDER BY s.created_date DESC;
+            SELECT DISTINCT s.*
+            FROM survey s
+                     JOIN students st ON st.id = :accountId
+            WHERE s.status = 'PUBLISHED'
+              AND st.is_enable_survey = true
+              AND (
+                  -- target grade filter
+                  s.target_grade_level = '[]'
+                  OR JSON_LENGTH(s.target_grade_level) = 0
+                  OR s.target_grade_level LIKE CONCAT('%', st.target_level, '%')
+              )
+              AND (
+                  -- Case 1: student không có case => chỉ hiển thị Screening
+                  (
+                      NOT EXISTS (
+                          SELECT 1 FROM cases c
+                          WHERE c.student_id = st.id
+                            AND c.status <> 'CLOSED'
+                      )
+                      AND s.survey_type = 'SCREENING'
+                  )
+                  OR
+                  -- Case 2: student có case => chỉ hiển thị Followup đã được assign
+                  (
+                      EXISTS (
+                          SELECT 1
+                          FROM survey_case_link scl
+                                   JOIN cases c2 ON scl.case_id = c2.id
+                          WHERE scl.survey_id = s.id
+                            AND c2.student_id = st.id
+                            AND c2.status <> 'CLOSED'
+                            AND (scl.is_active IS NULL OR scl.is_active = true)
+                      )
+                      AND s.survey_type = 'FOLLOWUP'
+                  )
+              )
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM survey_record sr
+                  WHERE sr.survey_id = s.id
+                    AND sr.account_id = st.id
+                    AND sr.round = s.round
+              )
+            ORDER BY s.created_date DESC
             """, nativeQuery = true)
     List<Survey> findUnansweredExpiredSurveysByAccountId(@Param("accountId") Integer accountId);
 
