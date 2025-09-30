@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SupportProgramRepository extends JpaRepository<SupportProgram, Integer> {
@@ -36,4 +37,17 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
             """)
     List<SupportProgram> findByStudentId(@Param("studentId") Integer studentId);
 
+    @Query("SELECT sp " +
+            "FROM ProgramParticipants pp " +
+            "JOIN pp.program sp " +
+            "WHERE (pp.student.id = :userId OR sp.hostedBy.id = :userId) " +
+            "AND sp.startTime < :appointmentEndTime " +
+            "AND sp.endTime > :appointmentStartTime " +
+            "AND (sp.status = 'ACTIVE' OR sp.status = 'ON_GOING') " +
+            "AND pp.status = 'ENROLLED'")
+    List<SupportProgram> findConflictingProgramsWithAppointment(
+            @Param("userId") Integer userId,
+            @Param("appointmentStartTime") LocalDateTime appointmentStartTime,
+            @Param("appointmentEndTime") LocalDateTime appointmentEndTime
+    );
 }

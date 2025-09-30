@@ -31,6 +31,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AccountRepository accountRepository;
     private final TeacherRepository teacherRepository;
     private final CounselorRepository counselorRepository;
+    private final SupportProgramRepository supportProgramRepository;
     private final SlotRepository slotRepository;
     private final CaseRepository caseRepository;
     private final AccountService accountService;
@@ -334,10 +335,18 @@ public class AppointmentServiceImpl implements AppointmentService {
                 endDate
         );
 
+        List<SupportProgram> conflictingSp = supportProgramRepository.findConflictingProgramsWithAppointment(hostById, startDate, endDate);
+
         if (!conflictingAppointments.isEmpty()) {
 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "There's already appointment booking this time");
+        }
+
+        if (!conflictingSp.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot create appointment. You have a support program during this time slot. " +
+                            "Please choose a different time or check your enrolled programs and hosted sessions.");
         }
     }
 
