@@ -14,32 +14,42 @@ public interface ProgramParticipantRepository extends JpaRepository<ProgramParti
     List<ProgramParticipants> findByProgramId(Integer programId);
 
     @Query("""
-    SELECT pp 
-    FROM ProgramParticipants pp 
-    WHERE pp.student.id = :studentId 
-      AND pp.joinAt BETWEEN :startDate AND :endDate
-""")
+                SELECT pp 
+                FROM ProgramParticipants pp 
+                WHERE pp.student.id = :studentId 
+                  AND pp.joinAt BETWEEN :startDate AND :endDate
+            """)
     List<ProgramParticipants> findByStudentIdAndJoinAtBetween(
             Integer studentId,
             LocalDateTime startDate,
             LocalDateTime endDate
     );
 
+    @Query(value = """
+                SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END
+                FROM program_participants pp
+                JOIN support_program sp ON pp.program_id = sp.id
+                WHERE pp.student_id = :studentId
+                  AND DATE(sp.start_time) = CURRENT_DATE
+                  AND pp.status NOT IN ('COMPLETED', 'ABSENT')
+            """, nativeQuery = true)
+    boolean checkAlreadyRegisterInDay(@Param("studentId") Integer studentId);
+
 
     @Query("SELECT pp FROM ProgramParticipants pp WHERE pp.student.id =:studentId AND pp.program.id = :supportProgramId")
     ProgramParticipants findByStudentId(Integer studentId, Integer supportProgramId);
 
     @Query("""
-    SELECT CASE 
-               WHEN COUNT(sr.id) >= 2 THEN TRUE 
-               ELSE FALSE 
-           END
-    FROM ProgramParticipants pp
-    JOIN pp.program sp
-    JOIN sp.survey s
-    JOIN SurveyRecord sr ON sr.survey = s AND sr.student.id = pp.student.id
-    WHERE pp.id = :participantId
-    """)
+            SELECT CASE 
+                       WHEN COUNT(sr.id) >= 2 THEN TRUE 
+                       ELSE FALSE 
+                   END
+            FROM ProgramParticipants pp
+            JOIN pp.program sp
+            JOIN sp.survey s
+            JOIN SurveyRecord sr ON sr.survey = s AND sr.student.id = pp.student.id
+            WHERE pp.id = :participantId
+            """)
     Boolean hasParticipantCompletedSurveyTwice(@Param("participantId") Integer participantId);
 
 

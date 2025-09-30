@@ -121,31 +121,37 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     }
 
     @Override
+    @Transactional
     public List<ProgramParticipantsResponse> addParticipantsToSupportProgram(Integer supportProgramId, List<Integer> caseIds) {
         List<Cases> cases = caseRepository.findAll();
         List<Cases> filteredCases = cases.stream().filter(c -> caseIds.contains(c.getId())).toList();
         SupportProgram supportProgram = supportProgramRepository.findById(supportProgramId).orElseThrow(() -> new RuntimeException("Could not find support program"));
+
+        List<ProgramParticipants> listRegistered = new ArrayList<>();
+
         filteredCases.forEach(c -> {
-            ProgramParticipants participants = ProgramParticipants.builder()
+            if (programParticipantRepository.checkAlreadyRegisterInDay(c.getStudent().getId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        c.getStudent().getFullName() + " has already registered to another program in today");
+            }
+
+            ProgramParticipants participant = programParticipantRepository.save(ProgramParticipants.builder()
                     .program(supportProgram)
                     .student(c.getStudent())
                     .cases(c)
                     .joinAt(LocalDateTime.now())
                     .status(RegistrationStatus.ENROLLED)
                     .finalScore(0f)
-                    .build();
-            programParticipantRepository.save(participants);
-        });
+                    .build());
 
-        List<ProgramParticipants> participants = programParticipantRepository.findByProgramId(supportProgramId);
+            listRegistered.add(participant);
 
-        participants.forEach(participant -> {
             NotiResponse programSupport = notificationService.saveNotification(
                     NotiRequest.builder()
                             .title("Bạn đã được thêm chương trình hỗ trợ mới")
                             .content("Chương trình hỗ trợ " + supportProgram.getName())
                             .username(participant.getStudent().getEmail())
-                            .notificationType("CASE")
+                            .notificationType("PROGRAM")
                             .relatedEntityId(supportProgram.getId())
                             .build()
             );
@@ -153,7 +159,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             notificationService.sendNotification(participant.getStudent().getEmail(), "/queue/notifications", programSupport);
         });
 
-        return participants.stream().map(participantMapper::mapToProgramParticipantsResponse).toList();
+        return listRegistered.stream().map(participantMapper::mapToProgramParticipantsResponse).toList();
     }
 
     @Override
@@ -182,9 +188,9 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             }
 
             if (programParticipantRepository.hasParticipantCompletedSurveyTwice(participant.getId())) {
-                    MentalEvaluation mentalEvaluation = mentalEvaluationService.createMentalEvaluationWithContext(null, null, participant);
-                    participant.setMentalEvaluation(mentalEvaluation);
-                    programParticipantRepository.save(participant);
+                MentalEvaluation mentalEvaluation = mentalEvaluationService.createMentalEvaluationWithContext(null, null, participant);
+                participant.setMentalEvaluation(mentalEvaluation);
+                programParticipantRepository.save(participant);
             }
 
             return Optional.of(surveyRecordDetailResponse);
@@ -211,7 +217,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         }
 
         if (programParticipantRepository.findByStudentId(student.getId(), supportProgramId) != null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Student is already registered to this program for studentId: " + student.getId());
         }
 
@@ -221,6 +227,11 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     "This student is having mental cases in progress");
         }
 
+        if (programParticipantRepository.checkAlreadyRegisterInDay(student.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "You have already registered to another program in today");
+        }
+
         List<ProgramParticipants> participants = supportProgram.getProgramRegistrations();
 
         if (!participants.isEmpty() && participants.size() >= supportProgram.getMaxParticipants()) {
@@ -228,15 +239,13 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                     "The number of participants is exceeded");
         }
 
-        ProgramParticipants programParticipants = ProgramParticipants.builder()
+        ProgramParticipants programParticipants = programParticipantRepository.save(ProgramParticipants.builder()
                 .program(supportProgram)
                 .student(student.getAccount())
                 .joinAt(LocalDateTime.now())
                 .status(RegistrationStatus.ENROLLED)
                 .finalScore(0f)
-                .build();
-
-        programParticipantRepository.save(programParticipants);
+                .build());
 
         NotiResponse programSupport = notificationService.saveNotification(
                 NotiRequest.builder()
@@ -341,7 +350,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     public SupportProgramResponse updateSupportProgram(Integer id, UpdateSupportProgramRequest request) {
         SupportProgram supportProgram = getSupportProgram(id);
 
-        if(supportProgram.getStatus() != ProgramStatus.ACTIVE) {
+        if (supportProgram.getStatus() != ProgramStatus.ACTIVE) {
             throw new RuntimeException("Support program can not be update with status " + supportProgram.getStatus());
         }
 
@@ -416,7 +425,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
                 .orElseThrow(() -> new RuntimeException("Support program not found for ID: " + programId));
 
         String public_id_response = fileUploadService.deleteFile(public_id);
-        if(!public_id_response.isEmpty() && public_id.equals(public_id_response)) {
+        if (!public_id_response.isEmpty() && public_id.equals(public_id_response)) {
             supportProgram.setPublicId(null);
             supportProgram.setThumbnail(null);
             supportProgramRepository.save(supportProgram);

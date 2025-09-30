@@ -121,9 +121,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             notificationService.sendNotification(appointmentResponse.getHostedBy().getEmail(), "/queue/notifications", response);
         }
 
-
-
-
         return appointmentResponse;
     }
 
