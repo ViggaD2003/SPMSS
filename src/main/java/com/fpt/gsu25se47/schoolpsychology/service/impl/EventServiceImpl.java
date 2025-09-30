@@ -65,7 +65,7 @@ public class EventServiceImpl implements EventService {
                 .toList();
 
         if(account.getRole() == Role.PARENTS && relationshipRepository.checkRelationshipExists(account.getId(), List.of(curAcc.getId()))
-                && !activeCase.getNotify()
+                && activeCase != null && !activeCase.getNotify()
         ) {
             appointments = appointments.stream().filter(item -> !activeCase.getAppointments().contains(item)).toList();
 
@@ -77,7 +77,6 @@ public class EventServiceImpl implements EventService {
 
             surveys = surveys.stream().filter(item -> !surveyCases.contains(item)).toList();
         }
-
 
         List<EventResponse> events = new ArrayList<>();
 
