@@ -161,7 +161,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 BuildNotiRequest.buildNotiRequest(
                         appointment.getId(),
                         "Cancel Appointment",
-                        appointment.getBookedFor() + "have already a cancel appointment!",
+                        appointment.getBookedFor().getFullName() + "have already a cancel appointment !",
                         "APPOINTMENT",
                         appointment.getSlot().getHostedBy().getEmail()
                 )
