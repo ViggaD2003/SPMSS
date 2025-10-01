@@ -51,6 +51,7 @@ public class CaseServiceImpl implements CaseService {
     private final AppointmentRepository appointmentRepository;
     private final ProgramParticipantRepository programParticipantRepository;
     private final NotificationService notificationService;
+    private final SurveyRecordRepository surveyRecordRepository;
 
     @Override
     @Transactional
@@ -180,30 +181,34 @@ public class CaseServiceImpl implements CaseService {
                 .orElseThrow(() -> new RuntimeException("Case not found"));
 
         // 1. Handle surveys
-        AtomicInteger numberOfSkips = new AtomicInteger(0);
-        AtomicInteger numberOfNotSkips = new AtomicInteger(0);
+        // 1. Handle surveys (dựa trên record thuộc case window)
+        List<SurveyRecord> surveyRecordsInThisCase =
+                surveyRecordRepository.findAllRecordsBelongToCaseWindow(caseId);
 
-        List<DataSet> surveyDataSets = surveyRepository.findAllSurveyByCaseId(caseId).stream()
-                .flatMap(survey -> survey.getSurveyRecords().stream())
-                .peek(record -> {
-                    if (Boolean.TRUE.equals(record.getIsSkipped())) {
-                        // count skipped
-                        numberOfSkips.incrementAndGet();
-                    } else {
-                        numberOfNotSkips.incrementAndGet();
-                    }
-                })
-                .filter(item -> item.getTotalScore() > 0 && item.getLevel() != null)
-                .map(record -> mapToDataSet(record.getMentalEvaluation()))
+// Đếm skip / not-skip sau khi đã lọc đúng case
+        int numberOfSkips = (int) surveyRecordsInThisCase.stream()
+                .filter(sr -> Boolean.TRUE.equals(sr.getIsSkipped()))
+                .count();
+
+        int numberOfNotSkips = (int) surveyRecordsInThisCase.stream()
+                .filter(sr -> !Boolean.TRUE.equals(sr.getIsSkipped()))
+                .count();
+
+// DataSet cho chart
+        List<DataSet> surveyDataSets = surveyRecordsInThisCase.stream()
+                .filter(sr -> sr.getTotalScore() != null && sr.getTotalScore() > 0 && sr.getLevel() != null)
+                .map(sr -> mapToDataSet(sr.getMentalEvaluation()))
                 .filter(Objects::nonNull)
                 .toList();
 
+// Số survey đang active (giữ logic cũ nếu bạn đang dùng để hiển thị “đang assign”)
         SurveyStatic surveyStatic = SurveyStatic.builder()
                 .activeSurveys(surveyRepository.findAllSurveyWithLinkActiveByCaseId(caseId).size())
-                .completedSurveys(numberOfNotSkips.get())
-                .numberOfSkips(numberOfSkips.get())
+                .completedSurveys(numberOfNotSkips)
+                .numberOfSkips(numberOfSkips)
                 .dataSet(surveyDataSets)
                 .build();
+
 
         // 2. Handle appointments
         List<Appointment> appointments = appointmentRepository.findAllByCaseId(caseId);
@@ -328,7 +333,7 @@ public class CaseServiceImpl implements CaseService {
                 NotiResponse studentRes = notificationService.saveNotification(
                         NotiRequest.builder()
                                 .title("Bạn có bài survey mới")
-                                .content("Survey " + survey.getId())
+                                .content("Survey " + survey.getTitle())
                                 .username(item.getStudent().getEmail())
                                 .notificationType("SURVEY")
                                 .relatedEntityId(survey.getId())

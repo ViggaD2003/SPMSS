@@ -116,14 +116,4 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
             """)
     int countSurveySkip(Integer studentId, LocalDateTime startDate, LocalDateTime endDate);
 
-
-    @Query("""
-                SELECT s FROM Survey s
-                WHERE
-                    s.startDate < :startDate AND
-                    s.endDate > :endDate AND
-                    s.status = 'PUBLISHED'
-            """)
-    List<Survey> findSurveysBetween(LocalDate startDate, LocalDate endDate);
-
 }

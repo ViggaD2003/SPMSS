@@ -26,6 +26,25 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
             Pageable pageable
     );
 
+
+    @Query(value = """
+        SELECT sr.*
+        FROM survey_record sr
+        JOIN survey_case_link scl ON scl.survey_id = sr.survey_id
+        JOIN cases c ON c.id = scl.case_id
+        WHERE c.id = :caseId
+          AND sr.account_id = c.student_id
+          AND sr.completed_at IS NOT NULL
+          AND sr.completed_at >= c.created_date
+          AND sr.completed_at < COALESCE((
+              SELECT MIN(c2.created_date)
+              FROM cases c2
+              WHERE c2.student_id = c.student_id
+                AND c2.created_date > c.created_date
+          ), TIMESTAMP('9999-12-31 23:59:59'))
+        """, nativeQuery = true)
+    List<SurveyRecord> findAllRecordsBelongToCaseWindow(@Param("caseId") Integer caseId);
+
     @Query("SELECT COUNT(sr) FROM SurveyRecord sr " +
             "WHERE sr.student.id = :studentId AND sr.isSkipped = true")
     int countSkippedSurveyRecordsByStudentId(@Param("studentId") int studentId);
