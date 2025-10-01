@@ -11,10 +11,7 @@ import com.fpt.gsu25se47.schoolpsychology.mapper.ProgramParticipantsMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SupportProgramMapper;
 import com.fpt.gsu25se47.schoolpsychology.mapper.SurveyMapper;
 import com.fpt.gsu25se47.schoolpsychology.model.*;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.ProgramStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.RegistrationStatus;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.Status;
-import com.fpt.gsu25se47.schoolpsychology.model.enums.SurveyRecordIdentify;
+import com.fpt.gsu25se47.schoolpsychology.model.enums.*;
 import com.fpt.gsu25se47.schoolpsychology.repository.*;
 import com.fpt.gsu25se47.schoolpsychology.service.inter.*;
 import com.fpt.gsu25se47.schoolpsychology.utils.CurrentAccountUtils;
@@ -28,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -72,6 +68,19 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         Account account = accountRepository.findById(request.getHostedBy()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find account")
         );
+        int maxSp = supportProgramRepository.countProgramsForCounselorByDate(account.getId(), request.getStartTime(), request.getEndTime());
+
+        if (maxSp >= 1) {
+            if (accountService.getCurrentAccount().getRole() == Role.COUNSELOR) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        String.format("You are already hosting %d support program(s) on %s. You cannot host more than one program per day.",
+                                maxSp, request.getStartTime().toLocalDate()));
+            } else if (accountService.getCurrentAccount().getRole() == Role.MANAGER) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        String.format("This counselor already hosting %d support program(s) on %s. This counselor cannot host more than one program per day.",
+                                maxSp, request.getStartTime().toLocalDate()));
+            }
+        }
 
         SupportProgram supportProgram = supportProgramMapper.mapSupportProgram(request);
         Map<String, String> rawFile = fileUploadService.uploadFile(thumbnail);

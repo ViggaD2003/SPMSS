@@ -50,4 +50,16 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
             @Param("appointmentStartTime") LocalDateTime appointmentStartTime,
             @Param("appointmentEndTime") LocalDateTime appointmentEndTime
     );
+
+    @Query("""
+           SELECT COUNT(sp)
+           FROM SupportProgram sp
+           WHERE sp.hostedBy.id = :userId
+             AND sp.startTime >= :startOfDay
+             AND sp.startTime < :endOfDay
+             AND (sp.status = 'ACTIVE' OR sp.status = 'ON_GOING')
+           """)
+    int countProgramsForCounselorByDate(@Param("userId") Integer userId,
+                                        @Param("startOfDay") LocalDateTime startDate,
+                                        @Param("endOfDay") LocalDateTime endDate);
 }
