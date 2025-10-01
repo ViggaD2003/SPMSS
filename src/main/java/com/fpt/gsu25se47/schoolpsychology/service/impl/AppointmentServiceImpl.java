@@ -269,7 +269,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         } else if (account.getRole() == Role.STUDENT) {
 
             appointments = appointmentRepository.findByBookedForAndStatus(account.getId(), statuses, null, null);
-        } else if (account.getRole() == Role.COUNSELOR) {
+        } else if (account.getRole() == Role.COUNSELOR || account.getRole() == Role.TEACHER) {
 
             appointments = appointmentRepository.findAllByHostByWithStatus(account.getId(), statuses);
         }
