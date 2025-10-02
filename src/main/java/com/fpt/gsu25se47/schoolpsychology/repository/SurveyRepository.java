@@ -68,7 +68,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                           AND sr2.round              = s.round
                           AND sr2.survey_record_type = 'FOLLOWUP'
                           AND sr2.completed_at IS NOT NULL
-                          AND sr2.completed_at >= c2.created_date
+                          AND sr2.completed_at >=  c2.created_date
                       )
                   )
                 )

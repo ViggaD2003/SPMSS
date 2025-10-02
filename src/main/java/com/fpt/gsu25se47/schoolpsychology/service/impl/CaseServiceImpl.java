@@ -367,8 +367,16 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
+    @Transactional
     public Optional<?> removeSurveyByCaseId(List<Integer> caseIds, Integer surveyId) {
+        caseIds.forEach(item -> {
+            if(surveyRecordRepository.isSurveyRecordCaseByCaseId(item, surveyId)){
+                throw new RuntimeException(item + " already have result of this survey. Can not remove !");
+            }
+        });
+
         List<SurveyCaseLink> surveyCaseLinks = surveyCaseLinkRepository.findAllBySurveyId(surveyId);
+
         List<SurveyCaseLink> filteredSurveyCaseLink = surveyCaseLinks.stream()
                 .filter(item -> caseIds.contains(item.getCases().getId()))
                 .toList();

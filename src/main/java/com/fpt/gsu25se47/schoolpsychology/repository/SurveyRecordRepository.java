@@ -28,21 +28,21 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
 
 
     @Query(value = """
-        SELECT sr.*
-        FROM survey_record sr
-        JOIN survey_case_link scl ON scl.survey_id = sr.survey_id
-        JOIN cases c ON c.id = scl.case_id
-        WHERE c.id = :caseId
-          AND sr.account_id = c.student_id
-          AND sr.completed_at IS NOT NULL
-          AND sr.completed_at >= c.created_date
-          AND sr.completed_at < COALESCE((
-              SELECT MIN(c2.created_date)
-              FROM cases c2
-              WHERE c2.student_id = c.student_id
-                AND c2.created_date > c.created_date
-          ), TIMESTAMP('9999-12-31 23:59:59'))
-        """, nativeQuery = true)
+            SELECT sr.*
+            FROM survey_record sr
+            JOIN survey_case_link scl ON scl.survey_id = sr.survey_id
+            JOIN cases c ON c.id = scl.case_id
+            WHERE c.id = :caseId
+              AND sr.account_id = c.student_id
+              AND sr.completed_at IS NOT NULL
+              AND sr.completed_at >= c.created_date
+              AND sr.completed_at < COALESCE((
+                  SELECT MIN(c2.created_date)
+                  FROM cases c2
+                  WHERE c2.student_id = c.student_id
+                    AND c2.created_date > c.created_date
+              ), TIMESTAMP('9999-12-31 23:59:59'))
+            """, nativeQuery = true)
     List<SurveyRecord> findAllRecordsBelongToCaseWindow(@Param("caseId") Integer caseId);
 
     @Query("SELECT COUNT(sr) FROM SurveyRecord sr " +
@@ -109,4 +109,22 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
             """)
     Boolean isExitSurveyRecordByStudentId(@Param("studentId") Integer studentId,
                                           @Param("supportProgramId") Integer supportProgramId);
+
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM survey_record sr
+                JOIN cases c ON sr.account_id = c.student_id
+                JOIN survey s ON sr.survey_id = s.id
+                WHERE sr.survey_id = :surveyId
+                  AND c.id = :caseId
+                  AND c.status = 'IN_PROGRESS'
+                  AND sr.round = s.round
+                  AND sr.completed_at >= c.created_date
+            )
+            """, nativeQuery = true)
+    Boolean isSurveyRecordCaseByCaseId(@Param("caseId") Integer caseId,
+                                       @Param("surveyId") Integer surveyId);
+
 }

@@ -112,12 +112,12 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     .level(matchLevel)
                     .build();
 
-            if (survey.getSurveyType() == SurveyType.FOLLOWUP) {
-                Cases cases = caseRepository.findActiveCaseByStudentId(account.getId());
-                SurveyCaseLink surveyCaseLink = surveyCaseLinkRepository.existsBySurveyIdAndCaseId(survey.getId(), cases.getId());
-                surveyCaseLink.setIsActive(false);
-                surveyCaseLinkRepository.save(surveyCaseLink);
-            }
+//            if (survey.getSurveyType() == SurveyType.FOLLOWUP) {
+//                Cases cases = caseRepository.findActiveCaseByStudentId(account.getId());
+//                SurveyCaseLink surveyCaseLink = surveyCaseLinkRepository.existsBySurveyIdAndCaseId(survey.getId(), cases.getId());
+////                surveyCaseLink.setIsActive(false);
+//                surveyCaseLinkRepository.save(surveyCaseLink);
+//            }
 
             if (surveyRecord.getAnswerRecords() != null && !surveyRecord.getAnswerRecords().isEmpty()) {
                 surveyRecord.getAnswerRecords()
