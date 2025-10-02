@@ -122,10 +122,8 @@ public class DashBoardServiceImpl implements DashBoardService {
                 .filter(item -> item.getWeightedScore() > 0)
                 .map(this::mapToDataSet).toList();
 
-        int surveyCount = (int) surveyRepository
-                .findUnansweredExpiredSurveysByAccountId(studentId).stream().filter(item ->
-                        !item.getStartDate().isBefore(startDate) &&
-                                !item.getEndDate().isAfter(endDate)).count();
+        int surveyCount = surveyRepository
+                .findUnansweredExpiredSurveysByAccountId(studentId).size();
 
         SurveyStatic surveyStatic = SurveyStatic.builder()
                 .activeSurveys(surveyCount)
