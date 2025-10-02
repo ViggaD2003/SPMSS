@@ -124,7 +124,7 @@ public interface SurveyRecordRepository extends JpaRepository<SurveyRecord, Inte
                   AND sr.completed_at >= c.created_date
             )
             """, nativeQuery = true)
-    Boolean isSurveyRecordCaseByCaseId(@Param("caseId") Integer caseId,
+    Integer isSurveyRecordCaseByCaseId(@Param("caseId") Integer caseId,
                                        @Param("surveyId") Integer surveyId);
 
 }
