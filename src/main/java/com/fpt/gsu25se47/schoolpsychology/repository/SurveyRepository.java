@@ -124,6 +124,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                 WHERE sr.isSkipped = true 
                   AND sr.student.id = :studentId
                   AND sr.completedAt BETWEEN :startDate AND :endDate
+                  AND sr.surveyRecordType = 'SCREENING'
             """)
     int countSurveySkip(Integer studentId, LocalDateTime startDate, LocalDateTime endDate);
 
