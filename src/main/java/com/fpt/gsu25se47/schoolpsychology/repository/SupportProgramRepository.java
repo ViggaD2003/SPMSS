@@ -56,7 +56,7 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
            FROM SupportProgram sp
            WHERE sp.hostedBy.id = :userId
              AND sp.startTime >= :startOfDay
-             AND sp.startTime < :endOfDay
+             AND sp.endTime < :endOfDay
              AND (sp.status = 'ACTIVE' OR sp.status = 'ON_GOING')
            """)
     int countProgramsForCounselorByDate(@Param("userId") Integer userId,
