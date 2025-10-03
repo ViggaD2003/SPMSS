@@ -150,14 +150,19 @@ public class SurveyServiceImpl implements SurveyService {
 
         SurveyStatus surveyStatus = survey.getStatus();
 
-        if(survey.getStatus() != SurveyStatus.PUBLISHED) {
-            if(surveyStatus == SurveyStatus.ARCHIVED && !dto.getIsRecurring() && dto.getStartDate().isAfter(LocalDate.now())) {
+        if(surveyStatus != SurveyStatus.PUBLISHED) {
+//            !dto.getIsRecurring()
+
+            if(surveyStatus == SurveyStatus.ARCHIVED && dto.getStartDate().isAfter(LocalDate.now())) {
                 surveyStatus = SurveyStatus.DRAFT;
                 survey.setRound(survey.getRound() + 1);
             }
 
-            if (surveyStatus == SurveyStatus.DRAFT && survey.getStartDate().isEqual(LocalDate.now())) {
+            if (surveyStatus == SurveyStatus.DRAFT && dto.getStartDate().isEqual(LocalDate.now())) {
                 surveyStatus = SurveyStatus.PUBLISHED;
+            } else if(surveyStatus == SurveyStatus.ARCHIVED && dto.getStartDate().isEqual(LocalDate.now())){
+                surveyStatus = SurveyStatus.PUBLISHED;
+                survey.setRound(survey.getRound() + 1);
             }
 
             survey.setStatus(surveyStatus);
