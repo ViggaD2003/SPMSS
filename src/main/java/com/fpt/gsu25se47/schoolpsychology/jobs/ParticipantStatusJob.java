@@ -10,7 +10,6 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -47,7 +46,7 @@ public class ParticipantStatusJob implements Job {
                     registration.setStatus(RegistrationStatus.ABSENT);
 
                     // Rule 3: Nếu chương trình kết thúc mà người đó chỉ ở trạng thái ENROLLED => ABSENT
-                } else if (program.getEndTime().isBefore(now) && registration.getStatus() == RegistrationStatus.ENROLLED) {
+                } else if (program.getEndTime().isBefore(now) && (registration.getStatus().equals(RegistrationStatus.ENROLLED)|| registration.getStatus() == RegistrationStatus.ACTIVE)) {
                     registration.setFinalScore(0f);
                     registration.setStatus(RegistrationStatus.ABSENT);
                 }
