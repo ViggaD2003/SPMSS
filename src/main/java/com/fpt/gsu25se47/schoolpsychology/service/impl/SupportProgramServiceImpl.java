@@ -26,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -68,14 +69,10 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         Account account = accountRepository.findById(request.getHostedBy()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find account")
         );
-        int maxSp = supportProgramRepository.countProgramsForCounselorByDate(account.getId(), request.getStartTime(), request.getEndTime());
+        int maxSp = supportProgramRepository.countProgramsForCounselorByDate(account.getId(), request.getStartTime().truncatedTo(ChronoUnit.DAYS), request.getEndTime().plusDays(1));
 
         if (maxSp >= 1) {
-            if (accountService.getCurrentAccount().getRole() == Role.COUNSELOR) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        String.format("You are already hosting %d support program(s) on %s. You cannot host more than one program per day.",
-                                maxSp, request.getStartTime().toLocalDate()));
-            } else if (accountService.getCurrentAccount().getRole() == Role.MANAGER) {
+             if (accountService.getCurrentAccount().getRole() == Role.MANAGER) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         String.format("This counselor already hosting %d support program(s) on %s. This counselor cannot host more than one program per day.",
                                 maxSp, request.getStartTime().toLocalDate()));

@@ -52,12 +52,13 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
     );
 
     @Query("""
-           SELECT COUNT(sp)
+
+            SELECT CASE WHEN COUNT(sp) > 0 THEN 1 ELSE 0 END
            FROM SupportProgram sp
            WHERE sp.hostedBy.id = :userId
+             AND sp.status IN ('ACTIVE','ON_GOING')
              AND sp.startTime >= :startOfDay
              AND sp.endTime < :endOfDay
-             AND (sp.status = 'ACTIVE' OR sp.status = 'ON_GOING')
            """)
     int countProgramsForCounselorByDate(@Param("userId") Integer userId,
                                         @Param("startOfDay") LocalDateTime startDate,
