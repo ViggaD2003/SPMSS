@@ -5,6 +5,7 @@ import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetAllResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.Cases.CaseGetDetailResponse;
 import com.fpt.gsu25se47.schoolpsychology.dto.response.MentalEvaluationStatic;
 import com.fpt.gsu25se47.schoolpsychology.model.Cases;
+import com.fpt.gsu25se47.schoolpsychology.repository.SurveyRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +15,11 @@ public class CaseMapper {
 
     private final LevelMapper levelMapper;
     private final AccountMapper accountMapper;
+    private final SurveyRecordRepository surveyRecordRepository;
 
     public CaseGetAllResponse mapToCaseGetAllResponse(Cases cases, Integer surveyId) {
+        Integer alreadyDoneSurveyRecord = surveyRecordRepository.isSurveyRecordCaseByCaseId(cases.getId(), surveyId);
+
         return CaseGetAllResponse.builder()
                 .id(cases.getId())
                 .categoryId(cases.getInitialLevel().getCategory().getId())
@@ -35,6 +39,7 @@ public class CaseMapper {
                 .notify(cases.getNotify())
                 .createdAt(cases.getCreatedDate())
                 .updatedAt(cases.getUpdatedDate())
+                .alreadyDoneSurvey(alreadyDoneSurveyRecord)
                 .build();
     }
 

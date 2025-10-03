@@ -371,7 +371,7 @@ public class CaseServiceImpl implements CaseService {
     public Optional<?> removeSurveyByCaseId(List<Integer> caseIds, Integer surveyId) {
         caseIds.forEach(item -> {
             if(surveyRecordRepository.isSurveyRecordCaseByCaseId(item, surveyId) == 1){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, item + " already have result of this survey. Can not remove !");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, item.toString());
             }
         });
 

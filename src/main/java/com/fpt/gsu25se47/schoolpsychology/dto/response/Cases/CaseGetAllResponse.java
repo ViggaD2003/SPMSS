@@ -48,5 +48,7 @@ public class CaseGetAllResponse {
     private LocalDateTime updatedAt;
 
     private Boolean notify;
+
+    private Integer alreadyDoneSurvey;
 }
 
