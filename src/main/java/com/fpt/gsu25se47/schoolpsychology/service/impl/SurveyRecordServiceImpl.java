@@ -73,12 +73,12 @@ public class SurveyRecordServiceImpl implements SurveyRecordService {
                     surveyRecord.setMentalEvaluation(mentalEvaluationSaved);
                     surveyRecord.setSurveyRecordIdentify(null);
 
-                    if (survey.getSurveyType() == SurveyType.FOLLOWUP) {
-                        Cases cases = caseRepository.findActiveCaseByStudentId(account.getId());
-                        SurveyCaseLink surveyCaseLink = surveyCaseLinkRepository.existsBySurveyIdAndCaseId(survey.getId(), cases.getId());
-                        surveyCaseLink.setIsActive(false);
-                        surveyCaseLinkRepository.save(surveyCaseLink);
-                    }
+//                    if (survey.getSurveyType() == SurveyType.FOLLOWUP) {
+//                        Cases cases = caseRepository.findActiveCaseByStudentId(account.getId());
+//                        SurveyCaseLink surveyCaseLink = surveyCaseLinkRepository.existsBySurveyIdAndCaseId(survey.getId(), cases.getId());
+//                        surveyCaseLink.setIsActive(false);
+//                        surveyCaseLinkRepository.save(surveyCaseLink);
+//                    }
                 } else {
                     surveyRecord.setSurveyRecordIdentify(identify);
                 }
