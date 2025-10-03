@@ -71,7 +71,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
         );
         int maxSp = supportProgramRepository.countProgramsForCounselorByDate(account.getId(), request.getStartTime().truncatedTo(ChronoUnit.DAYS), request.getEndTime().plusDays(1));
 
-        if (maxSp >= 1) {
+        if (maxSp == 1) {
              if (accountService.getCurrentAccount().getRole() == Role.MANAGER) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         String.format("This counselor already hosting %d support program(s) on %s. This counselor cannot host more than one program per day.",
