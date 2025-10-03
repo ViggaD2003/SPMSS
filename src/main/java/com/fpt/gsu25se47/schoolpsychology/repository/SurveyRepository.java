@@ -68,7 +68,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                           AND sr2.round              = s.round
                           AND sr2.survey_record_type = 'FOLLOWUP'
                           AND sr2.completed_at IS NOT NULL
-                          AND sr2.completed_at >= c2.created_date
+                          AND sr2.completed_at >=  c2.created_date
                       )
                   )
                 )
@@ -95,12 +95,23 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
             """)
     List<Survey> findAllSurveyByCaseId(Integer caseId);
 
-    @Query("""
-            SELECT s FROM Survey s
-            JOIN SurveyCaseLink scl ON s.id = scl.survey.id
-            JOIN Cases c ON scl.cases.id = c.id
-            WHERE c.id = :caseId and scl.isActive = true
-            """)
+    @Query(value = """
+            SELECT s.*
+            FROM survey s
+            JOIN survey_case_link scl ON s.id = scl.survey_id
+            JOIN cases c ON scl.case_id = c.id
+            WHERE c.id = :caseId
+              AND scl.is_active = true
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM survey_record sr
+                  WHERE sr.survey_id = s.id
+                    AND sr.account_id = c.student_id   -- chỉ record của học sinh trong case này
+                    AND sr.completed_at IS NOT NULL
+                    AND sr.round = s.round             -- nếu survey có recurring
+                    AND sr.completed_at >= c.created_date
+              )
+            """, nativeQuery = true)
     List<Survey> findAllSurveyWithLinkActiveByCaseId(Integer caseId);
 
     @Query("SELECT s FROM Survey s WHERE s.isRecurring = true AND s.status = 'ARCHIVED'")
@@ -113,6 +124,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Integer> {
                 WHERE sr.isSkipped = true 
                   AND sr.student.id = :studentId
                   AND sr.completedAt BETWEEN :startDate AND :endDate
+                  AND sr.surveyRecordType = 'SCREENING'
             """)
     int countSurveySkip(Integer studentId, LocalDateTime startDate, LocalDateTime endDate);
 

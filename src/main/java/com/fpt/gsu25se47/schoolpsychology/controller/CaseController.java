@@ -95,7 +95,7 @@ public class CaseController {
 
     @Operation(summary = "Update Case", description = "Update attribute of case")
     @PutMapping("/{caseId}")
-    @PreAuthorize("hasRole('COUNSELOR') or hasRole('PARENTS')")
+    @PreAuthorize("hasRole('COUNSELOR') or hasRole('PARENTS') or hasRole('MANAGER') ")
     public ResponseEntity<Optional<CaseGetAllResponse>> updateCaseById(
             @Parameter(description = "ID of the case") @PathVariable Integer caseId, @Valid @RequestBody UpdateCaseRequest request) {
         return ResponseEntity.ok(caseService.updateCase(caseId, request));
