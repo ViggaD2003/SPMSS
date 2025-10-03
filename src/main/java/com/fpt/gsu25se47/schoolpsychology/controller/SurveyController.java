@@ -43,7 +43,7 @@ public class SurveyController {
         return ResponseEntity.ok(surveyService.getSurveyById(id, flag));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('COUNSELOR')")
     @PutMapping("/{id}")
     @Operation(summary = "Cập nhật khảo sát", description = "Chỉ Quản lý được quyền cập nhật thông tin khảo sát.")
     public ResponseEntity<?> updateSurvey(@PathVariable Integer id, @Valid @RequestBody UpdateSurveyRequest dto) {
