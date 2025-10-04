@@ -15,7 +15,6 @@ import java.util.List;
 
 @Data
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AppointmentResponse {
 
     private Integer id;
