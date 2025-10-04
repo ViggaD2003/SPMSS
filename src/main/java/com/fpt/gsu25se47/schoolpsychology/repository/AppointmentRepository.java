@@ -1,6 +1,7 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
+import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -128,4 +129,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
     @Query("SELECT a FROM Appointment a WHERE a.bookedFor.id = :bookedForId")
     List<Appointment> findAllByBookedFor(Integer bookedForId);
+
+
+    @Query("""
+            SELECT DISTINCT a
+            FROM Appointment a
+            WHERE a.bookedFor.id = :studentId
+              AND a.status IN ('PENDING','CONFIRMED','IN_PROGRESS')
+              AND a.startDateTime < :programStartTime
+              AND a.endDateTime   > :programEndTime
+            """)
+    List<Appointment> findConflictingAppointmentsForStudent(
+            @Param("studentId") Integer studentId,
+            @Param("appointmentStartTime") LocalDateTime programStartTime,
+            @Param("appointmentEndTime") LocalDateTime programEndTime
+    );
+
 }

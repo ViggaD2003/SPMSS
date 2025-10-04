@@ -49,6 +49,7 @@ public class SupportProgramServiceImpl implements SupportProgramService {
     private final NotificationService notificationService;
     private final AccountService accountService;
     private final SurveyMapper surveyMapper;
+    private final AppointmentRepository appointmentRepository;
 
 
     @Override
@@ -238,6 +239,11 @@ public class SupportProgramServiceImpl implements SupportProgramService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "You have already registered to another program in today");
         }
+
+        if(!appointmentRepository.findConflictingAppointmentsForStudent(student.getId(), supportProgram.getStartTime(), supportProgram.getEndTime()).isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have appointment with the same time with the program you want to join!");
+        }
+
 
         List<ProgramParticipants> participants = supportProgram.getProgramRegistrations();
 

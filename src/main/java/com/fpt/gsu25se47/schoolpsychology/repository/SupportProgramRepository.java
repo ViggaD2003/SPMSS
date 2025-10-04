@@ -63,4 +63,8 @@ public interface SupportProgramRepository extends JpaRepository<SupportProgram, 
     int countProgramsForCounselorByDate(@Param("userId") Integer userId,
                                         @Param("startOfDay") LocalDateTime startDate,
                                         @Param("endOfDay") LocalDateTime endDate);
+//    PENDING, CONFIRMED, IN_PROGRESS
+
+
+
 }
