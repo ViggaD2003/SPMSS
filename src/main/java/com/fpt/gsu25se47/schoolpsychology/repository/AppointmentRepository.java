@@ -1,7 +1,6 @@
 package com.fpt.gsu25se47.schoolpsychology.repository;
 
 import com.fpt.gsu25se47.schoolpsychology.model.Appointment;
-import com.fpt.gsu25se47.schoolpsychology.model.SupportProgram;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.AppointmentStatus;
 import com.fpt.gsu25se47.schoolpsychology.model.enums.HostType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -64,6 +63,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
                 SELECT a FROM Appointment a
                 JOIN Slot s on s.id = a.slot.id
                 WHERE s.hostedBy.id = :hostById AND a.status IN (:statuses)
+                ORDER BY a.startDateTime DESC
             """)
     List<Appointment> findAllByHostByWithStatus(Integer hostById, List<AppointmentStatus> statuses);
 
